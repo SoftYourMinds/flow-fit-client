@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Реєстрація — FlowFit</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="auth-container">
+    <h1 style="color: #4A3034">Створити акаунт</h1>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Ім'я</ion-label>
+      <ion-input type="text" [(ngModel)]="firstName"></ion-input>
+    </ion-item>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Прізвище</ion-label>
+      <ion-input type="text" [(ngModel)]="lastName"></ion-input>
+    </ion-item>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="email" [(ngModel)]="email"></ion-input>
+    </ion-item>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Пароль</ion-label>
+      <ion-input type="password" [(ngModel)]="password"></ion-input>
+    </ion-item>
+
+    @if (error) {
+      <ion-text color="danger">
+        <p>{{ error }}</p>
+      </ion-text>
+    }
+
+    <ion-button expand="block" (click)="register()" style="--background: #B55C82; --color: white; margin-top: 2rem;">
+      Зареєструватися
+    </ion-button>
+
+    <div style="text-align: center; margin-top: 1rem;">
+      <a routerLink="/login" style="color: #4A3034">Вже маєте акаунт? Увійти</a>
+    </div>
+  </div>
+</ion-content>

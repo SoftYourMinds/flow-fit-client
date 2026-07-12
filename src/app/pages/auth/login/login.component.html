@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Вхід — FlowFit</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="auth-container">
+    <h1 style="color: #4A3034">З поверненням!</h1>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="email" [(ngModel)]="email"></ion-input>
+    </ion-item>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Пароль</ion-label>
+      <ion-input type="password" [(ngModel)]="password"></ion-input>
+    </ion-item>
+
+    @if (error) {
+      <ion-text color="danger">
+        <p>{{ error }}</p>
+      </ion-text>
+    }
+
+    <ion-button expand="block" (click)="login()" style="--background: #FFB3A7; --color: #4A3034; margin-top: 2rem;">
+      Увійти
+    </ion-button>
+
+    <div style="text-align: center; margin-top: 1rem;">
+      <a routerLink="/register" style="color: #B55C82">Немає акаунту? Створити</a>
+    </div>
+  </div>
+</ion-content>
