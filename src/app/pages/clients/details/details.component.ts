@@ -1,13 +1,17 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { ClientsService } from '../../../core/services/clients.service';
+import { ChartConfiguration, ChartOptions } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { NoteModalComponent } from '../../../shared/modals/note-modal/note-modal.component';
+import { MetricModalComponent } from '../../../shared/modals/metric-modal/metric-modal.component';
 
 @Component({
   selector: 'app-client-details',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BaseChartDirective],
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss']
 })
@@ -16,10 +20,30 @@ export class DetailsComponent implements OnInit {
   selectedTab = signal<'notes' | 'metrics' | 'sessions'>('notes');
   isLoading = signal(true);
 
+  upcomingSessions = signal<any[]>([]);
+  pastSessions = signal<any[]>([]);
+
+  public lineChartData: ChartConfiguration<'line'>['data'] = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        label: 'Вага (кг)',
+        fill: false,
+        tension: 0.1,
+        borderColor: '#C88A72',
+        backgroundColor: '#C88A72'
+      }
+    ]
+  };
+  public lineChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+  };
+
   constructor(
     private route: ActivatedRoute,
     private clientsService: ClientsService,
-    private alertController: AlertController
+    private modalCtrl: ModalController
   ) {}
 
   ngOnInit() {
@@ -34,6 +58,28 @@ export class DetailsComponent implements OnInit {
     this.clientsService.getOne(id).subscribe({
       next: (data) => {
         this.client.set(data);
+        
+        const now = new Date();
+        if (data.participations) {
+          const upcoming = data.participations.filter((p: any) => new Date(p.session.startTime) >= now);
+          const past = data.participations.filter((p: any) => new Date(p.session.startTime) < now);
+          this.upcomingSessions.set(upcoming);
+          this.pastSessions.set(past);
+        }
+
+        if (data.metrics && data.metrics.length > 0) {
+          const sortedMetrics = [...data.metrics].reverse();
+          this.lineChartData = {
+            labels: sortedMetrics.map(m => new Date(m.createdAt).toLocaleDateString()),
+            datasets: [
+              {
+                ...this.lineChartData.datasets[0],
+                data: sortedMetrics.map(m => m.weight)
+              }
+            ]
+          };
+        }
+
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
@@ -45,51 +91,28 @@ export class DetailsComponent implements OnInit {
   }
 
   async addNote() {
-    const alert = await this.alertController.create({
-      header: 'Нова нотатка',
-      inputs: [
-        { name: 'text', type: 'textarea', placeholder: 'Текст нотатки...' },
-        { name: 'link', type: 'url', placeholder: 'Посилання (напр. Google Диск, тренування)' }
-      ],
-      buttons: [
-        { text: 'Скасувати', role: 'cancel' },
-        {
-          text: 'Зберегти',
-          handler: (data) => {
-            if (data.text) {
-              const links = data.link ? [data.link] : [];
-              this.clientsService.addNote(this.client().id, { text: data.text, links })
-                .subscribe(() => this.loadClient(this.client().id));
-            }
-          }
-        }
-      ]
+    const modal = await this.modalCtrl.create({
+      component: NoteModalComponent
     });
-    await alert.present();
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'confirm' && data) {
+      this.clientsService.addNote(this.client().id, data)
+        .subscribe(() => this.loadClient(this.client().id));
+    }
   }
 
   async addMetric() {
-    const alert = await this.alertController.create({
-      header: 'Нові заміри',
-      inputs: [
-        { name: 'weight', type: 'number', placeholder: 'Вага (кг)' },
-        { name: 'bodyFatPercentage', type: 'number', placeholder: 'Відсоток жиру (%)' }
-      ],
-      buttons: [
-        { text: 'Скасувати', role: 'cancel' },
-        {
-          text: 'Зберегти',
-          handler: (data) => {
-            if (data.weight || data.bodyFatPercentage) {
-              this.clientsService.addMetric(this.client().id, {
-                weight: data.weight ? +data.weight : undefined,
-                bodyFatPercentage: data.bodyFatPercentage ? +data.bodyFatPercentage : undefined
-              }).subscribe(() => this.loadClient(this.client().id));
-            }
-          }
-        }
-      ]
+    const modal = await this.modalCtrl.create({
+      component: MetricModalComponent
     });
-    await alert.present();
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'confirm' && data) {
+      this.clientsService.addMetric(this.client().id, data)
+        .subscribe(() => this.loadClient(this.client().id));
+    }
   }
 }

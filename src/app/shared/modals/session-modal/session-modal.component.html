@@ -1,0 +1,84 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Нове тренування</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-container">
+    <!-- Type Selector -->
+    <div class="form-group">
+      <ion-label class="form-label">Тип тренування</ion-label>
+      <ion-segment [(ngModel)]="type" mode="ios">
+        <ion-segment-button value="INDIVIDUAL">
+          <ion-icon name="person-outline"></ion-icon>
+          <ion-label>Індивідуальне</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="GROUP">
+          <ion-icon name="people-outline"></ion-icon>
+          <ion-label>Групове</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Location Selector -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Локація</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+        <ion-select [(ngModel)]="locationId" placeholder="Оберіть локацію" interface="popover" style="width: 100%;">
+          @for (loc of locations; track loc.id) {
+            <ion-select-option [value]="loc.id">{{ loc.name }} ({{ loc.type }})</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <!-- Start & End Times -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Час початку</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+        <ion-datetime-button datetime="startTimePicker"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="startTimePicker" [(ngModel)]="startTime" presentation="date-time"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </div>
+
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Час завершення</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+        <ion-datetime-button datetime="endTimePicker"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime id="endTimePicker" [(ngModel)]="endTime" presentation="date-time"></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    </div>
+
+    <!-- Price Input -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Ціна за людину (грн)</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="cash-outline" slot="start" color="primary"></ion-icon>
+        <ion-input type="number" [(ngModel)]="pricePerPerson" placeholder="300"></ion-input>
+      </ion-item>
+    </div>
+
+    <div class="ion-margin-top ion-padding-top">
+      <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!locationId">
+        Створити тренування
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

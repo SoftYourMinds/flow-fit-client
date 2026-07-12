@@ -25,6 +25,9 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+/* Theme variables */
+@import "./theme/variables.scss";
+
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
@@ -35,3 +38,33 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+/* High Contrast & Dark Mode Color Compatibility Rules */
+ion-modal {
+  --background: var(--ion-background-color);
+}
+
+.custom-input-item {
+  --background: var(--ion-color-step-100, #f4f5f8);
+  --color: var(--ion-text-color, #111111);
+  --border-radius: 12px;
+  --padding-start: 12px;
+  color: var(--ion-text-color, #111111);
+}
+
+ion-select {
+  --placeholder-color: var(--ion-color-medium, #777777);
+  --color: var(--ion-text-color, #111111);
+  color: var(--ion-text-color, #111111);
+}
+
+ion-input, ion-textarea {
+  --color: var(--ion-text-color, #111111);
+  color: var(--ion-text-color, #111111);
+}
+
+.modern-card {
+  --background: var(--ion-card-background, var(--ion-color-step-50, #ffffff));
+  border: 1px solid var(--ion-color-step-150, rgba(128, 128, 128, 0.15));
+}
+

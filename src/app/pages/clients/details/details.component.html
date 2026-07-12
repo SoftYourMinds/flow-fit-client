@@ -73,6 +73,16 @@
           <ion-icon name="add" slot="start"></ion-icon> Додати заміри
         </ion-button>
         
+        @if (lineChartData.datasets[0].data.length) {
+          <div class="chart-container" style="position: relative; height: 300px; width: 100%; margin-bottom: 20px;">
+            <canvas baseChart
+              [data]="lineChartData"
+              [options]="lineChartOptions"
+              type="line">
+            </canvas>
+          </div>
+        }
+        
         <div class="metrics-container">
           @for (metric of client().metrics; track metric.id) {
             <ion-card class="modern-card">
@@ -98,7 +108,31 @@
       <!-- Sessions Tab -->
       @if (selectedTab() === 'sessions') {
         <div class="sessions-container">
-          @for (part of client().participations; track part.id) {
+          <ion-list-header>
+            <ion-label>Майбутні тренування</ion-label>
+          </ion-list-header>
+          @for (part of upcomingSessions(); track part.id) {
+            <ion-card class="modern-card">
+              <ion-card-content>
+                <div class="session-header">
+                  <div class="time">
+                    <ion-icon name="time-outline"></ion-icon>
+                    {{ part.session.startTime | date:'short' }}
+                  </div>
+                  <ion-badge color="primary">Майбутнє</ion-badge>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          } @empty {
+            <div class="empty-state">
+              <p>Немає майбутніх тренувань</p>
+            </div>
+          }
+
+          <ion-list-header class="ion-margin-top">
+            <ion-label>Історія тренувань</ion-label>
+          </ion-list-header>
+          @for (part of pastSessions(); track part.id) {
             <ion-card class="modern-card">
               <ion-card-content>
                 <div class="session-header">
@@ -110,15 +144,15 @@
                     {{ part.isAttended ? 'Присутній(я)' : 'Пропуск' }}
                   </ion-badge>
                 </div>
-                <div class="session-details">
-                  <p>Оплата: <span [class.paid]="part.isPaid" [class.unpaid]="!part.isPaid">{{ part.isPaid ? 'Сплачено' : 'Очікує' }}</span></p>
+                <div class="session-details ion-margin-top" style="display: flex; justify-content: space-between; align-items: center;">
+                  <p style="margin: 0;">Оплата: <span [class.paid]="part.isPaid" [class.unpaid]="!part.isPaid">{{ part.isPaid ? 'Сплачено' : 'Очікує' }}</span></p>
                 </div>
               </ion-card-content>
             </ion-card>
           } @empty {
             <div class="empty-state">
               <ion-icon name="barbell-outline"></ion-icon>
-              <p>Немає тренувань</p>
+              <p>Немає історії тренувань</p>
             </div>
           }
         </div>

@@ -1,2 +1,89 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+/**
+ * FlowFit Luxury Warm Nude & Terracotta Theme Palette
+ */
+:root {
+  /** Primary: Warm Terracotta / Luxury Nude Clay **/
+  --ion-color-primary: #C88A72;
+  --ion-color-primary-rgb: 200, 138, 114;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #b07964;
+  --ion-color-primary-tint: #ce9680;
+
+  /** Secondary: Warm Taupe / Sand **/
+  --ion-color-secondary: #A68A78;
+  --ion-color-secondary-rgb: 166, 138, 120;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #927a6a;
+  --ion-color-secondary-tint: #af9686;
+
+  /** Tertiary: Champagne Nude **/
+  --ion-color-tertiary: #D6A77A;
+  --ion-color-tertiary-rgb: 214, 167, 122;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #bc936c;
+  --ion-color-tertiary-tint: #dab087;
+
+  /** Success: Sage Warm Green **/
+  --ion-color-success: #7EA172;
+  --ion-color-success-rgb: 126, 161, 114;
+  --ion-color-success-contrast: #ffffff;
+
+  /** Warning: Warm Amber Amber **/
+  --ion-color-warning: #E0A96D;
+  --ion-color-warning-rgb: 224, 169, 109;
+  --ion-color-warning-contrast: #ffffff;
+
+  /** Danger: Rose Coral **/
+  --ion-color-danger: #C96B6B;
+  --ion-color-danger-rgb: 201, 107, 107;
+  --ion-color-danger-contrast: #ffffff;
+
+  /** Light Mode Backgrounds **/
+  --ion-background-color: #FAF7F4;
+  --ion-background-color-rgb: 250, 247, 244;
+
+  --ion-text-color: #2D2725;
+  --ion-text-color-rgb: 45, 39, 37;
+
+  --ion-card-background: #FFFFFF;
+  --ion-item-background: #FFFFFF;
+}
+
+/* Warm Nude Palette for Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: #141211;
+    --ion-background-color-rgb: 20, 18, 17;
+
+    --ion-text-color: #F5EFEB;
+    --ion-text-color-rgb: 245, 239, 235;
+
+    --ion-card-background: #1F1B1A;
+    --ion-item-background: #1F1B1A;
+    --ion-toolbar-background: #181514;
+    --ion-tab-bar-background: #181514;
+
+    --ion-color-step-50: #191615;
+    --ion-color-step-100: #211D1C;
+    --ion-color-step-150: #2A2524;
+    --ion-color-step-200: #332E2C;
+    --ion-color-step-250: #3D3735;
+    --ion-color-step-300: #463F3D;
+    --ion-color-step-350: #504846;
+    --ion-color-step-400: #5A514E;
+    --ion-color-step-450: #645A57;
+    --ion-color-step-500: #6D6360;
+    --ion-color-step-550: #776B68;
+    --ion-color-step-600: #817471;
+    --ion-color-step-650: #8B7D7A;
+    --ion-color-step-700: #948682;
+    --ion-color-step-750: #9E8F8B;
+    --ion-color-step-800: #A89894;
+    --ion-color-step-850: #B2A19D;
+    --ion-color-step-900: #BCAAA6;
+    --ion-color-step-950: #C6B3AF;
+  }
+}

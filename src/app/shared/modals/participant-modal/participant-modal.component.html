@@ -1,0 +1,57 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Додати учасника</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-container">
+    <ion-segment [(ngModel)]="mode" mode="ios" class="ion-margin-bottom">
+      <ion-segment-button value="existing">
+        <ion-label>Існуючий клієнт</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="custom">
+        <ion-label>Нове ім'я</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (mode === 'existing') {
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Оберіть клієнта зі списку</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="person-circle-outline" slot="start" color="primary"></ion-icon>
+          <ion-select [(ngModel)]="selectedClientId" placeholder="Виберіть клієнта" interface="popover" style="width: 100%;">
+            @for (c of clients; track c.id) {
+              <ion-select-option [value]="c.id">{{ c.fullName }} ({{ c.phone || 'без тел' }})</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+    } @else {
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Ім'я учасника</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+          <ion-input [(ngModel)]="customName" placeholder="Олександр П."></ion-input>
+        </ion-item>
+      </div>
+    }
+
+    <div class="ion-margin-top ion-padding-top">
+      <ion-button 
+        expand="block" 
+        shape="round" 
+        color="primary" 
+        class="submit-btn" 
+        (click)="confirm()" 
+        [disabled]="(mode === 'existing' && !selectedClientId) || (mode === 'custom' && !customName.trim())">
+        Додати учасника
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
