@@ -40,13 +40,22 @@
     <div class="ion-padding tab-content">
       <!-- Notes Tab -->
       @if (selectedTab() === 'notes') {
-        <ion-button expand="block" fill="outline" shape="round" color="primary" class="ion-margin-bottom">
+        <ion-button expand="block" fill="outline" shape="round" color="primary" class="ion-margin-bottom" (click)="addNote()">
           <ion-icon name="add" slot="start"></ion-icon> Додати нотатку
         </ion-button>
         @for (note of client().notes; track note.id) {
           <ion-card class="modern-card">
             <ion-card-content>
               <p>{{ note.text }}</p>
+              @if (note.links && note.links.length > 0) {
+                <div class="ion-margin-top">
+                  @for (link of note.links; track link) {
+                    <a [href]="link" target="_blank" rel="noopener noreferrer" style="color: var(--ion-color-primary); text-decoration: underline; font-size: 14px; display: inline-block; margin-right: 10px;">
+                      <ion-icon name="link-outline"></ion-icon> {{ link }}
+                    </a>
+                  }
+                </div>
+              }
               <div class="timestamp">{{ note.createdAt | date:'short' }}</div>
             </ion-card-content>
           </ion-card>
@@ -60,7 +69,7 @@
 
       <!-- Metrics Tab -->
       @if (selectedTab() === 'metrics') {
-        <ion-button expand="block" fill="outline" shape="round" color="secondary" class="ion-margin-bottom">
+        <ion-button expand="block" fill="outline" shape="round" color="secondary" class="ion-margin-bottom" (click)="addMetric()">
           <ion-icon name="add" slot="start"></ion-icon> Додати заміри
         </ion-button>
         

@@ -42,4 +42,12 @@ export class ClientsService {
   archive(id: number) {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  addNote(id: number, data: { text: string; links?: string[] }) {
+    return this.http.post(`${this.apiUrl}/${id}/notes`, data);
+  }
+
+  addMetric(id: number, data: { weight?: number; bodyFatPercentage?: number; note?: string }) {
+    return this.http.post(`${this.apiUrl}/${id}/metrics`, data);
+  }
 }
