@@ -21,7 +21,7 @@ const routes: Routes = [
       },
       {
         path: 'tab2',
-        loadChildren: () => import('../tab2/tab2.module').then(m => m.Tab2PageModule)
+        loadComponent: () => import('../pages/scheduler/scheduler.component').then(m => m.SchedulerComponent)
       },
       {
         path: '',

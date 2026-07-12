@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Розклад</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="createSession()">
+        <ion-icon name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-datetime 
+    presentation="date" 
+    [value]="selectedDate()"
+    (ionChange)="dateChanged($event)"
+    style="margin: 0 auto; display: block; border-radius: 12px; margin-top: 10px;">
+  </ion-datetime>
+
+  @if (isLoading()) {
+    <div class="ion-padding ion-text-center">
+      <ion-spinner></ion-spinner>
+    </div>
+  } @else {
+    @for (group of groupedSessions(); track group.date) {
+      <ion-list-header>
+        <ion-label><b>{{ group.date }}</b></ion-label>
+      </ion-list-header>
+
+      @for (session of group.sessions; track session.id) {
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>{{ session.startTime | date:'HH:mm' }} - {{ session.endTime | date:'HH:mm' }} | {{ session.type }}</ion-card-subtitle>
+            <ion-card-title>Локація ID: {{ session.locationId }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-badge color="primary">{{ session.status }}</ion-badge>
+            <p>Ціна: {{ session.pricePerPerson }} грн/люд.</p>
+            <p>Всього: {{ session.totalPrice }} грн.</p>
+            
+            <div class="ion-margin-top">
+              <b>Учасники ({{ session.participants.length || 0 }}):</b>
+              <ul>
+                @for (p of session.participants; track p.id) {
+                  <li>{{ p.client?.fullName || p.customName }}</li>
+                }
+              </ul>
+            </div>
+            
+            <div class="ion-margin-top">
+              <ion-button size="small" fill="clear" (click)="addParticipant(session.id)">
+                + Учасник
+              </ion-button>
+              <ion-button size="small" color="danger" fill="outline" (click)="deleteSession(session.id)">
+                Видалити
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      }
+    } @empty {
+      <div class="ion-padding ion-text-center">
+        <p>Немає занять на цей день.</p>
+      </div>
+    }
+  }
+</ion-content>

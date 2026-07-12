@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { LocationsService, Location } from '../../core/services/locations.service';
 
 @Component({
@@ -14,7 +14,10 @@ export class LocationsComponent implements OnInit {
   locations = signal<Location[]>([]);
   isLoading = signal(true);
 
-  constructor(private locationsService: LocationsService) {}
+  constructor(
+    private locationsService: LocationsService,
+    private alertController: AlertController
+  ) {}
 
   ngOnInit() {
     this.loadLocations();
@@ -33,5 +36,32 @@ export class LocationsComponent implements OnInit {
 
   deleteLocation(id: number) {
     this.locationsService.remove(id).subscribe(() => this.loadLocations());
+  }
+
+  async createLocation() {
+    const alert = await this.alertController.create({
+      header: 'Нова локація',
+      inputs: [
+        { name: 'name', type: 'text', placeholder: 'Назва (напр. Зал на Оболоні)' },
+        { name: 'address', type: 'text', placeholder: 'Адреса' },
+        { name: 'type', type: 'text', value: 'STUDIO', placeholder: 'Тип (STUDIO / GYM)' }
+      ],
+      buttons: [
+        { text: 'Скасувати', role: 'cancel' },
+        {
+          text: 'Створити',
+          handler: (data) => {
+            if (data.name) {
+              this.locationsService.create({
+                name: data.name,
+                address: data.address,
+                type: data.type
+              }).subscribe(() => this.loadLocations());
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 }

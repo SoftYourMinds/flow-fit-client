@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface Client {
@@ -18,8 +19,12 @@ export class ClientsService {
 
   constructor(private http: HttpClient) {}
 
-  getAll() {
-    return this.http.get<Client[]>(this.apiUrl);
+  getAll(searchQuery?: string): Observable<Client[]> {
+    let params = new HttpParams();
+    if (searchQuery) {
+      params = params.append('search', searchQuery);
+    }
+    return this.http.get<Client[]>(this.apiUrl, { params });
   }
 
   getOne(id: number) {

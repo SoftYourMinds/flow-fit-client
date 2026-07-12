@@ -1,9 +1,9 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/clients"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ client()?.fullName || 'Завантаження...' }}</ion-title>
+    <ion-title>Профіль клієнта</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -13,14 +13,19 @@
   }
 
   @if (!isLoading() && client()) {
-    <div class="ion-padding" style="background: #fcfcfc;">
+    <div class="client-hero">
+      <div class="avatar">
+        <ion-icon name="person"></ion-icon>
+      </div>
       <h2>{{ client().fullName }}</h2>
-      <p style="color: #666"><ion-icon name="call"></ion-icon> {{ client().phone || 'Немає номеру' }}</p>
-      <p><strong>Ціль:</strong> {{ client().goal || 'Не вказано' }}</p>
+      <p class="phone"><ion-icon name="call"></ion-icon> {{ client().phone || 'Немає номеру' }}</p>
+      @if (client().goal) {
+        <p class="goal">{{ client().goal }}</p>
+      }
     </div>
 
     <!-- Tabs inside the view -->
-    <ion-segment [value]="selectedTab()" (ionChange)="setTab($any($event).detail.value)">
+    <ion-segment [value]="selectedTab()" (ionChange)="setTab($any($event).detail.value)" mode="ios">
       <ion-segment-button value="notes">
         <ion-label>Нотатки</ion-label>
       </ion-segment-button>
@@ -28,67 +33,86 @@
         <ion-label>Метрики</ion-label>
       </ion-segment-button>
       <ion-segment-button value="sessions">
-        <ion-label>Тренування</ion-label>
+        <ion-label>Заняття</ion-label>
       </ion-segment-button>
     </ion-segment>
 
-    <div class="ion-padding">
+    <div class="ion-padding tab-content">
       <!-- Notes Tab -->
       @if (selectedTab() === 'notes') {
-        <ion-button expand="block" fill="outline" style="--color: #B55C82; --border-color: #B55C82; margin-bottom: 1rem;">
-          Додати нотатку
+        <ion-button expand="block" fill="outline" shape="round" color="primary" class="ion-margin-bottom">
+          <ion-icon name="add" slot="start"></ion-icon> Додати нотатку
         </ion-button>
         @for (note of client().notes; track note.id) {
-          <ion-card>
+          <ion-card class="modern-card">
             <ion-card-content>
               <p>{{ note.text }}</p>
-              <small style="color: #aaa">{{ note.createdAt | date:'short' }}</small>
+              <div class="timestamp">{{ note.createdAt | date:'short' }}</div>
             </ion-card-content>
           </ion-card>
         } @empty {
-          <p class="ion-text-center" style="color: #999;">Немає нотаток</p>
+          <div class="empty-state">
+            <ion-icon name="document-text-outline"></ion-icon>
+            <p>Немає нотаток</p>
+          </div>
         }
       }
 
       <!-- Metrics Tab -->
       @if (selectedTab() === 'metrics') {
-        <ion-button expand="block" fill="outline" style="--color: #829368; --border-color: #829368; margin-bottom: 1rem;">
-          Додати заміри
+        <ion-button expand="block" fill="outline" shape="round" color="secondary" class="ion-margin-bottom">
+          <ion-icon name="add" slot="start"></ion-icon> Додати заміри
         </ion-button>
-        <ion-list>
+        
+        <div class="metrics-container">
           @for (metric of client().metrics; track metric.id) {
-            <ion-item>
-              <ion-label>
-                <h3>Вага: {{ metric.weight }} кг</h3>
+            <ion-card class="modern-card">
+              <ion-card-content>
+                <div class="metric-header">
+                  <h3>Вага: <strong>{{ metric.weight }} кг</strong></h3>
+                  <span class="date">{{ metric.createdAt | date:'shortDate' }}</span>
+                </div>
                 @if (metric.bodyFatPercentage) {
-                  <p>Жир: {{ metric.bodyFatPercentage }}%</p>
+                  <p class="sub-metric">Жир: {{ metric.bodyFatPercentage }}%</p>
                 }
-              </ion-label>
-              <ion-note slot="end">{{ metric.createdAt | date:'shortDate' }}</ion-note>
-            </ion-item>
+              </ion-card-content>
+            </ion-card>
           } @empty {
-            <p class="ion-text-center" style="color: #999;">Немає метрик</p>
+            <div class="empty-state">
+              <ion-icon name="scale-outline"></ion-icon>
+              <p>Немає метрик</p>
+            </div>
           }
-        </ion-list>
+        </div>
       }
 
       <!-- Sessions Tab -->
       @if (selectedTab() === 'sessions') {
-        <ion-list>
+        <div class="sessions-container">
           @for (part of client().participations; track part.id) {
-            <ion-item>
-              <ion-label>
-                <h3>{{ part.session.startTime | date:'short' }}</h3>
-                <p>Оплата: {{ part.isPaid ? 'Сплачено' : 'Очікує' }}</p>
-              </ion-label>
-              <ion-badge [color]="part.isAttended ? 'success' : 'medium'" slot="end">
-                {{ part.isAttended ? 'Був(ла)' : 'Не було' }}
-              </ion-badge>
-            </ion-item>
+            <ion-card class="modern-card">
+              <ion-card-content>
+                <div class="session-header">
+                  <div class="time">
+                    <ion-icon name="time-outline"></ion-icon>
+                    {{ part.session.startTime | date:'short' }}
+                  </div>
+                  <ion-badge [color]="part.isAttended ? 'success' : 'medium'">
+                    {{ part.isAttended ? 'Присутній(я)' : 'Пропуск' }}
+                  </ion-badge>
+                </div>
+                <div class="session-details">
+                  <p>Оплата: <span [class.paid]="part.isPaid" [class.unpaid]="!part.isPaid">{{ part.isPaid ? 'Сплачено' : 'Очікує' }}</span></p>
+                </div>
+              </ion-card-content>
+            </ion-card>
           } @empty {
-            <p class="ion-text-center" style="color: #999;">Немає тренувань</p>
+            <div class="empty-state">
+              <ion-icon name="barbell-outline"></ion-icon>
+              <p>Немає тренувань</p>
+            </div>
           }
-        </ion-list>
+        </div>
       }
     </div>
   }
