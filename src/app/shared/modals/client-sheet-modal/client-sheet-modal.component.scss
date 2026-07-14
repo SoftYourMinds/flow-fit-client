@@ -1,0 +1,168 @@
+.client-sheet-content {
+  --background: transparent;
+  
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
+  
+  .sheet-header {
+    text-align: center;
+    margin-bottom: 20px;
+    
+    .avatar-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 12px;
+      
+      .avatar-letter {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--ion-color-tertiary);
+        color: #fff;
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(214, 167, 122, 0.3);
+      }
+    }
+    
+    .client-name {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: var(--ion-text-color);
+    }
+    
+    .client-phone {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--ion-color-medium);
+      font-size: 15px;
+      margin: 0;
+      
+      ion-icon {
+        font-size: 16px;
+      }
+    }
+  }
+  
+  .status-tags {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  
+  .session-info-card {
+    background: var(--ion-card-background);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      
+      ion-icon {
+        color: var(--ion-color-primary);
+        font-size: 20px;
+      }
+      
+      h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+    }
+    
+    .session-list {
+      background: transparent;
+      
+      .session-item {
+        --padding-start: 0;
+        --inner-padding-end: 0;
+        --background: transparent;
+        
+        ion-label {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          
+          .session-date {
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+  
+  .details-section {
+    margin-bottom: 24px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--ion-card-background);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      
+      .metric-label {
+        color: var(--ion-color-medium);
+      }
+      .metric-value {
+        font-weight: 600;
+        color: var(--ion-color-primary);
+      }
+    }
+    
+    .notes-preview {
+      h4 {
+        font-size: 14px;
+        color: var(--ion-color-medium);
+        margin-bottom: 8px;
+      }
+      
+      .note-card {
+        padding: 12px;
+        background: rgba(200, 138, 114, 0.05);
+        border-radius: 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        border-left: 3px solid var(--ion-color-primary);
+      }
+    }
+  }
+  
+  .empty-text {
+    color: var(--ion-color-medium);
+    font-size: 14px;
+    font-style: italic;
+    margin: 0;
+  }
+  
+  .full-profile-btn {
+    --border-radius: 12px;
+    --background: var(--ion-color-primary);
+    margin-top: 24px;
+    font-weight: 600;
+  }
+}

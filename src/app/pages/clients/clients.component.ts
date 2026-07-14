@@ -1,9 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule, AlertController, ModalController } from '@ionic/angular';
 import { ClientsService, Client } from '../../core/services/clients.service';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ClientSheetModalComponent } from '../../shared/modals/client-sheet-modal/client-sheet-modal.component';
 
 @Component({
   selector: 'app-clients',
@@ -19,7 +20,8 @@ export class ClientsComponent implements OnInit {
 
   constructor(
     private clientsService: ClientsService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private modalCtrl: ModalController
   ) {}
 
   ngOnInit() {
@@ -40,6 +42,20 @@ export class ClientsComponent implements OnInit {
   onSearch(event: any) {
     this.searchQuery.set(event.detail.value || '');
     this.loadClients();
+  }
+
+  async openClientCabinet(client: Client) {
+    const modal = await this.modalCtrl.create({
+      component: ClientSheetModalComponent,
+      componentProps: {
+        clientId: client.id
+      },
+      breakpoints: [0, 0.5, 0.9],
+      initialBreakpoint: 0.85,
+      handle: true,
+      cssClass: 'client-bottom-sheet'
+    });
+    await modal.present();
   }
 
   async createClient() {

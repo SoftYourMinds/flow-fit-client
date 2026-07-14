@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, ActionSheetController } from '@ionic/angular';
+import { IonicModule, ModalController, ActionSheetController, ToastController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { SessionsService, WorkoutSession } from '../../core/services/sessions.service';
 import { LocationsService, Location } from '../../core/services/locations.service';
@@ -31,7 +31,7 @@ export class SchedulerComponent implements OnInit {
   isLoading = signal(true);
 
   // View modes
-  viewMode = signal<'week' | 'list'>('week');
+  viewMode = signal<'day' | 'week' | 'month'>('day');
 
   // Date selection (defaults to today)
   selectedDate = signal<Date>(new Date());
@@ -86,11 +86,33 @@ export class SchedulerComponent implements OnInit {
     const type = this.filterType();
     const locId = this.filterLocationId();
 
-    // In week view, limit to selected day
-    if (mode === 'week') {
+    if (mode === 'day') {
       list = list.filter(s => {
         const sDateStr = new Date(s.startTime).toISOString().split('T')[0];
         return sDateStr === targetDateStr;
+      });
+    } else if (mode === 'week') {
+      const curr = new Date(this.selectedDate());
+      const first = curr.getDate() - (curr.getDay() === 0 ? 6 : curr.getDay() - 1);
+      const startOfWeek = new Date(curr);
+      startOfWeek.setDate(first);
+      startOfWeek.setHours(0,0,0,0);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23,59,59,999);
+      
+      list = list.filter(s => {
+        const sDate = new Date(s.startTime);
+        return sDate >= startOfWeek && sDate <= endOfWeek;
+      });
+    } else if (mode === 'month') {
+      const curr = new Date(this.selectedDate());
+      const startOfMonth = new Date(curr.getFullYear(), curr.getMonth(), 1);
+      const endOfMonth = new Date(curr.getFullYear(), curr.getMonth() + 1, 0, 23, 59, 59, 999);
+      
+      list = list.filter(s => {
+        const sDate = new Date(s.startTime);
+        return sDate >= startOfMonth && sDate <= endOfMonth;
       });
     }
 
@@ -138,7 +160,8 @@ export class SchedulerComponent implements OnInit {
     private locationsService: LocationsService,
     private clientsService: ClientsService,
     private modalCtrl: ModalController,
-    private actionSheetCtrl: ActionSheetController
+    private actionSheetCtrl: ActionSheetController,
+    private toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
@@ -165,6 +188,20 @@ export class SchedulerComponent implements OnInit {
     // Fetch clients for participant selection
     this.clientsService.getAll().subscribe({
       next: (cls) => this.clients.set(cls)
+    });
+  }
+
+  async togglePayment(session: WorkoutSession) {
+    // In a real app, this would call an API like this.sessionsService.markPaid(session.id)
+    this.sessionsService.update(session.id, { status: 'COMPLETED' }).subscribe(async () => {
+      this.loadData();
+      const toast = await this.toastCtrl.create({
+        message: `✅ Оплату за тренування "${session.location?.name || 'Локація #' + session.locationId}" успішно зафіксовано!`,
+        duration: 2000,
+        color: 'success',
+        position: 'top'
+      });
+      await toast.present();
     });
   }
 

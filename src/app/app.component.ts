@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-
+import { ThemeService } from './core/services/theme.service';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -7,5 +7,7 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class AppComponent {
-  constructor() {}
+  constructor(private themeService: ThemeService) {
+    this.themeService.initTheme();
+  }
 }

@@ -1,0 +1,26 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Налаштування</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Налаштування</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <ion-list lines="inset">
+      <ion-item>
+        <ion-icon slot="start" name="moon" color="primary"></ion-icon>
+        <ion-label>Темна тема</ion-label>
+        <ion-toggle 
+          [checked]="themeService.isDarkMode" 
+          (ionChange)="toggleTheme()">
+        </ion-toggle>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

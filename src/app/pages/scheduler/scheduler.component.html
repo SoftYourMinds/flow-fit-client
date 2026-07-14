@@ -12,13 +12,17 @@
   <!-- View Mode Switcher & Navigation Header -->
   <ion-toolbar class="sub-header-toolbar">
     <ion-segment [value]="viewMode()" (ionChange)="viewMode.set($any($event).detail.value)" mode="ios" class="view-segment" slot="start">
+      <ion-segment-button value="day">
+        <ion-icon name="today-outline"></ion-icon>
+        <ion-label>По днях</ion-label>
+      </ion-segment-button>
       <ion-segment-button value="week">
         <ion-icon name="calendar-outline"></ion-icon>
-        <ion-label>Тиждень</ion-label>
+        <ion-label>По тижнях</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="list">
-        <ion-icon name="list-outline"></ion-icon>
-        <ion-label>Список</ion-label>
+      <ion-segment-button value="month">
+        <ion-icon name="apps-outline"></ion-icon>
+        <ion-label>По місяцях</ion-label>
       </ion-segment-button>
     </ion-segment>
 
@@ -69,34 +73,32 @@
 </ion-header>
 
 <ion-content>
-  <!-- Week Navigation Strip (when viewMode === 'week') -->
-  @if (viewMode() === 'week') {
-    <div class="week-strip-container">
-      <ion-button fill="clear" size="small" (click)="previousWeek()">
-        <ion-icon name="chevron-back-outline"></ion-icon>
-      </ion-button>
+  <!-- Week Navigation Strip -->
+  <div class="week-strip-container">
+    <ion-button fill="clear" size="small" (click)="previousWeek()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </ion-button>
 
-      <div class="week-days-row">
-        @for (day of weekDays(); track day.dateStr) {
-          <div 
-            class="day-tab" 
-            [class.active]="selectedDateStr() === day.dateStr"
-            [class.is-today]="day.isToday"
-            (click)="selectDay(day)">
-            <span class="day-name">{{ day.dayName }}</span>
-            <span class="day-num">{{ day.dayNum }}</span>
-            @if (day.count > 0) {
-              <span class="day-badge">{{ day.count }}</span>
-            }
-          </div>
-        }
-      </div>
-
-      <ion-button fill="clear" size="small" (click)="nextWeek()">
-        <ion-icon name="chevron-forward-outline"></ion-icon>
-      </ion-button>
+    <div class="week-days-row">
+      @for (day of weekDays(); track day.dateStr) {
+        <div 
+          class="day-tab" 
+          [class.active]="selectedDateStr() === day.dateStr"
+          [class.is-today]="day.isToday"
+          (click)="selectDay(day)">
+          <span class="day-name">{{ day.dayName }}</span>
+          <span class="day-num">{{ day.dayNum }}</span>
+          @if (day.count > 0) {
+            <span class="day-badge">{{ day.count }}</span>
+          }
+        </div>
+      }
     </div>
-  }
+
+    <ion-button fill="clear" size="small" (click)="nextWeek()">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </ion-button>
+  </div>
 
   <!-- Loading State -->
   @if (isLoading()) {
@@ -107,7 +109,7 @@
 
     <!-- Sessions List -->
     <div class="sessions-wrapper ion-padding-horizontal">
-      @if (viewMode() === 'week') {
+      @if (viewMode() === 'day') {
         @for (session of filteredSessions(); track session.id) {
           <ion-card class="session-card modern-card">
             <ion-card-header>
@@ -158,8 +160,18 @@
               </div>
 
               <!-- Action Buttons -->
-              <div class="card-actions">
-                <ion-button fill="outline" size="small" color="dark" shape="round" (click)="openSessionActions(session)">
+              <div class="card-actions" style="display: flex; gap: 8px; margin-top: 16px;">
+                @if (session.status !== 'COMPLETED') {
+                  <ion-button fill="solid" size="small" color="success" shape="round" (click)="togglePayment(session)">
+                    <ion-icon name="cash-outline" slot="start"></ion-icon> Оплачено
+                  </ion-button>
+                } @else {
+                  <ion-button fill="outline" size="small" color="medium" shape="round" disabled>
+                    <ion-icon name="checkmark-done-outline" slot="start"></ion-icon> Сплачено
+                  </ion-button>
+                }
+                
+                <ion-button fill="outline" size="small" color="dark" shape="round" (click)="openSessionActions(session)" style="margin-left: auto;">
                   <ion-icon name="ellipsis-horizontal" slot="icon-only"></ion-icon>
                 </ion-button>
               </div>

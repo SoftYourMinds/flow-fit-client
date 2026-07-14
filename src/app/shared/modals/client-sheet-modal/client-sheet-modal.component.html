@@ -1,0 +1,84 @@
+<ion-content class="ion-padding client-sheet-content">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+    </div>
+  } @else if (client()) {
+    <div class="sheet-header">
+      <div class="avatar-container">
+        <div class="avatar-letter">{{ client().fullName[0] }}</div>
+      </div>
+      <h2 class="client-name">{{ client().fullName }}</h2>
+      <p class="client-phone">
+        <ion-icon name="call-outline"></ion-icon>
+        {{ client().phone || 'Немає номеру' }}
+      </p>
+    </div>
+
+    <div class="status-tags">
+      @if (client().goal) {
+        <ion-chip color="tertiary">
+          <ion-label>{{ client().goal }}</ion-label>
+        </ion-chip>
+      }
+      <ion-chip color="secondary">
+        <ion-label>Клієнт</ion-label>
+      </ion-chip>
+    </div>
+
+    <div class="session-info-card">
+      <div class="card-header">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <h3>Найближчі заняття</h3>
+      </div>
+      @if (upcomingSessions().length > 0) {
+        <ion-list lines="none" class="session-list">
+          @for (session of upcomingSessions(); track session.id) {
+            <ion-item class="session-item">
+              <ion-label>
+                <div class="session-date">
+                  {{ session.session.startTime | date:'dd MMM, HH:mm' }}
+                </div>
+                <div class="session-type">
+                  <ion-badge [color]="session.session.type === 'GROUP' ? 'secondary' : 'primary'">
+                    {{ session.session.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
+                  </ion-badge>
+                </div>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      } @else {
+        <p class="empty-text">Немає запланованих занять</p>
+      }
+    </div>
+
+    <div class="details-section">
+      <h3>Останні дані</h3>
+      
+      @if (client().metrics && client().metrics.length > 0) {
+        <div class="metric-row">
+          <span class="metric-label">Вага:</span>
+          <span class="metric-value">{{ client().metrics[client().metrics.length - 1].weight }} кг</span>
+        </div>
+      } @else {
+        <p class="empty-text">Немає збережених вимірів</p>
+      }
+
+      <div class="notes-preview">
+        <h4>Останні коментарі</h4>
+        @if (client().notes && client().notes.length > 0) {
+          <div class="note-card">
+            {{ client().notes[client().notes.length - 1].content }}
+          </div>
+        } @else {
+          <p class="empty-text">Немає коментарів</p>
+        }
+      </div>
+    </div>
+
+    <ion-button expand="block" class="full-profile-btn" [routerLink]="['/tabs/clients', client().id]" (click)="close()">
+      Повний профіль
+    </ion-button>
+  }
+</ion-content>

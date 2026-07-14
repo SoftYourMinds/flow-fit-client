@@ -28,6 +28,10 @@ const routes: Routes = [
         loadComponent: () => import('../pages/reports/reports.component').then(m => m.ReportsComponent)
       },
       {
+        path: 'settings',
+        loadComponent: () => import('../pages/settings/settings.component').then(m => m.SettingsComponent)
+      },
+      {
         path: '',
         redirectTo: '/tabs/clients',
         pathMatch: 'full'

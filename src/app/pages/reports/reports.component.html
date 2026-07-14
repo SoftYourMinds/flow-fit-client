@@ -24,11 +24,24 @@
         <ion-spinner name="crescent"></ion-spinner>
       </div>
     } @else if (summary) {
+      
+      <ion-segment [(ngModel)]="reportType" mode="ios" class="ion-margin-bottom">
+        <ion-segment-button value="all">
+          <ion-label>Всі</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="individual">
+          <ion-label>Індивідуальні</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="group">
+          <ion-label>Групові</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
       <!-- Total Income Card -->
       <ion-card class="income-card">
         <ion-card-content>
-          <h2>Загальний дохід</h2>
-          <div class="amount">{{ summary.totalIncome }} ₴</div>
+          <h2>{{ reportType === 'all' ? 'Загальний дохід' : (reportType === 'individual' ? 'Дохід (Індивідуальні)' : 'Дохід (Групові)') }}</h2>
+          <div class="amount">{{ displayedIncome }} ₴</div>
         </ion-card-content>
       </ion-card>
 
@@ -54,8 +67,36 @@
         </ion-card>
       </div>
 
+      <!-- Unpaid Sessions List -->
+      @if (unpaidSessions.length > 0) {
+        <ion-card class="unpaid-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="warning" color="warning"></ion-icon>
+              Неоплачені заняття
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="ion-no-padding">
+            <ion-list>
+              @for (session of unpaidSessions; track session.id) {
+                <ion-item>
+                  <ion-label>
+                    <h3>{{ session.location?.name || ('Локація #' + session.locationId) }}</h3>
+                    <p>{{ session.startTime | date:'short' }}</p>
+                    <p><strong>{{ session.pricePerPerson }} ₴/люд.</strong> ({{ session.participants.length }} учасників)</p>
+                  </ion-label>
+                  <ion-button slot="end" fill="solid" color="success" size="small" shape="round" (click)="markAsPaid(session)">
+                    <ion-icon name="cash-outline" slot="start"></ion-icon> Оплачено
+                  </ion-button>
+                </ion-item>
+              }
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      }
+
       <!-- Breakdown Pie Chart -->
-      @if (summary.totalIncome > 0) {
+      @if (summary.totalIncome > 0 && reportType === 'all') {
         <ion-card class="chart-card">
           <ion-card-header>
             <ion-card-title>Розподіл доходу</ion-card-title>

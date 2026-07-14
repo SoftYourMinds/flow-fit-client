@@ -1,1 +1,23 @@
+ion-tab-bar.glass-tab-bar {
+  --background: rgba(250, 247, 244, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(200, 138, 114, 0.1);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+}
 
+ion-tab-button {
+  --color-selected: var(--ion-color-primary);
+  --color: #A68A78;
+  transition: all 0.3s ease;
+}
+
+body.dark {
+  ion-tab-bar.glass-tab-bar {
+    --background: rgba(24, 21, 20, 0.85);
+    border-top: 1px solid rgba(200, 138, 114, 0.15);
+  }
+  ion-tab-button {
+    --color: #8B7D7A;
+  }
+}
