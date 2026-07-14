@@ -3,6 +3,7 @@
 **Session focus:** Scheduler Day/Week/Month filtering & Payment Toasts
 
 ### ✅ Accomplished
+- Implemented ability to edit existing client notes.
 - Added Day/Week/Month segment buttons in `scheduler.component.html`.
 - Updated `scheduler.component.ts` filter computation to correctly handle Day, Week, and Month scopes.
 - Integrated `ToastController` to display confirmation toast when marking workout sessions as "Оплачено".

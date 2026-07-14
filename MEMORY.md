@@ -8,10 +8,10 @@
 - `environment.ts` configured for devtunnel remote endpoint (`https://2p7hpg02-4000.euw.devtunnels.ms`).
 
 ## Recent Changes
+- Added ability to edit client notes (frontend and backend support).
 - Configured class-based dark mode (`body.dark`) and updated variables palette.
 - Added `ToastController` and `togglePayment` method in `scheduler.component.ts`.
 - Added Day/Week/Month mode switcher in `scheduler.component.html`.
-- Updated `.agents/AGENTS.md` rules for theme customization & memory management state persistence.
 
 ## Known Issues
 - None. Build completes successfully.
