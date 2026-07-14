@@ -175,16 +175,20 @@ export class SchedulerComponent implements OnInit {
     this.loadData();
   }
 
-  loadData() {
-    this.isLoading.set(true);
+  loadData(event?: any) {
+    if (!event) this.isLoading.set(true);
     
     // Fetch sessions
     this.sessionsService.getAll().subscribe({
       next: (data) => {
         this.sessions.set(data);
-        this.isLoading.set(false);
+        if (!event) this.isLoading.set(false);
+        if (event) event.target.complete();
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        if (!event) this.isLoading.set(false);
+        if (event) event.target.complete();
+      }
     });
 
     // Fetch locations for labels and form dropdowns
@@ -196,6 +200,10 @@ export class SchedulerComponent implements OnInit {
     this.clientsService.getAll().subscribe({
       next: (cls) => this.clients.set(cls)
     });
+  }
+
+  handleRefresh(event: any) {
+    this.loadData(event);
   }
 
   async togglePayment(session: WorkoutSession) {

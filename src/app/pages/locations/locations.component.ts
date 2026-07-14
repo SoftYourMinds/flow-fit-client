@@ -23,15 +23,23 @@ export class LocationsComponent implements OnInit {
     this.loadLocations();
   }
 
-  loadLocations() {
-    this.isLoading.set(true);
+  loadLocations(event?: any) {
+    if (!event) this.isLoading.set(true);
     this.locationsService.getAll().subscribe({
       next: (data) => {
         this.locations.set(data);
-        this.isLoading.set(false);
+        if (!event) this.isLoading.set(false);
+        if (event) event.target.complete();
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        if (!event) this.isLoading.set(false);
+        if (event) event.target.complete();
+      }
     });
+  }
+
+  handleRefresh(event: any) {
+    this.loadLocations(event);
   }
 
   deleteLocation(id: number) {

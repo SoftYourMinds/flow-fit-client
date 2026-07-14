@@ -73,6 +73,10 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <!-- Week Navigation Strip -->
   <div class="week-strip-container">
     <ion-button fill="clear" size="small" (click)="previousWeek()">

@@ -13,6 +13,10 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   @if (isLoading()) {
     <ion-progress-bar type="indeterminate"></ion-progress-bar>
   } @else {

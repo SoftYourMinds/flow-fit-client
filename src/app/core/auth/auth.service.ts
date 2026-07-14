@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { tap, catchError, share, finalize } from 'rxjs/operators';
+import { throwError, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface User {
@@ -15,6 +15,7 @@ export interface User {
 })
 export class AuthService {
   private readonly apiUrl = environment.apiUrl + '/auth';
+  private refreshSubject: Observable<any> | null = null;
 
   // State
   currentUser = signal<User | null>(null);
@@ -31,7 +32,11 @@ export class AuthService {
       // Ideally decode JWT to get user info or fetch /me
       this.http.get<User>(`${this.apiUrl}/me`).subscribe({
         next: (user) => this.currentUser.set(user),
-        error: () => this.logout()
+        error: (err) => {
+          if (err.status === 401 || err.status === 403) {
+            this.logout();
+          }
+        }
       });
     }
   }
@@ -55,15 +60,26 @@ export class AuthService {
       return throwError(() => new Error('No refresh token'));
     }
 
-    return this.http.post<any>(`${this.apiUrl}/refresh`, {}, {
+    if (this.refreshSubject) {
+      return this.refreshSubject;
+    }
+
+    this.refreshSubject = this.http.post<any>(`${this.apiUrl}/refresh`, {}, {
       headers: { Authorization: `Bearer ${refresh_token}` }
     }).pipe(
-      tap(res => this.handleAuthResponse(res)),
+      tap(res => {
+        localStorage.setItem('access_token', res.accessToken);
+        localStorage.setItem('refresh_token', res.refreshToken);
+      }),
       catchError(err => {
         this.logout();
         return throwError(() => err);
-      })
+      }),
+      finalize(() => this.refreshSubject = null),
+      share()
     );
+
+    return this.refreshSubject;
   }
 
   logout() {

@@ -29,15 +29,23 @@ export class ClientsComponent implements OnInit {
     this.loadClients();
   }
 
-  loadClients() {
-    this.isLoading.set(true);
+  loadClients(event?: any) {
+    if (!event) this.isLoading.set(true);
     this.clientsService.getAll(this.searchQuery()).subscribe({
       next: (data) => {
         this.clients.set(data);
-        this.isLoading.set(false);
+        if (!event) this.isLoading.set(false);
+        if (event) event.target.complete();
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        if (!event) this.isLoading.set(false);
+        if (event) event.target.complete();
+      }
     });
+  }
+
+  handleRefresh(event: any) {
+    this.loadClients(event);
   }
 
   onSearch(event: any) {
