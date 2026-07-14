@@ -1,0 +1,85 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Звіти</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <div class="reports-container">
+    <ion-card class="date-card">
+      <ion-card-content>
+        <ion-item lines="none" class="date-item">
+          <ion-label position="stacked">Початок</ion-label>
+          <input type="date" [(ngModel)]="startDate" (change)="onDateChange()" class="native-date-input" />
+        </ion-item>
+        <ion-item lines="none" class="date-item">
+          <ion-label position="stacked">Кінець</ion-label>
+          <input type="date" [(ngModel)]="endDate" (change)="onDateChange()" class="native-date-input" />
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    @if (isLoading) {
+      <div class="loading-container">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else if (summary) {
+      <!-- Total Income Card -->
+      <ion-card class="income-card">
+        <ion-card-content>
+          <h2>Загальний дохід</h2>
+          <div class="amount">{{ summary.totalIncome }} ₴</div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <div class="stat-value">{{ summary.statistics.totalClients }}</div>
+            <div class="stat-label">Клієнтів</div>
+          </ion-card-content>
+        </ion-card>
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <div class="stat-value">{{ summary.statistics.totalSessions }}</div>
+            <div class="stat-label">Тренувань</div>
+          </ion-card-content>
+        </ion-card>
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <div class="stat-value">{{ summary.statistics.missedRate }}%</div>
+            <div class="stat-label">Пропусків</div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Breakdown Pie Chart -->
+      @if (summary.totalIncome > 0) {
+        <ion-card class="chart-card">
+          <ion-card-header>
+            <ion-card-title>Розподіл доходу</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="chart-container">
+              <canvas baseChart
+                [data]="pieChartData"
+                [type]="pieChartType"
+                [options]="pieChartOptions">
+              </canvas>
+            </div>
+            
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="dot individual"></span> Індивідуальні: <b>{{ summary.incomeBreakdown.individual }} ₴</b>
+              </div>
+              <div class="legend-item">
+                <span class="dot group"></span> Групові: <b>{{ summary.incomeBreakdown.group }} ₴</b>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      }
+    }
+  </div>
+</ion-content>
