@@ -10,11 +10,18 @@ import { ParticipantModalComponent } from '../../shared/modals/participant-modal
 
 export interface DayTab {
   date: Date;
-  dateStr: string; // YYYY-MM-DD
+  dateStr: string; // YYYY-MM-DD (local)
   dayName: string; // Пн, Вт, etc.
   dayNum: number;  // 13
   isToday: boolean;
   count: number;
+}
+
+function getLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 @Component({
@@ -48,15 +55,15 @@ export class SchedulerComponent implements OnInit {
     
     const days: DayTab[] = [];
     const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString(new Date());
     const allSessions = this.sessions();
 
     for (let i = 0; i < 7; i++) {
       const d = new Date(curr.setDate(first + i));
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateString(d);
       
       const count = allSessions.filter(s => {
-        const sDateStr = new Date(s.startTime).toISOString().split('T')[0];
+        const sDateStr = getLocalDateString(new Date(s.startTime));
         return sDateStr === dateStr;
       }).length;
 
@@ -74,7 +81,7 @@ export class SchedulerComponent implements OnInit {
 
   // Selected date string (YYYY-MM-DD)
   selectedDateStr = computed(() => {
-    return this.selectedDate().toISOString().split('T')[0];
+    return getLocalDateString(this.selectedDate());
   });
 
   // Computed filtered sessions
@@ -88,7 +95,7 @@ export class SchedulerComponent implements OnInit {
 
     if (mode === 'day') {
       list = list.filter(s => {
-        const sDateStr = new Date(s.startTime).toISOString().split('T')[0];
+        const sDateStr = getLocalDateString(new Date(s.startTime));
         return sDateStr === targetDateStr;
       });
     } else if (mode === 'week') {

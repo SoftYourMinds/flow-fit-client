@@ -24,3 +24,24 @@
   font-weight: 600;
   height: 48px;
 }
+
+.duration-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+
+  ion-chip {
+    margin: 0;
+    font-weight: 500;
+    padding: 0 16px;
+    height: 36px;
+    transition: all 0.2s ease;
+    
+    &[outline="false"] {
+      --background: var(--ion-color-primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.4);
+    }
+  }
+}

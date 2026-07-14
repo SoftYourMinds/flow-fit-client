@@ -17,7 +17,7 @@ export class SessionModalComponent implements OnInit {
   locationId: number | null = null;
   type: 'INDIVIDUAL' | 'GROUP' = 'INDIVIDUAL';
   startTime: string = new Date().toISOString();
-  endTime: string = new Date(Date.now() + 3600000).toISOString();
+  duration: number = 50;
   pricePerPerson: number = 300;
 
   constructor(
@@ -46,11 +46,16 @@ export class SessionModalComponent implements OnInit {
 
   confirm() {
     if (!this.locationId) return;
+    
+    // Розрахунок часу завершення
+    const start = new Date(this.startTime);
+    const end = new Date(start.getTime() + this.duration * 60000);
+
     return this.modalCtrl.dismiss({
       locationId: +this.locationId,
       type: this.type,
       startTime: this.startTime,
-      endTime: this.endTime,
+      endTime: end.toISOString(),
       pricePerPerson: +this.pricePerPerson,
       status: 'UPCOMING'
     }, 'confirm');
