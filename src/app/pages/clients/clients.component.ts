@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, AlertController, ModalController } from '@ionic/angular';
 import { ClientsService, Client } from '../../core/services/clients.service';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ClientSheetModalComponent } from '../../shared/modals/client-sheet-modal/client-sheet-modal.component';
 
@@ -21,7 +21,8 @@ export class ClientsComponent implements OnInit {
   constructor(
     private clientsService: ClientsService,
     private alertController: AlertController,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -55,6 +56,14 @@ export class ClientsComponent implements OnInit {
       handle: true,
       cssClass: 'client-bottom-sheet'
     });
+
+    modal.addEventListener('ionBreakpointDidChange', (ev: any) => {
+      if (ev.detail.breakpoint === 0.9) {
+        modal.dismiss();
+        this.router.navigate(['/tabs/clients', client.id]);
+      }
+    });
+
     await modal.present();
   }
 

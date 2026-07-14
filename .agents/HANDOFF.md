@@ -1,14 +1,11 @@
 ## Last Session Summary
 
-**Date:** 2026-07-14
-**Session focus:** Implemented Phase 4 (Reports & Analytics UI).
+**Date:** 2026-07-15
+**Session focus:** Client Bottom Sheet Navigation.
 
 ### ✅ Accomplished
 
-- Completed Phase 3: Built Client Profile UI (Info, Progress, History tabs), Notes, and Metrics.
-- Completed Phase 4: Built Reports UI page with date range selectors and integrated API.
-- Added premium Ionic styling and Chart.js for Income Breakdown pie chart.
-- Added Reports tab to main navigation.
+- Implemented automatic navigation to the client's detail page when the client bottom sheet is swiped to 90% in `clients.component.ts`.
 
 ### ⚠️ Pending / Known Issues
 
