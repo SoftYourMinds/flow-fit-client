@@ -12,36 +12,44 @@
 <ion-content class="ion-padding">
   <div class="form-container">
     <div class="form-group">
-      <ion-label class="form-label">Текст нотатки</ion-label>
-      <ion-item lines="none" class="custom-input-item textarea-item">
-        <ion-textarea 
-          [(ngModel)]="text" 
-          rows="4" 
-          placeholder="Напишіть деталі про тренування, самопочуття клієнта або індивідуальну програму...">
-        </ion-textarea>
-      </ion-item>
-    </div>
-
-    <div class="form-group ion-margin-top">
       <div class="header-with-action">
-        <ion-label class="form-label">Корисні посилання</ion-label>
-        <ion-button fill="clear" size="small" (click)="addLinkField()">
-          <ion-icon name="add-circle-outline" slot="start"></ion-icon> Додати посилання
+        <ion-label class="form-label">Текст нотатки</ion-label>
+        <ion-button fill="clear" size="small" (click)="triggerFileUpload()" [disabled]="isUploading">
+          <ion-icon name="attach-outline" slot="start"></ion-icon> 
+          {{ isUploading ? 'Завантаження...' : 'Прикріпити файл' }}
         </ion-button>
       </div>
+      
+      <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*,video/*" hidden>
 
-      @for (link of links; track trackByIndex($index)) {
-        <div class="link-input-row">
-          <ion-item lines="none" class="custom-input-item flex-1">
-            <ion-icon name="link-outline" slot="start" color="primary"></ion-icon>
-            <ion-input [(ngModel)]="links[$index]" placeholder="https://drive.google.com/..."></ion-input>
-          </ion-item>
-          <ion-button fill="clear" color="danger" size="small" (click)="removeLinkField($index)">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-        </div>
-      }
+      <!-- Quill Editor -->
+      <div class="editor-wrapper">
+        <quill-editor 
+          [(ngModel)]="text" 
+          [modules]="quillModules" 
+          placeholder="Напишіть деталі про тренування..."
+          [styles]="{height: '150px'}">
+        </quill-editor>
+      </div>
     </div>
+
+    <!-- Attachments Preview -->
+    @if (links.length > 0) {
+      <div class="form-group ion-margin-top attachments-group">
+        <ion-label class="form-label">Вкладення</ion-label>
+        <div class="attachments-list">
+          @for (link of links; track trackByIndex($index)) {
+            <div class="attachment-item">
+              <!-- Using simple img tag for preview, assuming they are mostly images -->
+              <img [src]="link" alt="Вкладення" class="attachment-preview">
+              <ion-button fill="clear" color="danger" size="small" (click)="removeLink($index)" class="remove-btn">
+                <ion-icon name="close-circle"></ion-icon>
+              </ion-button>
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <div class="ion-margin-top ion-padding-top">
       <ion-button 
@@ -50,9 +58,10 @@
         color="primary" 
         class="submit-btn" 
         (click)="confirm()" 
-        [disabled]="!text.trim()">
+        [disabled]="!text || !text.trim() || isUploading">
         Зберегти нотатку
       </ion-button>
     </div>
   </div>
 </ion-content>
+

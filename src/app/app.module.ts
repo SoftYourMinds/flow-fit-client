@@ -10,10 +10,11 @@ import { AppComponent } from './app.component';
 import { authInterceptor } from './core/auth/auth.interceptor';
 
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { QuillModule } from 'ngx-quill';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule],
+  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, QuillModule.forRoot()],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideHttpClient(withInterceptors([authInterceptor])),
