@@ -47,6 +47,10 @@ export class ClientsService {
     return this.http.post(`${this.apiUrl}/${id}/notes`, data);
   }
 
+  updateNote(clientId: number, noteId: number, data: { text: string; links?: string[] }) {
+    return this.http.put(`${this.apiUrl}/${clientId}/notes/${noteId}`, data);
+  }
+
   addMetric(id: number, data: { weight?: number; bodyFatPercentage?: number; note?: string }) {
     return this.http.post(`${this.apiUrl}/${id}/metrics`, data);
   }

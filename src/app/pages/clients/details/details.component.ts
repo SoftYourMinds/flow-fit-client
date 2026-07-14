@@ -103,6 +103,20 @@ export class DetailsComponent implements OnInit {
     }
   }
 
+  async editNote(note: any) {
+    const modal = await this.modalCtrl.create({
+      component: NoteModalComponent,
+      componentProps: { note }
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'confirm' && data) {
+      this.clientsService.updateNote(this.client().id, note.id, data)
+        .subscribe(() => this.loadClient(this.client().id));
+    }
+  }
+
   async addMetric() {
     const modal = await this.modalCtrl.create({
       component: MetricModalComponent

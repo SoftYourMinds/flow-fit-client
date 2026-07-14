@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Нова нотатка</ion-title>
+    <ion-title>{{ note ? 'Редагувати нотатку' : 'Нова нотатка' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()">
         <ion-icon name="close-outline"></ion-icon>

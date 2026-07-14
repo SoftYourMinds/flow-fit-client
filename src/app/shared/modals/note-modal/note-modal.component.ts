@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
@@ -10,11 +10,22 @@ import { IonicModule, ModalController } from '@ionic/angular';
   templateUrl: './note-modal.component.html',
   styleUrls: ['./note-modal.component.scss']
 })
-export class NoteModalComponent {
+export class NoteModalComponent implements OnInit {
+  @Input() note?: any;
+  
   text: string = '';
   links: string[] = [''];
 
   constructor(private modalCtrl: ModalController) {}
+
+  ngOnInit() {
+    if (this.note) {
+      this.text = this.note.text || '';
+      if (this.note.links && this.note.links.length > 0) {
+        this.links = [...this.note.links];
+      }
+    }
+  }
 
   addLinkField() {
     this.links.push('');

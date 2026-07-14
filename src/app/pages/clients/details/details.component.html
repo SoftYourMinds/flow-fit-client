@@ -44,9 +44,12 @@
           <ion-icon name="add" slot="start"></ion-icon> Додати нотатку
         </ion-button>
         @for (note of client().notes; track note.id) {
-          <ion-card class="modern-card">
+          <ion-card class="modern-card" style="position: relative;">
+            <ion-button fill="clear" color="medium" style="position: absolute; top: 0; right: 0; z-index: 10;" (click)="editNote(note)">
+              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+            </ion-button>
             <ion-card-content>
-              <p>{{ note.text }}</p>
+              <p style="padding-right: 30px;">{{ note.text }}</p>
               @if (note.links && note.links.length > 0) {
                 <div class="ion-margin-top">
                   @for (link of note.links; track link) {

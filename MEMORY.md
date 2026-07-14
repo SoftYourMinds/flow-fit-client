@@ -1,19 +1,17 @@
 # FlowFit Memory
 
 ## Current State
-- UI/UX modernization is fully implemented.
-- The Nude & Terracotta theme (#C88A72) with glassmorphism has been applied.
-- The ClientSheetModalComponent handles the client cabinet using a bottom sheet modal (breakpoints: 0, 0.5, 0.9).
-- The Scheduler supports Day, Week, and Month views, with horizontal week-strip navigation.
-- Workout cards have a quick "Оплачено" action.
-- The Reports module features real-time analytics with segmented tabs for Individual/Group and an unpaid sessions quick action list.
+- UI/UX modernization fully implemented with Nude & Terracotta theme (#C88A72).
+- Class-based `.dark` theme configured in `variables.scss` and `global.scss`.
+- Scheduler supports Day, Week, and Month views, with horizontal week-strip navigation.
+- Workout cards feature quick payment toggle ("Оплачено") with Toast confirmation.
+- `environment.ts` configured for devtunnel remote endpoint (`https://2p7hpg02-4000.euw.devtunnels.ms`).
 
 ## Recent Changes
-- Implemented `ThemeService` and `SettingsComponent` to allow users to toggle between Light and Dark themes manually.
-- Updated tabs.page.scss and variables.scss for the glassmorphism UI and `.dark` class-based theming.
-- Integrated ClientSheetModalComponent into the client base.
-- Refactored scheduler.component.ts and scheduler.component.html to support the new UI requirements.
-- Updated reports.component.ts and reports.component.html for real-time dashboards and payment capabilities.
+- Configured class-based dark mode (`body.dark`) and updated variables palette.
+- Added `ToastController` and `togglePayment` method in `scheduler.component.ts`.
+- Added Day/Week/Month mode switcher in `scheduler.component.html`.
+- Updated `.agents/AGENTS.md` rules for theme customization & memory management state persistence.
 
 ## Known Issues
 - None. Build completes successfully.
