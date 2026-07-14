@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { SessionsService, WorkoutSession } from '../../core/services/sessions.service';
 import { LocationsService, Location } from '../../core/services/locations.service';
 import { ClientsService, Client } from '../../core/services/clients.service';
+import { Router } from '@angular/router';
 import { SessionModalComponent } from '../../shared/modals/session-modal/session-modal.component';
 import { ParticipantModalComponent } from '../../shared/modals/participant-modal/participant-modal.component';
 
@@ -168,7 +169,8 @@ export class SchedulerComponent implements OnInit {
     private clientsService: ClientsService,
     private modalCtrl: ModalController,
     private actionSheetCtrl: ActionSheetController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -206,18 +208,8 @@ export class SchedulerComponent implements OnInit {
     this.loadData(event);
   }
 
-  async togglePayment(session: WorkoutSession) {
-    // In a real app, this would call an API like this.sessionsService.markPaid(session.id)
-    this.sessionsService.update(session.id, { status: 'COMPLETED' }).subscribe(async () => {
-      this.loadData();
-      const toast = await this.toastCtrl.create({
-        message: `✅ Оплату за тренування "${session.location?.name || 'Локація #' + session.locationId}" успішно зафіксовано!`,
-        duration: 2000,
-        color: 'success',
-        position: 'top'
-      });
-      await toast.present();
-    });
+  goToSessionDetail(sessionId: number) {
+    this.router.navigate(['/tabs/sessions', sessionId]);
   }
 
   selectDay(day: DayTab) {
@@ -255,58 +247,9 @@ export class SchedulerComponent implements OnInit {
     }
   }
 
-  async openAddParticipantModal(session: WorkoutSession) {
-    const modal = await this.modalCtrl.create({
-      component: ParticipantModalComponent,
-      componentProps: {
-        clients: this.clients()
-      }
-    });
-    await modal.present();
 
-    const { data, role } = await modal.onWillDismiss();
-    if (role === 'confirm' && data) {
-      this.sessionsService.addParticipant(session.id, data).subscribe(() => this.loadData());
-    }
-  }
 
-  async removeParticipant(sessionId: number, participantId: number) {
-    this.sessionsService.removeParticipant(sessionId, participantId).subscribe(() => this.loadData());
-  }
 
-  async openSessionActions(session: WorkoutSession) {
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: `Управління заняттям #${session.id}`,
-      buttons: [
-        {
-          text: 'Позначити як ACTIVE',
-          icon: 'play-outline',
-          handler: () => this.updateStatus(session.id, 'ACTIVE')
-        },
-        {
-          text: 'Позначити як COMPLETED',
-          icon: 'checkmark-circle-outline',
-          handler: () => this.updateStatus(session.id, 'COMPLETED')
-        },
-        {
-          text: 'Позначити як MISSED',
-          icon: 'close-circle-outline',
-          handler: () => this.updateStatus(session.id, 'MISSED')
-        },
-        {
-          text: 'Видалити заняття',
-          role: 'destructive',
-          icon: 'trash-outline',
-          handler: () => this.deleteSession(session.id)
-        },
-        {
-          text: 'Скасувати',
-          role: 'cancel'
-        }
-      ]
-    });
-    await actionSheet.present();
-  }
 
   updateStatus(id: number, status: any) {
     this.sessionsService.update(id, { status }).subscribe(() => this.loadData());

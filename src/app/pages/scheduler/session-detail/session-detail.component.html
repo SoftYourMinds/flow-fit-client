@@ -1,0 +1,98 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Деталі тренування</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openSessionActions()">
+        <ion-icon name="ellipsis-horizontal"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (isLoading()) {
+    <div class="ion-padding ion-text-center">
+      <ion-spinner color="primary"></ion-spinner>
+    </div>
+  } @else if (session()) {
+    <div class="header-card">
+      <div class="time-range">
+        <ion-icon name="time-outline"></ion-icon>
+        <h2>{{ session()!.startTime | date:'dd MMM, HH:mm' }} - {{ session()!.endTime | date:'HH:mm' }}</h2>
+      </div>
+      <ion-badge [color]="getStatusColor(session()!.status)" class="status-badge">
+        {{ getStatusLabel(session()!.status) }}
+      </ion-badge>
+    </div>
+
+    <div class="details-section ion-padding">
+      <div class="info-row">
+        <div class="info-icon"><ion-icon name="location-outline"></ion-icon></div>
+        <div class="info-content">
+          <h4>Локація</h4>
+          <p>{{ session()!.location?.name || ('Локація #' + session()!.locationId) }}</p>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon"><ion-icon name="fitness-outline"></ion-icon></div>
+        <div class="info-content">
+          <h4>Тип</h4>
+          <p>{{ session()!.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}</p>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon"><ion-icon name="cash-outline"></ion-icon></div>
+        <div class="info-content">
+          <h4>Ціна за тренування</h4>
+          <p><strong>{{ session()!.price }} грн</strong></p>
+        </div>
+      </div>
+
+      <ion-button expand="block" fill="outline" color="primary" class="edit-btn ion-margin-top" (click)="editSession()">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        Редагувати тренування
+      </ion-button>
+    </div>
+
+    <div class="participants-section ion-padding">
+      <div class="section-header">
+        <h3>Учасники ({{ session()!.participants.length }})</h3>
+        <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
+          <ion-icon name="person-add-outline" slot="start"></ion-icon>
+          Додати
+        </ion-button>
+      </div>
+
+      <ion-list lines="none" class="participants-list">
+        @for (p of session()!.participants; track p.id) {
+          <ion-item class="participant-item">
+            <ion-avatar slot="start">
+              <div class="avatar-placeholder">
+                <ion-icon name="person"></ion-icon>
+              </div>
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ p.client?.fullName || p.customName }}</h2>
+              <p *ngIf="p.client">{{ p.client.phone || 'Немає номеру' }}</p>
+            </ion-label>
+            <ion-button fill="clear" color="danger" slot="end" (click)="removeParticipant(p.id)">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        } @empty {
+          <div class="empty-state">
+            <ion-icon name="people-outline"></ion-icon>
+            <p>Немає доданих учасників</p>
+          </div>
+        }
+      </ion-list>
+    </div>
+  }
+</ion-content>

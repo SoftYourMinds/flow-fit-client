@@ -18,8 +18,7 @@ export interface WorkoutSession {
   type: 'INDIVIDUAL' | 'GROUP';
   startTime: string;
   endTime: string;
-  pricePerPerson: number;
-  totalPrice?: number;
+  price: number;
   status: 'UPCOMING' | 'ACTIVE' | 'REQUIRED_ACTION' | 'COMPLETED' | 'MISSED';
   participants: SessionParticipant[];
 }

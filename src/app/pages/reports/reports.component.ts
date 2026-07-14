@@ -30,8 +30,7 @@ export class ReportsComponent implements OnInit {
   // Segment for displaying metrics
   reportType: 'all' | 'individual' | 'group' = 'all';
   
-  // Unpaid sessions
-  unpaidSessions: WorkoutSession[] = [];
+
 
   public pieChartOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -90,19 +89,9 @@ export class ReportsComponent implements OnInit {
       }
     });
 
-    this.loadUnpaidSessions();
   }
 
-  loadUnpaidSessions() {
-    // Ideally we filter by status and date range on backend, but here we just get all and filter
-    this.sessionsService.getAll().subscribe(sessions => {
-      // Find sessions that are not completed, missed, or upcoming
-      this.unpaidSessions = sessions.filter(s => 
-        (s.status === 'ACTIVE' || s.status === 'REQUIRED_ACTION') && 
-        new Date(s.startTime) <= new Date()
-      ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
-    });
-  }
+
 
   onDateChange() {
     this.loadData();
@@ -115,18 +104,7 @@ export class ReportsComponent implements OnInit {
     return this.summary.totalIncome;
   }
 
-  async markAsPaid(session: WorkoutSession) {
-    this.sessionsService.update(session.id, { status: 'COMPLETED' }).subscribe(async () => {
-      this.loadData(); // Reload both summary and unpaid sessions
-      const toast = await this.toastCtrl.create({
-        message: `✅ Оплату за тренування успішно зафіксовано!`,
-        duration: 2000,
-        color: 'success',
-        position: 'top'
-      });
-      await toast.present();
-    });
-  }
+
 
   private updateChartData() {
     if (this.summary) {

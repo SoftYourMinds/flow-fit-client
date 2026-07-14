@@ -24,6 +24,10 @@ const routes: Routes = [
         loadComponent: () => import('../pages/scheduler/scheduler.component').then(m => m.SchedulerComponent)
       },
       {
+        path: 'sessions/:id',
+        loadComponent: () => import('../pages/scheduler/session-detail/session-detail.component').then(m => m.SessionDetailComponent)
+      },
+      {
         path: 'reports',
         loadComponent: () => import('../pages/reports/reports.component').then(m => m.ReportsComponent)
       },

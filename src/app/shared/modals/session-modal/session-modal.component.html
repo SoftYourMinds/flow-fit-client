@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Нове тренування</ion-title>
+    <ion-title>{{ session ? 'Редагувати тренування' : 'Нове тренування' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()">
         <ion-icon name="close-outline"></ion-icon>
@@ -79,16 +79,16 @@
 
     <!-- Price Input -->
     <div class="form-group ion-margin-top">
-      <ion-label class="form-label">Ціна за людину (грн)</ion-label>
+      <ion-label class="form-label">Ціна за тренування (грн)</ion-label>
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="cash-outline" slot="start" color="primary"></ion-icon>
-        <ion-input type="number" [(ngModel)]="pricePerPerson" placeholder="300"></ion-input>
+        <ion-input type="number" [(ngModel)]="price" placeholder="800"></ion-input>
       </ion-item>
     </div>
 
     <div class="ion-margin-top ion-padding-top">
       <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!locationId">
-        Створити тренування
+        {{ session ? 'Зберегти зміни' : 'Створити тренування' }}
       </ion-button>
     </div>
   </div>

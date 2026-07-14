@@ -14,11 +14,13 @@ import { LocationsService, Location } from '../../../core/services/locations.ser
 export class SessionModalComponent implements OnInit {
   @Input() locations: Location[] = [];
 
+  @Input() session?: any; // To edit an existing session
+
   locationId: number | null = null;
   type: 'INDIVIDUAL' | 'GROUP' = 'INDIVIDUAL';
   startTime: string = new Date().toISOString();
   duration: number = 50;
-  pricePerPerson: number = 300;
+  price: number = 300;
 
   constructor(
     private modalCtrl: ModalController,
@@ -30,13 +32,24 @@ export class SessionModalComponent implements OnInit {
       this.locationsService.getAll().subscribe({
         next: (locs) => {
           this.locations = locs;
-          if (locs.length > 0) {
+          if (locs.length > 0 && !this.session) {
             this.locationId = locs[0].id;
           }
         }
       });
-    } else if (this.locations.length > 0) {
+    } else if (this.locations.length > 0 && !this.session) {
       this.locationId = this.locations[0].id;
+    }
+
+    if (this.session) {
+      this.locationId = this.session.locationId;
+      this.type = this.session.type;
+      this.startTime = this.session.startTime;
+      this.price = this.session.price;
+      
+      const start = new Date(this.session.startTime);
+      const end = new Date(this.session.endTime);
+      this.duration = Math.round((end.getTime() - start.getTime()) / 60000);
     }
   }
 
@@ -56,8 +69,8 @@ export class SessionModalComponent implements OnInit {
       type: this.type,
       startTime: this.startTime,
       endTime: end.toISOString(),
-      pricePerPerson: +this.pricePerPerson,
-      status: 'UPCOMING'
+      price: +this.price,
+      status: this.session ? this.session.status : 'UPCOMING'
     }, 'confirm');
   }
 }

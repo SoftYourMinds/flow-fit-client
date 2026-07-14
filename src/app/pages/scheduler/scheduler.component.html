@@ -115,7 +115,7 @@
     <div class="sessions-wrapper ion-padding-horizontal">
       @if (viewMode() === 'day') {
         @for (session of filteredSessions(); track session.id) {
-          <ion-card class="session-card modern-card">
+          <ion-card class="session-card modern-card" (click)="goToSessionDetail(session.id)" style="cursor: pointer;">
             <ion-card-header>
               <div class="card-top-bar">
                 <div class="time-range">
@@ -138,46 +138,30 @@
 
             <ion-card-content>
               <div class="price-info">
-                <p>Ціна: <strong>{{ session.pricePerPerson }} грн/люд.</strong> (Всього: {{ session.totalPrice || (session.pricePerPerson * (session.participants.length || 0)) }} грн)</p>
+                <p>Ціна: <strong>{{ session.price || 0 }} грн</strong></p>
               </div>
 
               <!-- Participants Section -->
               <div class="participants-section">
                 <div class="participants-header">
                   <span class="p-title"><ion-icon name="people-outline"></ion-icon> Учасники ({{ session.participants.length || 0 }})</span>
-                  <ion-button size="small" fill="clear" color="primary" (click)="openAddParticipantModal(session)">
-                    <ion-icon name="person-add-outline" slot="start"></ion-icon> + Додати
-                  </ion-button>
                 </div>
 
                 <div class="participants-chips">
-                  @for (p of session.participants; track p.id) {
+                  @for (p of session.participants.slice(0, 3); track p.id) {
                     <ion-chip class="participant-chip">
                       <ion-icon name="person-circle-outline" color="primary"></ion-icon>
                       <ion-label>{{ p.client?.fullName || p.customName }}</ion-label>
-                      <ion-icon name="close-circle" (click)="removeParticipant(session.id, p.id)"></ion-icon>
                     </ion-chip>
                   } @empty {
                     <p class="no-participants">Немає доданих учасників</p>
                   }
+                  @if (session.participants.length > 3) {
+                    <ion-chip class="participant-chip see-more-chip" color="medium">
+                      <ion-label>+{{ session.participants.length - 3 }} ще</ion-label>
+                    </ion-chip>
+                  }
                 </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="card-actions" style="display: flex; gap: 8px; margin-top: 16px;">
-                @if (session.status !== 'COMPLETED') {
-                  <ion-button fill="solid" size="small" color="success" shape="round" (click)="togglePayment(session)">
-                    <ion-icon name="cash-outline" slot="start"></ion-icon> Оплачено
-                  </ion-button>
-                } @else {
-                  <ion-button fill="outline" size="small" color="medium" shape="round" disabled>
-                    <ion-icon name="checkmark-done-outline" slot="start"></ion-icon> Сплачено
-                  </ion-button>
-                }
-                
-                <ion-button fill="outline" size="small" color="dark" shape="round" (click)="openSessionActions(session)" style="margin-left: auto;">
-                  <ion-icon name="ellipsis-horizontal" slot="icon-only"></ion-icon>
-                </ion-button>
               </div>
             </ion-card-content>
           </ion-card>
@@ -199,7 +183,7 @@
           </div>
 
           @for (session of group.items; track session.id) {
-            <ion-card class="session-card modern-card">
+            <ion-card class="session-card modern-card" (click)="goToSessionDetail(session.id)" style="cursor: pointer;">
               <ion-card-header>
                 <div class="card-top-bar">
                   <div class="time-range">
@@ -222,14 +206,19 @@
 
               <ion-card-content>
                 <div class="price-info">
-                  <p>Ціна: <strong>{{ session.pricePerPerson }} грн/люд.</strong></p>
+                  <p>Ціна: <strong>{{ session.price || 0 }} грн</strong></p>
                 </div>
 
                 <div class="participants-chips">
-                  @for (p of session.participants; track p.id) {
+                  @for (p of session.participants.slice(0, 3); track p.id) {
                     <ion-chip class="participant-chip">
                       <ion-icon name="person-circle-outline" color="primary"></ion-icon>
                       <ion-label>{{ p.client?.fullName || p.customName }}</ion-label>
+                    </ion-chip>
+                  }
+                  @if (session.participants.length > 3) {
+                    <ion-chip class="participant-chip see-more-chip" color="medium">
+                      <ion-label>+{{ session.participants.length - 3 }} ще</ion-label>
                     </ion-chip>
                   }
                 </div>
