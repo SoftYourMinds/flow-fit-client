@@ -40,9 +40,15 @@
         <div class="attachments-list">
           @for (link of links; track trackByIndex($index)) {
             <div class="attachment-item">
-              <!-- Using simple img tag for preview, assuming they are mostly images -->
-              <img [src]="link" alt="Вкладення" class="attachment-preview">
-              <ion-button fill="clear" color="danger" size="small" (click)="removeLink($index)" class="remove-btn">
+              <div style="position: relative; cursor: pointer; height: 100%; display: flex; align-items: center;" (click)="openMedia(link)">
+                @if (isVideo(link)) {
+                  <video [src]="link" class="attachment-preview" style="background: #000; object-fit: cover;" preload="metadata"></video>
+                  <ion-icon name="play-circle" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; color: white; opacity: 0.8;"></ion-icon>
+                } @else {
+                  <img [src]="link" alt="Вкладення" class="attachment-preview" style="object-fit: cover;">
+                }
+              </div>
+              <ion-button fill="clear" color="danger" size="small" (click)="removeLink($index); $event.stopPropagation();" class="remove-btn">
                 <ion-icon name="close-circle"></ion-icon>
               </ion-button>
             </div>

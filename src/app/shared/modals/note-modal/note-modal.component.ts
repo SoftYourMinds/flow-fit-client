@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { QuillModule } from 'ngx-quill';
 import { StorageService } from '../../../core/services/storage.service';
+import { MediaViewerModalComponent } from '../media-viewer-modal/media-viewer-modal.component';
 
 @Component({
   selector: 'app-note-modal',
@@ -68,6 +69,19 @@ export class NoteModalComponent implements OnInit {
 
   removeLink(index: number) {
     this.links.splice(index, 1);
+  }
+
+  isVideo(url: string): boolean {
+    if (!url) return false;
+    return url.match(/\.(mp4|webm|ogg|mov)$/i) != null;
+  }
+
+  async openMedia(url: string) {
+    const modal = await this.modalCtrl.create({
+      component: MediaViewerModalComponent,
+      componentProps: { mediaUrl: url }
+    });
+    await modal.present();
   }
 
   trackByIndex(index: number): number {

@@ -53,11 +53,15 @@
               <div class="note-html-content" [innerHTML]="note.text" style="padding-right: 30px;"></div>
               
               @if (note.links && note.links.length > 0) {
-                <div class="ion-margin-top attachments-list-view">
+                <div class="ion-margin-top attachments-list-view" style="display: flex; gap: 8px; flex-wrap: wrap;">
                   @for (link of note.links; track link) {
-                    <!-- Simplified logic: if link contains r2.dev or cloudflarestorage, assume it's an image for now, or just try to render as img and fallback -->
-                    <div style="margin-top: 8px;">
-                      <img [src]="link" alt="Вкладення" style="max-height: 150px; border-radius: 8px;">
+                    <div (click)="openMedia(link)" style="position: relative; cursor: pointer;">
+                      @if (isVideo(link)) {
+                        <video [src]="link" style="max-height: 150px; border-radius: 8px; background: #000;" preload="metadata"></video>
+                        <ion-icon name="play-circle" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; color: white; opacity: 0.8;"></ion-icon>
+                      } @else {
+                        <img [src]="link" alt="Вкладення" style="max-height: 150px; border-radius: 8px; object-fit: cover;">
+                      }
                     </div>
                   }
                 </div>

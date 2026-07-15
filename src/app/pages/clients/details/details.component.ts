@@ -7,6 +7,7 @@ import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { NoteModalComponent } from '../../../shared/modals/note-modal/note-modal.component';
 import { MetricModalComponent } from '../../../shared/modals/metric-modal/metric-modal.component';
+import { MediaViewerModalComponent } from '../../../shared/modals/media-viewer-modal/media-viewer-modal.component';
 
 @Component({
   selector: 'app-client-details',
@@ -128,5 +129,17 @@ export class DetailsComponent implements OnInit {
       this.clientsService.addMetric(this.client().id, data)
         .subscribe(() => this.loadClient(this.client().id));
     }
+  }
+  async openMedia(url: string) {
+    const modal = await this.modalCtrl.create({
+      component: MediaViewerModalComponent,
+      componentProps: { mediaUrl: url }
+    });
+    await modal.present();
+  }
+
+  isVideo(url: string): boolean {
+    if (!url) return false;
+    return url.match(/\.(mp4|webm|ogg|mov)$/i) != null;
   }
 }
