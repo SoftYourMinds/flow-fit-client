@@ -9,6 +9,8 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Fixed bottom toolbar dark mode theme selector bug (`:host-context`) and safe-area inset height cutoff.
+- Scaled tab icons down to micro size (20px) with single-line labels (10px) to solve 5-item toolbar overcrowding.
 - Removed `isPaid` tracking from `SessionParticipant`.
 - Renamed `pricePerPerson` to `price` in `WorkoutSession` (now represents the total price of the training).
 - Replaced inline quick actions in Scheduler with a dedicated "Деталі тренування" (Session Detail) page.

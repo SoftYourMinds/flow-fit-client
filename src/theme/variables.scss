@@ -53,7 +53,8 @@
 }
 
 /* Warm Nude Palette for Dark Mode */
-body.dark {
+body.dark,
+html.ion-palette-dark {
   --ion-background-color: #141211;
   --ion-background-color-rgb: 20, 18, 17;
 
