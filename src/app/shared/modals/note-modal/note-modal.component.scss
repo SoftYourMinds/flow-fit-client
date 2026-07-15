@@ -1,3 +1,7 @@
+quill-editor {
+  width: 100%;
+}
+
 .form-label {
   display: block;
   font-weight: 600;
@@ -13,7 +17,8 @@
   --padding-start: 12px;
   margin-top: 4px;
 
-  ion-input, ion-textarea {
+  ion-input,
+  ion-textarea {
     --color: var(--ion-text-color, #111111);
     color: var(--ion-text-color, #111111);
   }
@@ -80,7 +85,7 @@
   height: 80px;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   .attachment-preview {
     width: 100%;
@@ -96,11 +101,10 @@
     --padding-start: 0;
     --padding-end: 0;
     height: 24px;
-    
+
     ion-icon {
       font-size: 24px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     }
   }
 }
-
