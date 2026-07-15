@@ -48,10 +48,12 @@ export class DetailsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadClient(+id);
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.loadClient(+id);
+      }
+    });
   }
 
   loadClient(id: number) {

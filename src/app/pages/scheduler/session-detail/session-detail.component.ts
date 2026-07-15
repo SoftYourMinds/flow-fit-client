@@ -32,10 +32,12 @@ export class SessionDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.loadSession(+idParam);
-    }
+    this.route.paramMap.subscribe(params => {
+      const idParam = params.get('id');
+      if (idParam) {
+        this.loadSession(+idParam);
+      }
+    });
     
     // Load lists for modals
     this.clientsService.getAll().subscribe({
