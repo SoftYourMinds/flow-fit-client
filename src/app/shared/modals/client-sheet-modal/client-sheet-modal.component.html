@@ -68,8 +68,7 @@
       <div class="notes-preview">
         <h4>Останні коментарі</h4>
         @if (client().notes && client().notes.length > 0) {
-          <div class="note-card">
-            {{ client().notes[client().notes.length - 1].content }}
+          <div class="note-card" [innerHTML]="client().notes[client().notes.length - 1].text">
           </div>
         } @else {
           <p class="empty-text">Немає коментарів</p>
