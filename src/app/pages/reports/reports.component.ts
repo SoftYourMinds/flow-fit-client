@@ -6,6 +6,7 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ReportsService, ReportSummary } from '../../core/services/reports.service';
 import { SessionsService, WorkoutSession } from '../../core/services/sessions.service';
+import { LocationsService, Location } from '../../core/services/locations.service';
 
 function getLocalDateString(date: Date): string {
   const year = date.getFullYear();
@@ -26,6 +27,9 @@ export class ReportsComponent implements OnInit {
   endDate: string = '';
   summary: ReportSummary | null = null;
   isLoading: boolean = false;
+  
+  locations: Location[] = [];
+  selectedLocationId: number | null = null;
 
   // Segment for displaying metrics
   reportType: 'all' | 'individual' | 'group' = 'all';
@@ -56,10 +60,12 @@ export class ReportsComponent implements OnInit {
   constructor(
     private reportsService: ReportsService,
     private sessionsService: SessionsService,
+    private locationsService: LocationsService,
     private toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
+    this.loadLocations();
     this.setDefaultDates();
     this.loadData();
   }
@@ -77,7 +83,7 @@ export class ReportsComponent implements OnInit {
     if (!this.startDate || !this.endDate) return;
 
     this.isLoading = true;
-    this.reportsService.getSummary(this.startDate, this.endDate).subscribe({
+    this.reportsService.getSummary(this.startDate, this.endDate, this.selectedLocationId).subscribe({
       next: (data) => {
         this.summary = data;
         this.updateChartData();
@@ -93,7 +99,20 @@ export class ReportsComponent implements OnInit {
 
 
 
+  loadLocations() {
+    this.locationsService.getAll().subscribe({
+      next: (locs) => {
+        this.locations = locs;
+      },
+      error: (err) => console.error('Failed to load locations', err)
+    });
+  }
+
   onDateChange() {
+    this.loadData();
+  }
+
+  onLocationChange() {
     this.loadData();
   }
 

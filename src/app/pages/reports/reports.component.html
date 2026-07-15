@@ -8,13 +8,24 @@
   <div class="reports-container">
     <ion-card class="date-card">
       <ion-card-content>
-        <ion-item lines="none" class="date-item">
-          <ion-label position="stacked">Початок</ion-label>
-          <input type="date" [(ngModel)]="startDate" (change)="onDateChange()" class="native-date-input" />
-        </ion-item>
-        <ion-item lines="none" class="date-item">
-          <ion-label position="stacked">Кінець</ion-label>
-          <input type="date" [(ngModel)]="endDate" (change)="onDateChange()" class="native-date-input" />
+        <div class="filters-row">
+          <ion-item lines="none" class="date-item">
+            <ion-label position="stacked">Початок</ion-label>
+            <input type="date" [(ngModel)]="startDate" (change)="onDateChange()" class="native-date-input" />
+          </ion-item>
+          <ion-item lines="none" class="date-item">
+            <ion-label position="stacked">Кінець</ion-label>
+            <input type="date" [(ngModel)]="endDate" (change)="onDateChange()" class="native-date-input" />
+          </ion-item>
+        </div>
+        <ion-item lines="none" class="location-item">
+          <ion-label position="stacked">Локація</ion-label>
+          <ion-select [(ngModel)]="selectedLocationId" (ionChange)="onLocationChange()" interface="popover">
+            <ion-select-option [value]="null">Всі локації</ion-select-option>
+            @for (loc of locations; track loc.id) {
+              <ion-select-option [value]="loc.id">{{ loc.name }}</ion-select-option>
+            }
+          </ion-select>
         </ion-item>
       </ion-card-content>
     </ion-card>

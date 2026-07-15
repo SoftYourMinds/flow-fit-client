@@ -24,9 +24,14 @@ export class ReportsService {
 
   constructor(private http: HttpClient) {}
 
-  getSummary(startDate: string, endDate: string): Observable<ReportSummary> {
+  getSummary(startDate: string, endDate: string, locationId?: number | null): Observable<ReportSummary> {
+    let params: any = { startDate, endDate };
+    if (locationId) {
+      params.locationId = locationId.toString();
+    }
+    
     return this.http.get<ReportSummary>(`${this.apiUrl}/summary`, {
-      params: { startDate, endDate },
+      params,
     });
   }
 }

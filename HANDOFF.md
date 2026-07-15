@@ -1,14 +1,13 @@
 ## Last Session Summary
 **Date:** 2026-07-15
-**Session focus:** Bottom Toolbar & Tab Bar UI/UX Redesign
+**Session focus:** Statistics Location Filtering
 
 ### ✅ Accomplished
-- Implemented 4 Core Tabs + "Більше" (More) Glassmorphism ActionSheet Drawer (*Клієнти*, *Розклад*, *Звіти*, *Більше*).
-- Integrated *Локації*, *Налаштування*, and Theme Toggle into the "Більше" bottom action sheet.
-- Fixed dark theme mismatch in `tabs.page.scss` using `:host-context(.dark)` / `:host-context(.ion-palette-dark)` to bypass Angular CSS encapsulation.
-- Resolved bottom height gap on modern devices by adding dynamic `env(safe-area-inset-bottom)` height & padding calculations.
-- Updated Client list to navigate directly to profile, bypassing bottom sheet.
-- Updated Client profile session history to show dynamic session price/location and enabled clicking to navigate to session detail page.
+- Added location filter dropdown (ion-select) to the Reports page next to date selection.
+- Updated `reports.component.ts` to fetch locations and pass `locationId` to the `ReportsService`.
+- Updated API `reports.controller.ts` and `reports.service.ts` to filter sessions by `locationId` when calculating statistics.
+- Styled the `.filters-row` in `reports.component.scss` to lay out the dates and location dropdown nicely.
+- Rebuilt both API and Client to verify no compilation errors.
 
 ### ⚠️ Pending / Known Issues
 - Need to update the Client `environment.ts` and `environment.prod.ts` to point to the new production Vercel URL once fully verified.
