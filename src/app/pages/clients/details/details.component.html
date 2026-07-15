@@ -129,11 +129,11 @@
                     <ion-icon name="time-outline"></ion-icon>
                     {{ part.session.startTime | date:'short' }}
                   </div>
-                  <ion-badge color="primary">Майбутнє</ion-badge>
+                  <ion-badge [color]="getStatusColor(part.session.status)">{{ getStatusLabel(part.session.status) }}</ion-badge>
                 </div>
                 <div class="session-details ion-margin-top" style="display: flex; justify-content: space-between; align-items: center;">
                   <p style="margin: 0; font-size: 0.9rem; color: var(--ion-color-medium);">
-                    <ion-icon name="location-outline"></ion-icon> {{ part.session.location?.name || 'Локація' }}
+                    <ion-icon name="location-outline"></ion-icon> {{ part.session.location?.name }}
                   </p>
                   <p style="margin: 0; font-weight: bold;">
                     {{ part.session.price }} ₴
@@ -158,13 +158,13 @@
                     <ion-icon name="time-outline"></ion-icon>
                     {{ part.session.startTime | date:'short' }}
                   </div>
-                  <ion-badge [color]="part.isAttended ? 'success' : 'medium'">
-                    {{ part.isAttended ? 'Присутній(я)' : 'Пропуск' }}
+                  <ion-badge [color]="getStatusColor(part.session.status)">
+                    {{ getStatusLabel(part.session.status) }}
                   </ion-badge>
                 </div>
                 <div class="session-details ion-margin-top" style="display: flex; justify-content: space-between; align-items: center;">
                   <p style="margin: 0; font-size: 0.9rem; color: var(--ion-color-medium);">
-                    <ion-icon name="location-outline"></ion-icon> {{ part.session.location?.name || 'Локація' }}
+                    <ion-icon name="location-outline"></ion-icon> {{ part.session.location?.name }}
                   </p>
                   <p style="margin: 0; font-weight: bold;">
                     {{ part.session.price }} ₴

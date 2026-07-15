@@ -149,4 +149,26 @@ export class DetailsComponent implements OnInit {
   editSession(sessionId: number) {
     this.router.navigate(['/tabs/sessions', sessionId]);
   }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'UPCOMING': return 'primary';
+      case 'ACTIVE': return 'warning';
+      case 'COMPLETED': return 'success';
+      case 'MISSED': return 'danger';
+      case 'REQUIRED_ACTION': return 'tertiary';
+      default: return 'medium';
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'UPCOMING': return 'Заплановано';
+      case 'ACTIVE': return 'Триває';
+      case 'COMPLETED': return 'Завершено';
+      case 'MISSED': return 'Пропущено';
+      case 'REQUIRED_ACTION': return 'Потребує дії';
+      default: return status;
+    }
+  }
 }
