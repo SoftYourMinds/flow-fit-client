@@ -95,7 +95,7 @@ export class SessionModalComponent implements OnInit {
     return this.modalCtrl.dismiss({
       locationId: +this.locationId,
       type: this.type,
-      startTime: this.startTime,
+      startTime: start.toISOString(),
       endTime: end.toISOString(),
       price: +this.price,
       status: this.session ? this.session.status : 'UPCOMING',
