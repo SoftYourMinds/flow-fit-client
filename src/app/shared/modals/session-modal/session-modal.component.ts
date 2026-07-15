@@ -21,7 +21,7 @@ export class SessionModalComponent implements OnInit {
 
   locationId: number | null = null;
   type: 'INDIVIDUAL' | 'GROUP' = 'INDIVIDUAL';
-  startTime: string = new Date().toISOString();
+  startTime: string = this.getLocalIsoString(new Date());
   duration: number = 50;
   price: number = 300;
   participants: any[] = [];
@@ -48,7 +48,7 @@ export class SessionModalComponent implements OnInit {
     if (this.session) {
       this.locationId = this.session.locationId;
       this.type = this.session.type;
-      this.startTime = this.session.startTime;
+      this.startTime = this.getLocalIsoString(new Date(this.session.startTime));
       this.price = this.session.price;
       
       const start = new Date(this.session.startTime);
@@ -101,5 +101,10 @@ export class SessionModalComponent implements OnInit {
       status: this.session ? this.session.status : 'UPCOMING',
       participants: this.participants
     }, 'confirm');
+  }
+
+  private getLocalIsoString(date: Date): string {
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1);
   }
 }
