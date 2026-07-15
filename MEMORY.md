@@ -21,6 +21,9 @@
 - Fixed JWT refresh race condition on page reload that caused simultaneous token requests and logouts.
 - Corrected checkAuthOnLoad error handling to prevent aggressive logouts on non-auth network errors.
 - Added ability to edit client notes.
+- Updated Client list UI to navigate directly to the full profile (`/tabs/clients/:id`) on click, bypassing the bottom sheet.
+- Updated Client profile session history to display session price and location name instead of `isPaid` boolean.
+- Added navigation from Client profile session history to the detailed Session edit page.
 
 ## Known Issues
 - None. Build completes successfully.
