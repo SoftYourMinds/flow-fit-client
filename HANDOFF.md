@@ -1,13 +1,15 @@
 ## Last Session Summary
 **Date:** 2026-07-15
-**Session focus:** JWT refresh bug fix and pull-to-refresh global handlers
+**Session focus:** API Deployment on Vercel
 
 ### ✅ Accomplished
-- Investigated and fixed a race condition during JWT refresh causing the user to log out on page reload when multiple requests failed with 401.
-- Updated `auth.service.ts` to use `share()` on `refreshSubject` preventing parallel calls to the `/refresh` endpoint.
-- Corrected error handling inside `checkAuthOnLoad` in `auth.service.ts` to avoid aggressive logout on general network errors.
-- Added `ion-refresher` support for Clients, Locations, and Scheduler views to fetch data cleanly on pull-to-refresh without showing the global loader spinner.
+- Focus was entirely on the `flow-fit-api` repository today. Successfully configured and deployed the NestJS backend to Vercel via Serverless Functions.
+- No direct changes were made to the client-side code today.
+
+### ⚠️ Pending / Known Issues
+- Need to update the Client `environment.ts` and `environment.prod.ts` to point to the new production Vercel URL once fully verified.
 
 ### 🚀 Immediate Next Steps
-1. Create dedicated metrics sub-page screen (`/tabs/clients/:id/add-metric`).
-2. Add recurring workout generation system (`/sessions/recurring`).
+1. Connect the Client to the new Vercel backend API endpoint and test functionality.
+2. Create dedicated metrics sub-page screen (`/tabs/clients/:id/add-metric`).
+3. Add recurring workout generation system (`/sessions/recurring`).
