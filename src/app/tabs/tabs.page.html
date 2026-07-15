@@ -10,19 +10,14 @@
       <ion-label>Розклад</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="locations" href="/tabs/locations">
-      <ion-icon aria-hidden="true" name="pin"></ion-icon>
-      <ion-label>Локації</ion-label>
-    </ion-tab-button>
-
     <ion-tab-button tab="reports" href="/tabs/reports">
       <ion-icon aria-hidden="true" name="stats-chart"></ion-icon>
       <ion-label>Звіти</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="settings" href="/tabs/settings">
-      <ion-icon aria-hidden="true" name="settings"></ion-icon>
-      <ion-label>Налаштування</ion-label>
+    <ion-tab-button (click)="openMoreMenu($event)">
+      <ion-icon aria-hidden="true" name="ellipsis-horizontal-circle-outline"></ion-icon>
+      <ion-label>Більше</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
 </ion-tabs>

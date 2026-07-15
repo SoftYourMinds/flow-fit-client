@@ -3,9 +3,10 @@
 **Session focus:** Bottom Toolbar & Tab Bar UI/UX Redesign
 
 ### ✅ Accomplished
+- Implemented 4 Core Tabs + "Більше" (More) Glassmorphism ActionSheet Drawer (*Клієнти*, *Розклад*, *Звіти*, *Більше*).
+- Integrated *Локації*, *Налаштування*, and Theme Toggle into the "Більше" bottom action sheet.
 - Fixed dark theme mismatch in `tabs.page.scss` using `:host-context(.dark)` / `:host-context(.ion-palette-dark)` to bypass Angular CSS encapsulation.
 - Resolved bottom height gap on modern devices by adding dynamic `env(safe-area-inset-bottom)` height & padding calculations.
-- Optimized tab item spacing with compact icons (20px) and refined single-line labels (10px) to prevent crowded layout.
 
 ### ⚠️ Pending / Known Issues
 - Need to update the Client `environment.ts` and `environment.prod.ts` to point to the new production Vercel URL once fully verified.

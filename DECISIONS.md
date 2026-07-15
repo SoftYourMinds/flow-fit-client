@@ -16,6 +16,6 @@ This document tracks important architectural, design, and business logic decisio
 - **Implementation:** Extensive use of CSS variables in `variables.scss` and `global.scss`, implementing translucent backgrounds and rounded corners across all major components (cards, bottom sheets).
 
 ## 2026-07-15: Bottom Toolbar & Safe-Area Redesign
-- **Decision:** Refactored `tabs.page.scss` to use `:host-context(.dark)` / `:host-context(.ion-palette-dark)` and added safe area inset calculations (`env(safe-area-inset-bottom)`).
-- **Rationale:** Angular encapsulation prevented standard `body.dark` selectors inside component stylesheets from matching, causing the tab bar background to remain light-tinted in dark mode and leaving a visual gap at the bottom of iOS devices. Micro-sized icons (20px) and single-line truncated labels (10px) resolved tab item crowding.
-- **Implementation:** Applied height adjustments (`calc(52px + env(safe-area-inset-bottom, 0px))`), custom safe area inset bottom padding, smaller icons, smooth active scaling transitions, and dark theme variables.
+- **Decision:** Shifted to a 4 Core Tabs + "Більше" (More) ActionSheet Drawer layout (*Клієнти*, *Розклад*, *Звіти*, *Більше*). Refactored `tabs.page.scss` to use `:host-context(.dark)` / `:host-context(.ion-palette-dark)` and added safe area inset calculations (`env(safe-area-inset-bottom)`).
+- **Rationale:** Reduces horizontal overcrowding, increases individual touch targets, and allows lower-frequency pages (*Локації*, *Налаштування*, *Тема*) to sit inside an elegant glassmorphism action sheet. Angular encapsulation prevented standard `body.dark` selectors inside component stylesheets from matching, which was fixed via `:host-context`.
+- **Implementation:** Configured 4 main tab buttons, `openMoreMenu()` ActionSheet trigger, glassmorphism CSS in `global.scss`, height adjustments (`calc(52px + env(safe-area-inset-bottom, 0px))`), and dark theme custom properties.
