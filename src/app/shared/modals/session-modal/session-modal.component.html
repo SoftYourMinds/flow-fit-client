@@ -86,6 +86,41 @@
       </ion-item>
     </div>
 
+    <!-- Participants Section (Only on Creation) -->
+    <div *ngIf="!session" class="participants-section ion-margin-top ion-padding-top" style="border-top: 1px solid var(--ion-color-step-150, #eee);">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Учасники ({{ participants.length }})</h3>
+        <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
+          <ion-icon name="person-add-outline" slot="start"></ion-icon>
+          Додати
+        </ion-button>
+      </div>
+
+      <ion-list lines="none" class="participants-list">
+        @for (p of participants; track p.clientId || p.customName; let i = $index) {
+          <ion-item class="participant-item">
+            <ion-avatar slot="start">
+              <div class="avatar-placeholder" style="background: var(--ion-color-light); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium);">
+                <ion-icon name="person"></ion-icon>
+              </div>
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ p.client?.fullName || p.customName }}</h2>
+              <p *ngIf="p.client">{{ p.client.phone || 'Немає номеру' }}</p>
+            </ion-label>
+            <ion-button fill="clear" color="danger" slot="end" (click)="removeParticipant(i)">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        } @empty {
+          <div class="empty-state" style="text-align: center; color: var(--ion-color-medium); padding: 16px 0;">
+            <ion-icon name="people-outline" style="font-size: 24px; opacity: 0.5;"></ion-icon>
+            <p style="margin: 8px 0 0; font-size: 14px;">Немає доданих учасників</p>
+          </div>
+        }
+      </ion-list>
+    </div>
+
     <div class="ion-margin-top ion-padding-top">
       <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!locationId">
         {{ session ? 'Зберегти зміни' : 'Створити тренування' }}

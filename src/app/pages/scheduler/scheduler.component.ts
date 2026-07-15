@@ -8,6 +8,7 @@ import { ClientsService, Client } from '../../core/services/clients.service';
 import { Router } from '@angular/router';
 import { SessionModalComponent } from '../../shared/modals/session-modal/session-modal.component';
 import { ParticipantModalComponent } from '../../shared/modals/participant-modal/participant-modal.component';
+import { forkJoin } from 'rxjs';
 
 export interface DayTab {
   date: Date;
@@ -236,14 +237,25 @@ export class SchedulerComponent implements OnInit {
     const modal = await this.modalCtrl.create({
       component: SessionModalComponent,
       componentProps: {
-        locations: this.locations()
+        locations: this.locations(),
+        clients: this.clients()
       }
     });
     await modal.present();
 
     const { data, role } = await modal.onWillDismiss();
     if (role === 'confirm' && data) {
-      this.sessionsService.create(data).subscribe(() => this.loadData());
+      const participants = data.participants || [];
+      delete data.participants;
+
+      this.sessionsService.create(data).subscribe((session) => {
+        if (participants.length > 0) {
+          const requests = participants.map((p: any) => this.sessionsService.addParticipant(session.id, p));
+          forkJoin(requests).subscribe(() => this.loadData());
+        } else {
+          this.loadData();
+        }
+      });
     }
   }
 

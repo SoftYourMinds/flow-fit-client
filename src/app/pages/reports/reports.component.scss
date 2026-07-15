@@ -17,7 +17,7 @@ ion-card {
     gap: 8px;
     padding: 12px;
   }
-  
+
   .date-item {
     flex: 1;
     --padding-start: 0;
@@ -55,7 +55,7 @@ ion-card {
   display: flex;
   justify-content: center;
   padding: 40px;
-  
+
   ion-spinner {
     color: #C88A72;
   }
@@ -85,7 +85,7 @@ ion-card {
 
   .stat-card {
     text-align: center;
-    
+
     ion-card-content {
       padding: 16px 8px;
     }
@@ -124,13 +124,13 @@ ion-card {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    
+
     .legend-item {
       display: flex;
       align-items: center;
       font-size: 15px;
       color: var(--ion-color-dark);
-      
+
       b {
         margin-left: auto;
       }
@@ -140,9 +140,14 @@ ion-card {
         height: 12px;
         border-radius: 50%;
         margin-right: 8px;
-        
-        &.individual { background-color: #C88A72; }
-        &.group { background-color: #E8C5B8; }
+
+        &.individual {
+          background-color: #C88A72;
+        }
+
+        &.group {
+          background-color: #E8C5B8;
+        }
       }
     }
   }
@@ -151,7 +156,7 @@ ion-card {
 .unpaid-card {
   border: 1px solid var(--ion-color-warning);
   background: rgba(var(--ion-color-warning-rgb), 0.03);
-  
+
   ion-card-title {
     font-size: 16px;
     display: flex;
@@ -163,16 +168,36 @@ ion-card {
     --background: transparent;
     --padding-start: 16px;
     --inner-padding-end: 16px;
-    
+
     h3 {
       font-weight: 600;
       margin-bottom: 4px;
       font-size: 15px;
     }
+
     p {
       font-size: 13px;
       color: var(--ion-color-medium);
       margin-bottom: 2px;
+    }
+  }
+}
+
+:host ::ng-deep ion-segment {
+  ion-segment-button {
+    --padding-start: 4px;
+    --padding-end: 4px;
+
+    &::part(native) {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    ion-label {
+      width: 100% !important;
+      font-size: 13px !important;
     }
   }
 }

@@ -72,6 +72,7 @@ export class SessionDetailComponent implements OnInit {
       component: SessionModalComponent,
       componentProps: {
         locations: this.locations(),
+        clients: this.clients(),
         session: s
       }
     });
@@ -79,6 +80,7 @@ export class SessionDetailComponent implements OnInit {
 
     const { data, role } = await modal.onWillDismiss();
     if (role === 'confirm' && data) {
+      delete data.participants; // Edit of participants is done via detail page directly
       this.sessionsService.update(s.id, data).subscribe(() => this.loadSession(s.id));
     }
   }

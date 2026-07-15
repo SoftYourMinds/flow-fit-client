@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { LocationsService, Location } from '../../../core/services/locations.service';
+import { ClientsService, Client } from '../../../core/services/clients.service';
+import { ParticipantModalComponent } from '../participant-modal/participant-modal.component';
 
 @Component({
   selector: 'app-session-modal',
@@ -13,6 +15,7 @@ import { LocationsService, Location } from '../../../core/services/locations.ser
 })
 export class SessionModalComponent implements OnInit {
   @Input() locations: Location[] = [];
+  @Input() clients: Client[] = [];
 
   @Input() session?: any; // To edit an existing session
 
@@ -21,6 +24,7 @@ export class SessionModalComponent implements OnInit {
   startTime: string = new Date().toISOString();
   duration: number = 50;
   price: number = 300;
+  participants: any[] = [];
 
   constructor(
     private modalCtrl: ModalController,
@@ -50,11 +54,35 @@ export class SessionModalComponent implements OnInit {
       const start = new Date(this.session.startTime);
       const end = new Date(this.session.endTime);
       this.duration = Math.round((end.getTime() - start.getTime()) / 60000);
+      
+      this.participants = this.session.participants ? [...this.session.participants] : [];
     }
   }
 
   cancel() {
     return this.modalCtrl.dismiss(null, 'cancel');
+  }
+
+  async openAddParticipantModal() {
+    const modal = await this.modalCtrl.create({
+      component: ParticipantModalComponent,
+      componentProps: {
+        clients: this.clients
+      }
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'confirm' && data) {
+      if (data.clientId) {
+        data.client = this.clients.find(c => c.id === data.clientId);
+      }
+      this.participants.push(data);
+    }
+  }
+
+  removeParticipant(index: number) {
+    this.participants.splice(index, 1);
   }
 
   confirm() {
@@ -70,7 +98,8 @@ export class SessionModalComponent implements OnInit {
       startTime: this.startTime,
       endTime: end.toISOString(),
       price: +this.price,
-      status: this.session ? this.session.status : 'UPCOMING'
+      status: this.session ? this.session.status : 'UPCOMING',
+      participants: this.participants
     }, 'confirm');
   }
 }
