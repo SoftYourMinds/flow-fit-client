@@ -122,7 +122,7 @@
             <ion-label>Майбутні тренування</ion-label>
           </ion-list-header>
           @for (part of upcomingSessions(); track part.id) {
-            <ion-card class="modern-card">
+            <ion-card class="modern-card" (click)="editSession(part.session.id)" button="true">
               <ion-card-content>
                 <div class="session-header">
                   <div class="time">
@@ -130,6 +130,14 @@
                     {{ part.session.startTime | date:'short' }}
                   </div>
                   <ion-badge color="primary">Майбутнє</ion-badge>
+                </div>
+                <div class="session-details ion-margin-top" style="display: flex; justify-content: space-between; align-items: center;">
+                  <p style="margin: 0; font-size: 0.9rem; color: var(--ion-color-medium);">
+                    <ion-icon name="location-outline"></ion-icon> {{ part.session.location?.name || 'Локація' }}
+                  </p>
+                  <p style="margin: 0; font-weight: bold;">
+                    {{ part.session.price }} ₴
+                  </p>
                 </div>
               </ion-card-content>
             </ion-card>
@@ -143,7 +151,7 @@
             <ion-label>Історія тренувань</ion-label>
           </ion-list-header>
           @for (part of pastSessions(); track part.id) {
-            <ion-card class="modern-card">
+            <ion-card class="modern-card" (click)="editSession(part.session.id)" button="true">
               <ion-card-content>
                 <div class="session-header">
                   <div class="time">
@@ -155,7 +163,12 @@
                   </ion-badge>
                 </div>
                 <div class="session-details ion-margin-top" style="display: flex; justify-content: space-between; align-items: center;">
-                  <p style="margin: 0;">Оплата: <span [class.paid]="part.isPaid" [class.unpaid]="!part.isPaid">{{ part.isPaid ? 'Сплачено' : 'Очікує' }}</span></p>
+                  <p style="margin: 0; font-size: 0.9rem; color: var(--ion-color-medium);">
+                    <ion-icon name="location-outline"></ion-icon> {{ part.session.location?.name || 'Локація' }}
+                  </p>
+                  <p style="margin: 0; font-weight: bold;">
+                    {{ part.session.price }} ₴
+                  </p>
                 </div>
               </ion-card-content>
             </ion-card>

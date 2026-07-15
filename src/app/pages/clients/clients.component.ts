@@ -53,26 +53,8 @@ export class ClientsComponent implements OnInit {
     this.loadClients();
   }
 
-  async openClientCabinet(client: Client) {
-    const modal = await this.modalCtrl.create({
-      component: ClientSheetModalComponent,
-      componentProps: {
-        clientId: client.id
-      },
-      breakpoints: [0, 0.5, 0.9],
-      initialBreakpoint: 0.85,
-      handle: true,
-      cssClass: 'client-bottom-sheet'
-    });
-
-    modal.addEventListener('ionBreakpointDidChange', (ev: any) => {
-      if (ev.detail.breakpoint === 0.9) {
-        modal.dismiss();
-        this.router.navigate(['/tabs/clients', client.id]);
-      }
-    });
-
-    await modal.present();
+  openClientCabinet(client: Client) {
+    this.router.navigate(['/tabs/clients', client.id]);
   }
 
   async createClient() {

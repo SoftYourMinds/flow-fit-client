@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ClientsService } from '../../../core/services/clients.service';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
@@ -44,7 +44,8 @@ export class DetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private clientsService: ClientsService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -143,5 +144,9 @@ export class DetailsComponent implements OnInit {
   isVideo(url: string): boolean {
     if (!url) return false;
     return url.match(/\.(mp4|webm|ogg|mov)$/i) != null;
+  }
+
+  editSession(sessionId: number) {
+    this.router.navigate(['/tabs/sessions', sessionId]);
   }
 }
