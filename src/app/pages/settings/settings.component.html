@@ -30,6 +30,15 @@
           (ionChange)="onNotificationsToggle($event)">
         </ion-toggle>
       </ion-item>
+
+      <ion-item button (click)="connectTelegram()">
+        <ion-icon slot="start" name="paper-plane" color="tertiary"></ion-icon>
+        <ion-label>
+          <h2>Підключити Telegram-бота</h2>
+          <p>Отримуй миттєві сповіщення та зведення</p>
+        </ion-label>
+        <ion-icon slot="end" name="open-outline"></ion-icon>
+      </ion-item>
     </ion-list>
 
     <div class="ion-padding-top ion-margin-top">

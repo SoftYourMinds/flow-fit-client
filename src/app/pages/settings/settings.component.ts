@@ -5,6 +5,7 @@ import { IonicModule, AlertController, NavController } from '@ionic/angular';
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { TelegramService } from '../../core/services/telegram.service';
 
 @Component({
   selector: 'app-settings',
@@ -21,6 +22,7 @@ export class SettingsComponent implements OnInit {
     public themeService: ThemeService,
     private notificationService: NotificationService,
     private authService: AuthService,
+    private telegramService: TelegramService,
     private alertCtrl: AlertController,
     private navCtrl: NavController
   ) { }
@@ -74,6 +76,25 @@ export class SettingsComponent implements OnInit {
     this.notificationService.cancelAll();
     this.authService.logout();
     this.navCtrl.navigateRoot('/login');
+  }
+
+  async connectTelegram() {
+    this.telegramService.getLinkToken().subscribe({
+      next: (res) => {
+        const token = res.token;
+        // Open the telegram bot link
+        // Use window.open or just set location.href
+        window.open(`https://t.me/FlowFitBot?start=${token}`, '_blank');
+      },
+      error: async (err) => {
+        const alert = await this.alertCtrl.create({
+          header: 'Помилка',
+          message: 'Не вдалося згенерувати токен для підключення.',
+          buttons: ['ОК']
+        });
+        await alert.present();
+      }
+    });
   }
 
 }
