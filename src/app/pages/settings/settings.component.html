@@ -21,6 +21,22 @@
           (ionChange)="toggleTheme()">
         </ion-toggle>
       </ion-item>
+      
+      <ion-item>
+        <ion-icon slot="start" name="notifications" color="primary"></ion-icon>
+        <ion-label>Нагадування про тренування</ion-label>
+        <ion-toggle 
+          [(ngModel)]="notificationsEnabled" 
+          (ionChange)="onNotificationsToggle($event)">
+        </ion-toggle>
+      </ion-item>
     </ion-list>
+
+    <div class="ion-padding-top ion-margin-top">
+      <ion-button expand="block" color="danger" fill="outline" (click)="logout()">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+        Вийти з акаунту
+      </ion-button>
+    </div>
   </div>
 </ion-content>

@@ -5,6 +5,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { LocationsService, Location } from '../../../core/services/locations.service';
 import { ClientsService, Client } from '../../../core/services/clients.service';
 import { ParticipantModalComponent } from '../participant-modal/participant-modal.component';
+import { ReminderMode, REMINDER_MODE_LABELS } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-session-modal',
@@ -25,6 +26,11 @@ export class SessionModalComponent implements OnInit {
   duration: number = 50;
   price: number = 300;
   participants: any[] = [];
+
+  // Notifications
+  enableNotification: boolean = true;
+  reminderMode: ReminderMode = 'auto';
+  reminderModes = REMINDER_MODE_LABELS;
 
   constructor(
     private modalCtrl: ModalController,
@@ -99,7 +105,9 @@ export class SessionModalComponent implements OnInit {
       endTime: end.toISOString(),
       price: +this.price,
       status: this.session ? this.session.status : 'UPCOMING',
-      participants: this.participants
+      participants: this.participants,
+      enableNotification: this.enableNotification,
+      reminderMode: this.reminderMode
     }, 'confirm');
   }
 

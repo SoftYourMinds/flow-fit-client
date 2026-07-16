@@ -61,6 +61,30 @@
       </ion-button>
     </div>
 
+    <!-- Notifications Section -->
+    <div class="notifications-section ion-padding">
+      <div class="section-header">
+        <h3>Сповіщення</h3>
+      </div>
+      <div class="ion-margin-top">
+        <ion-item lines="none" class="custom-input-item" style="border: 1px solid var(--ion-color-step-150); border-radius: 8px;">
+          <ion-icon name="notifications-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>Увімкнути нагадування</ion-label>
+          <ion-toggle slot="end" [(ngModel)]="notificationEnabled" (ionChange)="updateNotification()"></ion-toggle>
+        </ion-item>
+
+        <ion-item *ngIf="notificationEnabled" lines="none" class="custom-input-item ion-margin-top" style="border: 1px solid var(--ion-color-step-150); border-radius: 8px;">
+          <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+          <ion-label color="medium">Час нагадування</ion-label>
+          <ion-select [(ngModel)]="reminderMode" (ionChange)="updateNotification()" interface="popover" style="width: 100%;">
+            @for (mode of reminderModes; track mode.value) {
+              <ion-select-option [value]="mode.value">{{ mode.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+    </div>
+
     <div class="participants-section ion-padding">
       <div class="section-header">
         <h3>Учасники ({{ session()!.participants.length }})</h3>

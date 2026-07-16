@@ -1,9 +1,9 @@
 ## Last Session Summary
 **Date:** 2026-07-16
-**Session focus:** Backend Session Status Scheduler Integration
+**Session focus:** Local Notifications Integration
 
 ### ✅ Accomplished
-- Verified client compatibility with backend automatic status transitions (`UPCOMING` -> `ACTIVE` -> `COMPLETED`).
+- Implemented `@capacitor/local-notifications` to schedule workout reminders on the device.
 - Added location filter dropdown (ion-select) to the Reports page next to date selection.
 - Updated `reports.component.ts` to fetch locations and pass `locationId` to the `ReportsService`.
 - Updated API `reports.controller.ts` and `reports.service.ts` to filter sessions by `locationId` when calculating statistics.

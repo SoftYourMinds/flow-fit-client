@@ -9,6 +9,7 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Implemented Local Notifications for workouts via `@capacitor/local-notifications`. Users can toggle notifications and select reminder offsets per session. Settings page provides a global toggle.
 - Background session status scheduler implemented on backend (`UPCOMING` -> `ACTIVE` -> `COMPLETED`).
 - Fixed API bug in `SessionsController.findOne` where `trainerId` and `sessionId` were passed in the wrong order, causing 404 errors when attempting to view or edit sessions.
 - Fixed Angular router parameter caching issue by migrating `route.snapshot` usage to `route.paramMap.subscribe()` in `SessionDetailComponent` and `DetailsComponent`, fixing a bug where clicking the second item in the same view wouldn't update the data.

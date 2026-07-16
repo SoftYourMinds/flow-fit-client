@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { SessionModalComponent } from '../../shared/modals/session-modal/session-modal.component';
 import { ParticipantModalComponent } from '../../shared/modals/participant-modal/participant-modal.component';
 import { forkJoin } from 'rxjs';
+import { NotificationService } from '../../core/services/notification.service';
 
 export interface DayTab {
   date: Date;
@@ -171,7 +172,8 @@ export class SchedulerComponent implements OnInit {
     private modalCtrl: ModalController,
     private actionSheetCtrl: ActionSheetController,
     private toastCtrl: ToastController,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -185,6 +187,7 @@ export class SchedulerComponent implements OnInit {
     this.sessionsService.getAll().subscribe({
       next: (data) => {
         this.sessions.set(data);
+        this.notificationService.syncNotifications(data);
         if (!event) this.isLoading.set(false);
         if (event) event.target.complete();
       },
@@ -246,9 +249,22 @@ export class SchedulerComponent implements OnInit {
     const { data, role } = await modal.onWillDismiss();
     if (role === 'confirm' && data) {
       const participants = data.participants || [];
+      const enableNotification = data.enableNotification;
+      const reminderMode = data.reminderMode;
+      
       delete data.participants;
+      delete data.enableNotification;
+      delete data.reminderMode;
 
       this.sessionsService.create(data).subscribe((session) => {
+        // Schedule notification
+        if (enableNotification) {
+          const loc = this.locations().find(l => l.id === session.locationId);
+          if (loc) {
+            this.notificationService.scheduleForSession(session, loc.name, reminderMode);
+          }
+        }
+
         if (participants.length > 0) {
           const requests = participants.map((p: any) => this.sessionsService.addParticipant(session.id, p));
           forkJoin(requests).subscribe(() => this.loadData());
@@ -268,7 +284,10 @@ export class SchedulerComponent implements OnInit {
   }
 
   deleteSession(id: number) {
-    this.sessionsService.delete(id).subscribe(() => this.loadData());
+    this.sessionsService.delete(id).subscribe(() => {
+      this.notificationService.cancelForSession(id);
+      this.loadData();
+    });
   }
 
   getStatusColor(status: string): string {

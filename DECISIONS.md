@@ -2,6 +2,14 @@
 
 This document tracks important architectural, design, and business logic decisions made during the development of the FlowFit client application.
 
+## 2026-07-16: Local Notifications vs Background Sync
+- **Decision:** Implemented workout reminders using `@capacitor/local-notifications` rather than a background service or Web Worker.
+- **Rationale:** Background processes are unreliable on iOS (they get suspended). Local notifications operate on a "schedule and forget" principle: the OS guarantees delivery at the specified time even if the app is completely closed. This perfectly fits the atomic nature of workout reminders.
+- **Implementation:** 
+  - `NotificationService` handles calculating the reminder time based on the session's start time.
+  - Limits are respected by maintaining maximum 50 scheduled notifications at any time.
+  - State is synchronized every time the app resumes via `App.addListener('appStateChange')` to clear stale notifications.
+
 ## 2026-07-15: Training Pricing and Payment Tracking
 - **Decision:** Removed per-client `isPaid` tracking and replaced `pricePerPerson` with a single `price` field representing the total cost of the training session.
 - **Rationale:** The business model shifted from tracking individual client payments for a session to simply tracking the total expected revenue for the session as a whole. This simplifies the UX and reduces overhead for the trainer.
