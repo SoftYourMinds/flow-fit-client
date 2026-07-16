@@ -59,6 +59,14 @@
         <ion-icon name="create-outline" slot="start"></ion-icon>
         Редагувати тренування
       </ion-button>
+
+      @if (session()!.status === 'MISSED') {
+        <ion-item lines="none" class="custom-input-item ion-margin-top" style="border: 1px solid var(--ion-color-step-150); border-radius: 8px;">
+          <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
+          <ion-label>Оплачено</ion-label>
+          <ion-toggle slot="end" [checked]="session()!.isPaid" (ionChange)="toggleIsPaid($event)"></ion-toggle>
+        </ion-item>
+      }
     </div>
 
     <!-- Notifications Section -->

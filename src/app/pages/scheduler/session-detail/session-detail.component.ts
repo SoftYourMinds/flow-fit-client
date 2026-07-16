@@ -181,7 +181,19 @@ export class SessionDetailComponent implements OnInit {
   }
 
   updateStatus(id: number, status: any) {
-    this.sessionsService.update(id, { status }).subscribe(() => this.loadSession(id));
+    // If setting to COMPLETED, also ensure isPaid is true on the backend.
+    const payload: any = { status };
+    if (status === 'COMPLETED') {
+      payload.isPaid = true;
+    }
+    this.sessionsService.update(id, payload).subscribe(() => this.loadSession(id));
+  }
+
+  toggleIsPaid(event: any) {
+    const s = this.session();
+    if (!s) return;
+    const isPaid = event.detail.checked;
+    this.sessionsService.update(s.id, { isPaid }).subscribe(() => this.loadSession(s.id));
   }
 
   deleteSession(id: number) {

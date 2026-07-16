@@ -123,6 +123,13 @@ export class ReportsComponent implements OnInit {
     return this.summary.totalIncome;
   }
 
+  get displayedStats(): { totalClients: number, totalSessions: number, missedRate: number } {
+    if (!this.summary) return { totalClients: 0, totalSessions: 0, missedRate: 0 };
+    if (this.reportType === 'individual') return this.summary.statistics.individual;
+    if (this.reportType === 'group') return this.summary.statistics.group;
+    return this.summary.statistics.all;
+  }
+
 
 
   private updateChartData() {

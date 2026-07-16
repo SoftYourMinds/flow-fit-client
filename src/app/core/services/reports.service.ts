@@ -10,9 +10,9 @@ export interface ReportSummary {
     group: number;
   };
   statistics: {
-    totalClients: number;
-    totalSessions: number;
-    missedRate: number;
+    all: { totalClients: number; totalSessions: number; missedRate: number };
+    individual: { totalClients: number; totalSessions: number; missedRate: number };
+    group: { totalClients: number; totalSessions: number; missedRate: number };
   };
 }
 

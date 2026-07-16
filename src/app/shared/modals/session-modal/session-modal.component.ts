@@ -105,6 +105,7 @@ export class SessionModalComponent implements OnInit {
       endTime: end.toISOString(),
       price: +this.price,
       status: this.session ? this.session.status : 'UPCOMING',
+      isPaid: this.session ? this.session.isPaid : false,
       participants: this.participants,
       enableNotification: this.enableNotification,
       reminderMode: this.reminderMode

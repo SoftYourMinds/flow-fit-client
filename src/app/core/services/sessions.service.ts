@@ -19,7 +19,8 @@ export interface WorkoutSession {
   startTime: string;
   endTime: string;
   price: number;
-  status: 'UPCOMING' | 'ACTIVE' | 'REQUIRED_ACTION' | 'COMPLETED' | 'MISSED';
+  status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'MISSED' | 'REQUIRED_ACTION';
+  isPaid: boolean;
   participants: SessionParticipant[];
 }
 
