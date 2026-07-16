@@ -5,7 +5,7 @@ ion-tab-bar.glass-tab-bar {
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(200, 138, 114, 0.15);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-  height: calc(52px + env(safe-area-inset-bottom, 0px));
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-top: 4px;
 }
@@ -19,13 +19,13 @@ ion-tab-button {
   transition: all 0.2s ease-in-out;
 
   ion-icon {
-    font-size: 20px;
-    margin-bottom: 3px;
+    font-size: 24px;
+    margin-bottom: 2px;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
   }
 
   ion-label {
-    font-size: 10px;
+    font-size: 11.5px;
     font-weight: 500;
     letter-spacing: -0.2px;
     white-space: nowrap;
