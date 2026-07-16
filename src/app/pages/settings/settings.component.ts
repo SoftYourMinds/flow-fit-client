@@ -41,7 +41,7 @@ export class SettingsComponent implements OnInit {
 
   async onNotificationsToggle(event: any) {
     const isChecked = event.detail.checked;
-    
+
     if (!isChecked) {
       const alert = await this.alertCtrl.create({
         header: 'Вимкнути сповіщення?',
@@ -83,8 +83,8 @@ export class SettingsComponent implements OnInit {
       next: (res) => {
         const token = res.token;
         // Open the telegram bot link
-        // Use window.open or just set location.href
-        window.open(`https://t.me/FlowFitBot?start=${token}`, '_blank');
+        // Replace FlowFit_Trainer_bot with your exact bot username if different
+        window.open(`https://t.me/FlowFit_Trainer_Bot?start=${token}`, '_blank');
       },
       error: async (err) => {
         const alert = await this.alertCtrl.create({
