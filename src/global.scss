@@ -76,9 +76,19 @@ ion-input, ion-textarea {
     background: rgba(250, 247, 244, 0.95);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-radius: 24px 24px 0 0;
-    border-top: 1px solid rgba(200, 138, 114, 0.2);
+    border-radius: 0;
+    margin-top: 0;
+    margin-bottom: 0;
     padding: 6px 0;
+
+    &:first-child {
+      border-radius: 24px 24px 0 0;
+      border-top: 1px solid rgba(200, 138, 114, 0.2);
+    }
+  }
+
+  .action-sheet-group-cancel {
+    border-top: 1px solid rgba(200, 138, 114, 0.15);
   }
 
   .action-sheet-title {
@@ -115,6 +125,9 @@ html.ion-palette-dark .glass-action-sheet {
 
   .action-sheet-group {
     background: rgba(26, 23, 22, 0.96);
+  }
+
+  .action-sheet-group:first-child {
     border-top: 1px solid rgba(200, 138, 114, 0.25);
   }
 
