@@ -1,14 +1,14 @@
 ## Last Session Summary
 **Date:** 2026-07-16
-**Session focus:** Local Notifications Integration
+**Session focus:** Telegram Bot Integration & UI Polish
 
 ### ✅ Accomplished
+- Added Telegram Bot deep-link generation and UI button in Settings.
+- Improved visual proportions of the bottom tab bar (increased footer font and icon sizes).
+- Polished Action Sheet UI by removing bottom rounded corners.
+- Fixed iOS keyboard overlay issues.
 - Implemented `@capacitor/local-notifications` to schedule workout reminders on the device.
-- Added location filter dropdown (ion-select) to the Reports page next to date selection.
-- Updated `reports.component.ts` to fetch locations and pass `locationId` to the `ReportsService`.
-- Updated API `reports.controller.ts` and `reports.service.ts` to filter sessions by `locationId` when calculating statistics.
-- Styled the `.filters-row` in `reports.component.scss` to lay out the dates and location dropdown nicely.
-- Rebuilt both API and Client to verify no compilation errors.
+- Added location filter dropdown (ion-select) to the Reports page.
 
 ### ⚠️ Pending / Known Issues
 - Need to update the Client `environment.ts` and `environment.prod.ts` to point to the new production Vercel URL once fully verified.

@@ -9,6 +9,10 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Added Telegram Bot integration to Settings page, redirecting users to Telegram with a secure deep-linking token.
+- Increased footer tab bar font and icon sizes to improve visual proportions and eliminate excessive empty whitespace.
+- Removed rounded corners between the menu content and the cancel button in the options action sheet.
+- Fixed iOS keyboard behavior to ensure inputs remain visible when the virtual keyboard appears.
 - Implemented Local Notifications for workouts via `@capacitor/local-notifications`. Users can toggle notifications and select reminder offsets per session. Settings page provides a global toggle.
 - Background session status scheduler implemented on backend (`UPCOMING` -> `ACTIVE` -> `COMPLETED`).
 - Fixed API bug in `SessionsController.findOne` where `trainerId` and `sessionId` were passed in the wrong order, causing 404 errors when attempting to view or edit sessions.
