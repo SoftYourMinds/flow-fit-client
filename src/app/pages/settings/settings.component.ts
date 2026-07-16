@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, AlertController, NavController } from '@ionic/angular';
+import { IonicModule, AlertController, NavController, LoadingController } from '@ionic/angular';
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { TelegramService } from '../../core/services/telegram.service';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-settings',
@@ -18,14 +21,15 @@ export class SettingsComponent implements OnInit {
 
   notificationsEnabled = true;
 
-  constructor(
-    public themeService: ThemeService,
-    private notificationService: NotificationService,
-    private authService: AuthService,
-    private telegramService: TelegramService,
-    private alertCtrl: AlertController,
-    private navCtrl: NavController
-  ) { }
+  public themeService = inject(ThemeService);
+  private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
+  private telegramService = inject(TelegramService);
+  private alertCtrl = inject(AlertController);
+  private navCtrl = inject(NavController);
+  private loadingCtrl = inject(LoadingController);
+
+  constructor() { }
 
   ngOnInit() {
     // Read from local storage if we want persistence across app restarts
@@ -79,22 +83,32 @@ export class SettingsComponent implements OnInit {
   }
 
   async connectTelegram() {
-    this.telegramService.getLinkToken().subscribe({
-      next: (res) => {
-        const token = res.token;
-        // Open the telegram bot link
-        // Replace FlowFit_Trainer_bot with your exact bot username if different
-        window.open(`https://t.me/FlowFit_Trainer_Bot?start=${token}`, '_blank');
-      },
-      error: async (err) => {
-        const alert = await this.alertCtrl.create({
-          header: 'Помилка',
-          message: 'Не вдалося згенерувати токен для підключення.',
-          buttons: ['ОК']
-        });
-        await alert.present();
-      }
+    const loading = await this.loadingCtrl.create({
+      message: 'Генерація токена...',
+      spinner: 'crescent'
     });
+    await loading.present();
+
+    try {
+      const res = await firstValueFrom(this.telegramService.getLinkToken());
+      const token = res.token;
+      const botUrl = `https://t.me/FlowFit_Trainer_Bot?start=${token}`;
+
+      if (Capacitor.isNativePlatform()) {
+        await Browser.open({ url: botUrl });
+      } else {
+        window.open(botUrl, '_blank');
+      }
+    } catch (err) {
+      const alert = await this.alertCtrl.create({
+        header: 'Помилка',
+        message: 'Не вдалося згенерувати токен для підключення.',
+        buttons: ['ОК']
+      });
+      await alert.present();
+    } finally {
+      await loading.dismiss();
+    }
   }
 
 }
