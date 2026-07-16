@@ -3,16 +3,13 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClientsService } from '../../../core/services/clients.service';
-import { ChartConfiguration, ChartOptions } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
 import { NoteModalComponent } from '../../../shared/modals/note-modal/note-modal.component';
-import { MetricModalComponent } from '../../../shared/modals/metric-modal/metric-modal.component';
 import { MediaViewerModalComponent } from '../../../shared/modals/media-viewer-modal/media-viewer-modal.component';
 
 @Component({
   selector: 'app-client-details',
   standalone: true,
-  imports: [CommonModule, IonicModule, BaseChartDirective],
+  imports: [CommonModule, IonicModule],
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss']
 })
@@ -23,23 +20,6 @@ export class DetailsComponent implements OnInit {
 
   upcomingSessions = signal<any[]>([]);
   pastSessions = signal<any[]>([]);
-
-  public lineChartData: ChartConfiguration<'line'>['data'] = {
-    labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'Вага (кг)',
-        fill: false,
-        tension: 0.1,
-        borderColor: '#C88A72',
-        backgroundColor: '#C88A72'
-      }
-    ]
-  };
-  public lineChartOptions: ChartOptions<'line'> = {
-    responsive: true,
-  };
 
   constructor(
     private route: ActivatedRoute,
@@ -61,6 +41,15 @@ export class DetailsComponent implements OnInit {
     this.isLoading.set(true);
     this.clientsService.getOne(id).subscribe({
       next: (data) => {
+        // Sort metrics from oldest to newest
+        if (data.metrics && data.metrics.length > 0) {
+          data.metrics = [...data.metrics].sort((a: any, b: any) => {
+            const dateA = new Date(a.date || a.createdAt).getTime();
+            const dateB = new Date(b.date || b.createdAt).getTime();
+            return dateA - dateB;
+          });
+        }
+        
         this.client.set(data);
         
         const now = new Date();
@@ -69,19 +58,6 @@ export class DetailsComponent implements OnInit {
           const past = data.participations.filter((p: any) => new Date(p.session.startTime) < now);
           this.upcomingSessions.set(upcoming);
           this.pastSessions.set(past);
-        }
-
-        if (data.metrics && data.metrics.length > 0) {
-          const sortedMetrics = [...data.metrics].reverse();
-          this.lineChartData = {
-            labels: sortedMetrics.map(m => new Date(m.createdAt).toLocaleDateString()),
-            datasets: [
-              {
-                ...this.lineChartData.datasets[0],
-                data: sortedMetrics.map(m => m.weight)
-              }
-            ]
-          };
         }
 
         this.isLoading.set(false);
@@ -121,18 +97,14 @@ export class DetailsComponent implements OnInit {
     }
   }
 
-  async addMetric() {
-    const modal = await this.modalCtrl.create({
-      component: MetricModalComponent
-    });
-    await modal.present();
-
-    const { data, role } = await modal.onWillDismiss();
-    if (role === 'confirm' && data) {
-      this.clientsService.addMetric(this.client().id, data)
-        .subscribe(() => this.loadClient(this.client().id));
-    }
+  addMetric() {
+    this.router.navigate(['/tabs/clients', this.client().id, 'metrics', 'new']);
   }
+
+  editMetric(metric: any) {
+    this.router.navigate(['/tabs/clients', this.client().id, 'metrics', metric.id]);
+  }
+
   async openMedia(url: string) {
     const modal = await this.modalCtrl.create({
       component: MediaViewerModalComponent,

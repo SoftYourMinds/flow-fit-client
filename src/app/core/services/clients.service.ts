@@ -51,7 +51,11 @@ export class ClientsService {
     return this.http.put(`${this.apiUrl}/${clientId}/notes/${noteId}`, data);
   }
 
-  addMetric(id: number, data: { weight?: number; bodyFatPercentage?: number; note?: string }) {
+  addMetric(id: number, data: any) {
     return this.http.post(`${this.apiUrl}/${id}/metrics`, data);
+  }
+
+  updateMetric(clientId: number, metricId: number, data: any) {
+    return this.http.put(`${this.apiUrl}/${clientId}/metrics/${metricId}`, data);
   }
 }

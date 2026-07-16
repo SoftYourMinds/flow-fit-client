@@ -16,6 +16,14 @@ const routes: Routes = [
         loadComponent: () => import('../pages/clients/details/details.component').then(m => m.DetailsComponent)
       },
       {
+        path: 'clients/:id/metrics/new',
+        loadComponent: () => import('../pages/clients/metric-editor/metric-editor.component').then(m => m.MetricEditorComponent)
+      },
+      {
+        path: 'clients/:id/metrics/:metricId',
+        loadComponent: () => import('../pages/clients/metric-editor/metric-editor.component').then(m => m.MetricEditorComponent)
+      },
+      {
         path: 'locations',
         loadComponent: () => import('../pages/locations/locations.component').then(m => m.LocationsComponent)
       },

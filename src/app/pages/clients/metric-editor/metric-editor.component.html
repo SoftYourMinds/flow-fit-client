@@ -1,0 +1,183 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ metricId ? 'Редагувати метрику' : 'Нова метрика' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()">
+        <ion-icon name="checkmark-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading) {
+    <div class="loading-spinner">
+      <ion-spinner></ion-spinner>
+    </div>
+  } @else {
+    <div class="form-container">
+      
+      <!-- Date -->
+      <div class="form-group">
+        <ion-label class="form-label">Дата заміру</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="calendar-outline" slot="start" color="secondary"></ion-icon>
+          <ion-datetime-button datetime="datetime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="datetime" [(ngModel)]="date" presentation="date"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </div>
+
+      <!-- Basic -->
+      <div class="row-2 ion-margin-top">
+        <div class="form-group flex-1">
+          <ion-label class="form-label">Вага (кг)</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="scale-outline" slot="start" color="secondary"></ion-icon>
+            <ion-input type="number" [(ngModel)]="weight" placeholder="75.5"></ion-input>
+          </ion-item>
+        </div>
+
+        <div class="form-group flex-1">
+          <ion-label class="form-label">% Жиру (опц.)</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="analytics-outline" slot="start" color="secondary"></ion-icon>
+            <ion-input type="number" [(ngModel)]="bodyFatPercentage" placeholder="18.5"></ion-input>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Main Measurements -->
+      <h3 class="section-title ion-margin-top">Об'єми тіла (см)</h3>
+      <div class="row-3">
+        <div class="form-group flex-1">
+          <ion-label class="form-label">Груди</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input type="number" [(ngModel)]="chest" placeholder="0"></ion-input>
+          </ion-item>
+        </div>
+        <div class="form-group flex-1">
+          <ion-label class="form-label">Талія</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input type="number" [(ngModel)]="waist" placeholder="0"></ion-input>
+          </ion-item>
+        </div>
+        <div class="form-group flex-1">
+          <ion-label class="form-label">Живіт</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input type="number" [(ngModel)]="belly" placeholder="0"></ion-input>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Complex Measurements -->
+      <div class="measurement-row ion-margin-top">
+        <div class="measurement-label">Верх стегна/Сідниці</div>
+        <div class="measurement-inputs">
+          <ion-item lines="none" class="custom-input-item small-item">
+            <ion-input type="number" [(ngModel)]="buttocksTop" placeholder="Верх"></ion-input>
+          </ion-item>
+          <span class="separator">-</span>
+          <ion-item lines="none" class="custom-input-item small-item">
+            <ion-input type="number" [(ngModel)]="buttocksBottom" placeholder="Низ"></ion-input>
+          </ion-item>
+        </div>
+      </div>
+
+      <div class="measurement-row ion-margin-top">
+        <div class="measurement-label">Ліва/Права нога</div>
+        <div class="measurement-inputs">
+          <ion-item lines="none" class="custom-input-item small-item">
+            <ion-input type="number" [(ngModel)]="legLeft" placeholder="Ліва"></ion-input>
+          </ion-item>
+          <span class="separator">-</span>
+          <ion-item lines="none" class="custom-input-item small-item">
+            <ion-input type="number" [(ngModel)]="legRight" placeholder="Права"></ion-input>
+          </ion-item>
+        </div>
+      </div>
+
+      <div class="measurement-row ion-margin-top">
+        <div class="measurement-label">Ліва/Права рука</div>
+        <div class="measurement-inputs">
+          <ion-item lines="none" class="custom-input-item small-item">
+            <ion-input type="number" [(ngModel)]="armLeft" placeholder="Ліва"></ion-input>
+          </ion-item>
+          <span class="separator">-</span>
+          <ion-item lines="none" class="custom-input-item small-item">
+            <ion-input type="number" [(ngModel)]="armRight" placeholder="Права"></ion-input>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Note & Attachments -->
+      <h3 class="section-title ion-margin-top">Коментар</h3>
+      
+      <div class="form-group">
+        <div class="header-with-action">
+          <ion-button fill="clear" size="small" (click)="triggerFileUpload()" [disabled]="isUploading">
+            <ion-icon name="attach-outline" slot="start"></ion-icon> 
+            {{ isUploading ? 'Завантаження...' : 'Прикріпити фото/відео' }}
+          </ion-button>
+        </div>
+        
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*,video/*" hidden>
+
+        <!-- Quill Editor -->
+        <div class="editor-wrapper">
+          <quill-editor 
+            [(ngModel)]="note" 
+            [modules]="quillModules" 
+            placeholder="Напишіть деталі замірів..."
+            [styles]="{height: '150px'}">
+          </quill-editor>
+        </div>
+      </div>
+
+      <!-- Attachments Preview -->
+      @if (photos.length > 0) {
+        <div class="form-group ion-margin-top attachments-group">
+          <ion-label class="form-label">Вкладення</ion-label>
+          <div class="attachments-list">
+            @for (photo of photos; track trackByIndex($index)) {
+              <div class="attachment-item">
+                <div style="position: relative; cursor: pointer; height: 100%; display: flex; align-items: center;" (click)="openMedia(photo)">
+                  @if (isVideo(photo)) {
+                    <video [src]="photo" class="attachment-preview" style="background: #000; object-fit: cover;" preload="metadata"></video>
+                    <ion-icon name="play-circle" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; color: white; opacity: 0.8;"></ion-icon>
+                  } @else {
+                    <img [src]="photo" alt="Вкладення" class="attachment-preview" style="object-fit: cover;">
+                  }
+                </div>
+                <ion-button fill="clear" color="danger" size="small" (click)="removePhoto($index); $event.stopPropagation();" class="remove-btn">
+                  <ion-icon name="close-circle"></ion-icon>
+                </ion-button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="ion-margin-top ion-padding-top">
+        <ion-button 
+          expand="block" 
+          shape="round" 
+          color="secondary" 
+          class="submit-btn" 
+          (click)="save()" 
+          [disabled]="isUploading">
+          Зберегти метрику
+        </ion-button>
+      </div>
+
+    </div>
+  }
+</ion-content>
