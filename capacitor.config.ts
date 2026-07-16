@@ -1,4 +1,5 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { KeyboardResize } from '@capacitor/keyboard';
 
 const config: CapacitorConfig = {
   appId: 'com.maksimbarisov.flowfit',
@@ -21,6 +22,10 @@ const config: CapacitorConfig = {
       smallIcon: 'ic_stat_notification',
       iconColor: '#C88A72',
       sound: 'default',
+    },
+    Keyboard: {
+      resize: KeyboardResize.None,
+      resizeOnFullScreen: false,
     },
   },
 };

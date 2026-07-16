@@ -3,6 +3,7 @@ import { ThemeService } from './core/services/theme.service';
 import { NotificationService } from './core/services/notification.service';
 import { SessionsService } from './core/services/sessions.service';
 import { App } from '@capacitor/app';
+import { Keyboard } from '@capacitor/keyboard';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -27,6 +28,21 @@ export class AppComponent implements OnInit {
           this.notificationService.syncNotifications(data);
         });
       }
+    });
+
+    Keyboard.addListener('keyboardWillShow', (info) => {
+      const keyboardHeight = info.keyboardHeight;
+      const contents = document.querySelectorAll('ion-content');
+      contents.forEach((content: any) => {
+        content.style.setProperty('--keyboard-offset', `${keyboardHeight}px`);
+      });
+    });
+
+    Keyboard.addListener('keyboardWillHide', () => {
+      const contents = document.querySelectorAll('ion-content');
+      contents.forEach((content: any) => {
+        content.style.setProperty('--keyboard-offset', '0px');
+      });
     });
   }
 }
