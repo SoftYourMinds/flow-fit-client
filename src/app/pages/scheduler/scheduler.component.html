@@ -11,26 +11,23 @@
 
   <!-- View Mode Switcher & Navigation Header -->
   <ion-toolbar class="sub-header-toolbar">
-    <ion-segment [value]="viewMode()" (ionChange)="viewMode.set($any($event).detail.value)" mode="ios" class="view-segment" slot="start">
-      <ion-segment-button value="day">
-        <ion-icon name="today-outline"></ion-icon>
-        <ion-label>По днях</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="week">
-        <ion-icon name="calendar-outline"></ion-icon>
-        <ion-label>По тижнях</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="month">
-        <ion-icon name="apps-outline"></ion-icon>
-        <ion-label>По місяцях</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+    <div class="view-header-container">
+      <ion-segment [value]="viewMode()" (ionChange)="viewMode.set($any($event).detail.value)" mode="ios" class="view-segment">
+        <ion-segment-button value="day">
+          <ion-label>День</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="week">
+          <ion-label>Тиждень</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="month">
+          <ion-label>Місяць</ion-label>
+        </ion-segment-button>
+      </ion-segment>
 
-    <ion-buttons slot="end">
       <ion-button fill="clear" size="small" (click)="goToToday()" class="today-btn">
         Сьогодні
       </ion-button>
-    </ion-buttons>
+    </div>
   </ion-toolbar>
 
   <!-- Filter Bar -->
@@ -117,22 +114,25 @@
         @for (session of filteredSessions(); track session.id) {
           <ion-card class="session-card modern-card" (click)="goToSessionDetail(session.id)" style="cursor: pointer;">
             <ion-card-header>
-              <div class="card-top-bar">
-                <div class="time-range">
-                  <ion-icon name="time-outline" color="primary"></ion-icon>
-                  <span>{{ session.startTime | date:'HH:mm' }} - {{ session.endTime | date:'HH:mm' }}</span>
+              <div class="card-header-flex">
+                <div class="header-left">
+                  <div class="info-row location-row">
+                    <ion-icon name="location-outline"></ion-icon>
+                    <h3>{{ session.location?.name || ('Локація #' + session.locationId) }}</h3>
+                  </div>
+                  <div class="info-row time-row">
+                    <ion-icon name="time-outline"></ion-icon>
+                    <span>{{ session.startTime | date:'HH:mm' }} - {{ session.endTime | date:'HH:mm' }}</span>
+                  </div>
                 </div>
-                <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
-                  {{ getStatusLabel(session.status) }}
-                </ion-badge>
-              </div>
-
-              <div class="location-title">
-                <ion-icon name="location-outline" color="medium"></ion-icon>
-                <h3>{{ session.location?.name || ('Локація #' + session.locationId) }}</h3>
-                <span class="type-tag" [class.group]="session.type === 'GROUP'">
-                  {{ session.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
-                </span>
+                <div class="header-right">
+                  <span class="type-tag" [class.group]="session.type === 'GROUP'">
+                    {{ session.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
+                  </span>
+                  <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
+                    {{ getStatusLabel(session.status) }}
+                  </ion-badge>
+                </div>
               </div>
             </ion-card-header>
 
@@ -185,22 +185,25 @@
           @for (session of group.items; track session.id) {
             <ion-card class="session-card modern-card" (click)="goToSessionDetail(session.id)" style="cursor: pointer;">
               <ion-card-header>
-                <div class="card-top-bar">
-                  <div class="time-range">
-                    <ion-icon name="time-outline" color="primary"></ion-icon>
-                    <span>{{ session.startTime | date:'HH:mm' }} - {{ session.endTime | date:'HH:mm' }}</span>
+                <div class="card-header-flex">
+                  <div class="header-left">
+                    <div class="info-row location-row">
+                      <ion-icon name="location-outline"></ion-icon>
+                      <h3>{{ session.location?.name || ('Локація #' + session.locationId) }}</h3>
+                    </div>
+                    <div class="info-row time-row">
+                      <ion-icon name="time-outline"></ion-icon>
+                      <span>{{ session.startTime | date:'HH:mm' }} - {{ session.endTime | date:'HH:mm' }}</span>
+                    </div>
                   </div>
-                  <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
-                    {{ getStatusLabel(session.status) }}
-                  </ion-badge>
-                </div>
-
-                <div class="location-title">
-                  <ion-icon name="location-outline" color="medium"></ion-icon>
-                  <h3>{{ session.location?.name || ('Локація #' + session.locationId) }}</h3>
-                  <span class="type-tag" [class.group]="session.type === 'GROUP'">
-                    {{ session.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
-                  </span>
+                  <div class="header-right">
+                    <span class="type-tag" [class.group]="session.type === 'GROUP'">
+                      {{ session.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
+                    </span>
+                    <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
+                      {{ getStatusLabel(session.status) }}
+                    </ion-badge>
+                  </div>
                 </div>
               </ion-card-header>
 
