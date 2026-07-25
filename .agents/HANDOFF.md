@@ -1,21 +1,18 @@
 ## Last Session Summary
 **Date:** 2026-07-25
-**Session focus:** Public Client Portal & Registration Restrictions
+**Session focus:** Client Portal Enhancements (Tabs, Theme Switcher, Recent Sessions History, Metric Switching)
 
 ### ✅ Accomplished
-- **Backend**: Disabled the `/auth/register` route. Trainers cannot self-register until an admin management system is built.
-- **Backend**: Added `shareToken` to `Client` model and implemented `PortalModule` (`/portal/client/:shareToken`) to securely fetch public-facing client data without auth.
-- **Frontend**: Added "Share Profile" button in `ClientDetailsComponent` that copies the portal link to clipboard.
-- **Frontend**: Created standalone `PortalComponent` for `/portal/:token` route with a premium, mobile-first design displaying client info, metrics, and upcoming sessions.
-- **Frontend**: Setup SEO information (moved `favicon.ico` to `src/`, added meta description, changed title to "Flow Fit").
+- **Frontend**: Added Light/Dark mode theme switcher button on the public Client Portal (`/portal/:token`).
+- **Frontend**: Restructured Client Portal into a tabbed layout ("Workout History" vs "Body Metrics") using `ion-segment` with smooth `fadeIn` transitions.
+- **Frontend**: Added "Recent Sessions" history list displaying past workouts with date, time, format, and location.
+- **Frontend**: Added dynamic status badges ("Відвідано" for `COMPLETED`, "Пропущено" for `MISSED`) while hiding `UPCOMING` statuses for past sessions.
+- **Frontend**: Added metric switcher on the progress chart to toggle between weight, body fat %, chest, and waist measurements.
+- **Frontend**: Ensured financial/pricing information is excluded from the client portal for privacy.
 
 ### ⚠️ Pending / Known Issues
-- The Prisma migration `add_client_share_token` needs to be run against the actual database (`npx prisma migrate dev` or `deploy`) since there was no local DB environment configured during this session.
+- Database migration `add_client_share_token` needs to be deployed on production if not already done.
 
 ### 🚀 Immediate Next Steps
-1. Run the database migration.
-2. Test the public portal sharing flow in production to ensure tokens generate correctly for existing and new clients.
-3. Design and implement the Admin Management system for registering trainers (Phase 2).
-
-### 🐛 Bug Fixes
-- Resolved a permanent loader hang caused by a Circular Dependency (NG0200) in `authInterceptor`. Converted `AuthService` injection to lazy `Injector` evaluation.
+1. Commit and push the client portal updates (`git commit -m "feat(portal): enhance client portal UX..."`).
+2. Test theme switcher and tab navigation across various mobile screen sizes.

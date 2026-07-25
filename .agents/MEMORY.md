@@ -111,3 +111,4 @@ Use `/git-commit` workflow. Format: `type(scope): description` (Conventional Com
 - `async/await` only
 
 - **2026-07-25**: Disabled sign-up route until admin management system is built.
+- **2026-07-25**: Enhanced Client Portal with tabs (Workout History / Body Metrics), light/dark theme switcher, recent sessions list with status badges, and body metrics switcher for progress charts.

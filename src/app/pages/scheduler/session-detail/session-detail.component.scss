@@ -40,7 +40,7 @@ ion-toolbar {
 }
 
 .details-section {
-  background: white;
+  background: var(--ion-card-background, #fff);
   margin: 0 16px;
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.05);
@@ -80,7 +80,7 @@ ion-toolbar {
         margin: 0;
         font-size: 16px;
         font-weight: 500;
-        color: var(--ion-color-dark);
+        color: var(--ion-text-color, #2D2725);
       }
     }
   }
@@ -91,28 +91,28 @@ ion-toolbar {
   }
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ion-text-color, #2D2725);
+  }
+}
+
 .participants-section {
   margin-top: 16px;
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-
-    h3 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--ion-color-dark);
-    }
-  }
 
   .participants-list {
     background: transparent;
 
     .participant-item {
-      --background: white;
+      --background: var(--ion-item-background, #fff);
       --border-radius: 16px;
       --padding-start: 16px;
       margin-bottom: 12px;
