@@ -21,6 +21,7 @@ export class PortalComponent implements OnInit {
 
   activeTab = signal<'history' | 'metrics'>('history');
   activeChartMetric = signal<'weight' | 'bodyFatPercentage' | 'chest' | 'waist'>('weight');
+  isDarkMode = signal(false);
 
   // Computed properties
   initials = computed(() => {
@@ -163,6 +164,12 @@ export class PortalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Initialize theme based on current state or system preference
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isCurrentlyDark = document.documentElement.classList.contains('ion-palette-dark') || document.body.classList.contains('dark') || prefersDark;
+    this.isDarkMode.set(isCurrentlyDark);
+    this.applyTheme(isCurrentlyDark);
+
     this.route.paramMap.subscribe(params => {
       const token = params.get('token');
       if (token) {
@@ -192,5 +199,21 @@ export class PortalComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  toggleTheme() {
+    const newTheme = !this.isDarkMode();
+    this.isDarkMode.set(newTheme);
+    this.applyTheme(newTheme);
+  }
+
+  private applyTheme(isDark: boolean) {
+    if (isDark) {
+      document.documentElement.classList.add('ion-palette-dark');
+      document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('ion-palette-dark');
+      document.body.classList.remove('dark');
+    }
   }
 }

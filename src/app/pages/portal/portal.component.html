@@ -16,6 +16,10 @@
   @if (!isLoading() && profile()) {
     <!-- Hero Section -->
     <div class="hero-section">
+      <ion-button fill="clear" class="theme-toggle-btn" (click)="toggleTheme()">
+        <ion-icon slot="icon-only" [name]="isDarkMode() ? 'sunny' : 'moon'"></ion-icon>
+      </ion-button>
+      
       <div class="avatar-circle">
         <span class="avatar-text">{{ initials() }}</span>
       </div>
