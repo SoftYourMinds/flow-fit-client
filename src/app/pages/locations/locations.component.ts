@@ -1,7 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule, AlertController, ModalController } from '@ionic/angular';
 import { LocationsService, Location } from '../../core/services/locations.service';
+import { LocationModalComponent } from '../../shared/modals/location-modal/location-modal.component';
 
 @Component({
   selector: 'app-locations',
@@ -16,7 +17,8 @@ export class LocationsComponent implements OnInit {
 
   constructor(
     private locationsService: LocationsService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private modalCtrl: ModalController
   ) {}
 
   ngOnInit() {
@@ -47,29 +49,20 @@ export class LocationsComponent implements OnInit {
   }
 
   async createLocation() {
-    const alert = await this.alertController.create({
-      header: 'Нова локація',
-      inputs: [
-        { name: 'name', type: 'text', placeholder: 'Назва (напр. Зал на Оболоні)' },
-        { name: 'address', type: 'text', placeholder: 'Адреса' },
-        { name: 'type', type: 'text', value: 'STUDIO', placeholder: 'Тип (STUDIO / GYM)' }
-      ],
-      buttons: [
-        { text: 'Скасувати', role: 'cancel' },
-        {
-          text: 'Створити',
-          handler: (data) => {
-            if (data.name) {
-              this.locationsService.create({
-                name: data.name,
-                address: data.address,
-                type: data.type
-              }).subscribe(() => this.loadLocations());
-            }
-          }
-        }
-      ]
+    const modal = await this.modalCtrl.create({
+      component: LocationModalComponent
     });
-    await alert.present();
+    
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    
+    if (role === 'confirm' && data) {
+      this.locationsService.create({
+        name: data.name,
+        address: data.address,
+        type: data.type
+      }).subscribe(() => this.loadLocations());
+    }
   }
 }

@@ -5,6 +5,7 @@ import { ClientsService, Client } from '../../core/services/clients.service';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ClientSheetModalComponent } from '../../shared/modals/client-sheet-modal/client-sheet-modal.component';
+import { ClientModalComponent } from '../../shared/modals/client-modal/client-modal.component';
 
 @Component({
   selector: 'app-clients',
@@ -58,29 +59,20 @@ export class ClientsComponent implements OnInit {
   }
 
   async createClient() {
-    const alert = await this.alertController.create({
-      header: 'Новий клієнт',
-      inputs: [
-        { name: 'fullName', type: 'text', placeholder: 'ПІБ клієнта' },
-        { name: 'phone', type: 'tel', placeholder: 'Номер телефону' },
-        { name: 'goal', type: 'text', placeholder: 'Ціль (напр. схуднення)' }
-      ],
-      buttons: [
-        { text: 'Скасувати', role: 'cancel' },
-        {
-          text: 'Створити',
-          handler: (data) => {
-            if (data.fullName) {
-              this.clientsService.create({
-                fullName: data.fullName,
-                phone: data.phone,
-                goal: data.goal
-              }).subscribe(() => this.loadClients());
-            }
-          }
-        }
-      ]
+    const modal = await this.modalCtrl.create({
+      component: ClientModalComponent
     });
-    await alert.present();
+    
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    
+    if (role === 'confirm' && data) {
+      this.clientsService.create({
+        fullName: data.fullName,
+        phone: data.phone,
+        goal: data.goal
+      }).subscribe(() => this.loadClients());
+    }
   }
 }

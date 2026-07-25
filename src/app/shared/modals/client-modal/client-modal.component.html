@@ -1,0 +1,44 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ client ? 'Редагувати клієнта' : 'Новий клієнт' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-container">
+    <div class="form-group">
+      <ion-label class="form-label">ПІБ клієнта</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+        <ion-input type="text" [value]="fullName()" (ionInput)="fullName.set($any($event).detail.value)" placeholder="Введіть ПІБ"></ion-input>
+      </ion-item>
+    </div>
+
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Номер телефону</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="call-outline" slot="start" color="primary"></ion-icon>
+        <ion-input type="tel" [value]="phone()" (ionInput)="phone.set($any($event).detail.value)" placeholder="+380..."></ion-input>
+      </ion-item>
+    </div>
+
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Ціль</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="trophy-outline" slot="start" color="primary"></ion-icon>
+        <ion-input type="text" [value]="goal()" (ionInput)="goal.set($any($event).detail.value)" placeholder="напр. схуднення"></ion-input>
+      </ion-item>
+    </div>
+
+    <div class="ion-margin-top ion-padding-top">
+      <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!fullName()">
+        {{ client ? 'Зберегти зміни' : 'Створити клієнта' }}
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
