@@ -17,40 +17,62 @@ export class UiService {
   async showLoader() {
     this.activeRequests++;
     
-    if (this.activeRequests === 1 && !this.loader && !this.isCreatingLoader) {
-      this.isCreatingLoader = true;
-      try {
-        this.loader = await this.loadingCtrl.create({
-          spinner: 'crescent',
-          message: 'Завантаження...',
-          translucent: true,
-          backdropDismiss: false
-        });
-        
-        // Check if requests were cancelled/completed while creating
-        if (this.activeRequests > 0) {
-          await this.loader.present();
-        } else {
-          await this.loader.dismiss();
+    if (this.activeRequests === 1) {
+      // Delay to prevent flickering for very fast requests
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if ((this.activeRequests as number) === 0) {
+        return; // Request finished during the delay
+      }
+
+      if (!this.loader && !this.isCreatingLoader) {
+        this.isCreatingLoader = true;
+        try {
+          this.loader = await this.loadingCtrl.create({
+            spinner: 'crescent',
+            message: 'Завантаження...',
+            translucent: true,
+            backdropDismiss: false
+          });
+
+          if (this.activeRequests > 0) {
+            await this.loader.present();
+            // Double check if requests finished during the present animation
+            if ((this.activeRequests as number) === 0) {
+              await this.dismissLoader();
+            }
+          } else {
+            await this.dismissLoader();
+          }
+        } catch (error) {
+          console.error('[UiService] Error creating loader:', error);
           this.loader = null;
+        } finally {
+          this.isCreatingLoader = false;
         }
-      } finally {
-        this.isCreatingLoader = false;
       }
     }
   }
 
   async hideLoader() {
     this.activeRequests--;
-    if (this.activeRequests < 0) {
+    if (this.activeRequests <= 0) {
       this.activeRequests = 0;
-    }
-    
-    if (this.activeRequests === 0) {
+      
       if (this.loader && !this.isCreatingLoader) {
-        await this.loader.dismiss();
-        this.loader = null;
+        await this.dismissLoader();
       }
+    }
+  }
+
+  private async dismissLoader() {
+    if (this.loader) {
+      try {
+        await this.loader.dismiss();
+      } catch (e) {
+        console.warn('[UiService] Loader already dismissed or error dismissing:', e);
+      }
+      this.loader = null;
     }
   }
 

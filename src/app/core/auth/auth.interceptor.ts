@@ -1,11 +1,11 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { AuthService } from './auth.service';
 import { catchError, switchMap } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
+  const injector = inject(Injector);
   const token = localStorage.getItem('access_token');
 
   let authReq = req;
@@ -19,6 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !req.url.includes('/refresh') && !req.url.includes('/login')) {
+        const authService = injector.get(AuthService);
         // Try refreshing token
         return authService.refreshToken().pipe(
           switchMap((res) => {

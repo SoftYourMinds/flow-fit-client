@@ -16,3 +16,6 @@
 1. Run the database migration.
 2. Test the public portal sharing flow in production to ensure tokens generate correctly for existing and new clients.
 3. Design and implement the Admin Management system for registering trainers (Phase 2).
+
+### 🐛 Bug Fixes
+- Resolved a permanent loader hang caused by a Circular Dependency (NG0200) in `authInterceptor`. Converted `AuthService` injection to lazy `Injector` evaluation.

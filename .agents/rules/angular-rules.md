@@ -90,3 +90,9 @@ trigger: always_on
 
 - Use `ChangeDetectionStrategy.OnPush`
 - Use pure or memoized pipes for formatting or computation
+
+## Interceptors & Dependency Injection
+
+- **Avoid Circular Dependencies**: Do NOT synchronously `inject()` services (like `AuthService`) inside `HttpInterceptorFn` if those services make HTTP requests in their constructors.
+- **Lazy Injection**: Instead, inject the `Injector` synchronously (`const injector = inject(Injector)`), and retrieve the service asynchronously (e.g., `injector.get(AuthService)`) exactly when it's needed inside RxJS operators like `catchError` or `switchMap`.
+
