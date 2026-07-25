@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
@@ -22,7 +23,7 @@ function getLocalDateString(date: Date): string {
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule, BaseChartDirective]
 })
-export class ReportsComponent implements OnInit {
+export class ReportsComponent implements OnInit, ViewWillEnter {
   startDate: string = '';
   endDate: string = '';
   summary: ReportSummary | null = null;
@@ -67,6 +68,9 @@ export class ReportsComponent implements OnInit {
   ngOnInit() {
     this.loadLocations();
     this.setDefaultDates();
+  }
+
+  ionViewWillEnter() {
     this.loadData();
   }
 

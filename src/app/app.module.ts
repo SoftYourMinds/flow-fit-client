@@ -8,6 +8,8 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { globalLoaderInterceptor } from './core/interceptors/global-loader.interceptor';
+import { globalErrorInterceptor } from './core/interceptors/global-error.interceptor';
 
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { QuillModule } from 'ngx-quill';
@@ -17,7 +19,7 @@ import { QuillModule } from 'ngx-quill';
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, QuillModule.forRoot()],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([globalLoaderInterceptor, authInterceptor, globalErrorInterceptor])),
     provideCharts(withDefaultRegisterables())
   ],
   bootstrap: [AppComponent],

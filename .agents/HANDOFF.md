@@ -1,16 +1,18 @@
 ## Last Session Summary
 **Date:** 2026-07-25
-**Session focus:** Entity Creation Modal Refactoring
+**Session focus:** Global HTTP Loading and Error Handling
 
 ### ✅ Accomplished
-- Created `ClientModalComponent` to handle client creation/editing in a full `ion-modal` interface instead of a generic `AlertController`.
-- Created `LocationModalComponent` to handle location creation/editing in a full `ion-modal` interface instead of a generic `AlertController`, including support for the `OUTDOOR` location type.
-- Updated `ClientsComponent` and `LocationsComponent` to utilize `ModalController` to spawn these new custom modal components.
-- Maintained consistent UI styling matching the existing `SessionModalComponent`.
+- Created `UiService` to centrally manage Ionic's `LoadingController` and `ToastController`, ensuring no race conditions with overlapping HTTP requests.
+- Added `globalLoaderInterceptor` to automatically show a spinner during active HTTP requests.
+- Added `globalErrorInterceptor` to automatically catch HTTP errors and display user-friendly Toast notifications.
+- Registered these interceptors in `AppModule`.
+- Updated `apiUrl` in `environment.ts` to point to Vercel backend.
+- Applied `ionViewWillEnter` lifecycle hook to `ReportsComponent` to ensure fresh data fetching when returning to the tab.
 
 ### ⚠️ Pending / Known Issues
-- Need to verify if users want the metric history chart back in the future. Right now it is completely removed (from previous session).
+- Verify if any background polling or interval-based requests cause the global loader to appear unprompted (if so, they will need the `x-silent-request: true` header applied).
 
 ### 🚀 Immediate Next Steps
-1. Test client creation and location creation workflows with the new modals to ensure state and server interactions work smoothly.
-2. Consider implementing edit mode logic in components if we need to edit clients or locations in the future (the modals support it via `@Input`, but the parent components currently only pass empty state for creation).
+1. Test global loader during authentication flows to ensure it works smoothly with token refreshes.
+2. Address any UI glitches if loaders appear briefly and disappear quickly during very fast network requests (might want a small debounce later if requested).

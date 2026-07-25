@@ -37,6 +37,7 @@ _(empty — fresh project, no tech debt yet)_
 2. **Components** inject services, consume signals via `computed()` and template bindings
 3. **Route resolvers** (optional) pre-fetch data before route activates
 4. **No query params for data that lives in services** — use service signals
+5. **Global HTTP Interceptors** handle generic loading states (`UiService.showLoader`) and error toasts (`UiService.showErrorToast`) automatically.
 
 ### Component Patterns
 
