@@ -288,26 +288,43 @@
           flex: 1;
           padding: 0.75rem 0;
           
-          .time-type {
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem;
-            
+          .time-row {
             .time {
               font-weight: 700;
               font-size: 1.1rem;
               color: var(--ion-text-color);
             }
-            .type-text {
-              font-size: 0.75rem;
+          }
+          
+          .type-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+            flex-wrap: wrap;
+            
+            .badge {
+              font-size: 0.7rem;
               font-weight: 700;
-              color: var(--ion-color-tertiary);
               text-transform: uppercase;
               letter-spacing: 0.5px;
+              padding: 4px 8px;
+              border-radius: 6px;
+            }
+
+            .type-badge {
+              background: rgba(var(--ion-color-tertiary-rgb), 0.15);
+              color: var(--ion-color-tertiary);
               
               &.group {
+                background: rgba(var(--ion-color-secondary-rgb), 0.15);
                 color: var(--ion-color-secondary);
               }
+            }
+            
+            .workout-badge {
+              background: rgba(var(--ion-color-medium-rgb), 0.1);
+              color: var(--ion-color-medium);
             }
           }
           

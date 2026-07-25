@@ -116,18 +116,22 @@
                         <span class="month">{{ session.startTime | date:'MMM' }}</span>
                       </div>
                       <div class="session-info-col">
-                        <div class="time-type">
+                        <div class="time-row">
                           <span class="time">{{ session.startTime | date:'HH:mm' }}</span>
-                          <span class="type-text" [class.group]="session.type === 'GROUP'">
-                            {{ session.type === 'INDIVIDUAL' ? 'Персональне' : 'Групове' }}
-                          </span>
                         </div>
                         <div class="details-row">
-                          @if (session.workoutTypes && session.workoutTypes.length > 0) {
-                            <span class="workout-types"><ion-icon name="fitness-outline"></ion-icon> {{ session.workoutTypes.join(', ') }}</span>
-                          }
                           @if (session.locationName) {
                             <span class="location"><ion-icon name="location-outline"></ion-icon> {{ session.locationName }}</span>
+                          }
+                        </div>
+                        <div class="type-row">
+                          <span class="badge type-badge" [class.group]="session.type === 'GROUP'">
+                            {{ session.type === 'INDIVIDUAL' ? 'Персональне' : 'Групове' }}
+                          </span>
+                          @if (session.workoutTypes && session.workoutTypes.length > 0) {
+                            @for (workout of session.workoutTypes; track workout) {
+                              <span class="badge workout-badge">{{ workout }}</span>
+                            }
                           }
                         </div>
                       </div>
