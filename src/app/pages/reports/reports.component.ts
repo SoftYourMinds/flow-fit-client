@@ -233,7 +233,23 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
         reportText += `Загальна сума: ${totalSum} ₴\n`;
       }
 
-      await navigator.clipboard.writeText(reportText);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(reportText);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = reportText;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+        } finally {
+          textArea.remove();
+        }
+      }
       
       const toast = await this.toastCtrl.create({
         message: 'Звіт скопійовано',
