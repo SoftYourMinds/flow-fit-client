@@ -233,21 +233,47 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
         reportText += `Загальна сума: ${totalSum} ₴\n`;
       }
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(reportText);
-      } else {
+      let copySuccess = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(reportText);
+          copySuccess = true;
+        }
+      } catch (e) {
+        console.warn('Clipboard API failed:', e);
+      }
+
+      if (!copySuccess) {
         const textArea = document.createElement('textarea');
         textArea.value = reportText;
         textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.opacity = '0';
         document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
+        
+        const isIos = navigator.userAgent.match(/ipad|iphone|ipod/i);
+        if (isIos) {
+          textArea.contentEditable = 'true';
+          textArea.readOnly = false;
+          const range = document.createRange();
+          range.selectNodeContents(textArea);
+          const sel = window.getSelection();
+          if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+          textArea.setSelectionRange(0, 999999);
+        } else {
+          textArea.focus();
+          textArea.select();
+        }
+        
         try {
-          document.execCommand('copy');
+          const successful = document.execCommand('copy');
+          if (!successful) throw new Error('execCommand copy failed');
         } finally {
-          textArea.remove();
+          document.body.removeChild(textArea);
         }
       }
       
