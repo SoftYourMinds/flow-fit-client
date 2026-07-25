@@ -44,10 +44,10 @@
       <ion-label class="form-label">Час початку</ion-label>
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
-        <ion-datetime-button datetime="startTimePicker"></ion-datetime-button>
+        <ion-datetime-button [datetime]="datetimeId"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime id="startTimePicker" [value]="startTime()" (ionChange)="startTime.set($any($event).detail.value)" presentation="date-time" [minuteValues]="minuteValues()"></ion-datetime>
+            <ion-datetime [id]="datetimeId" [value]="startTime()" (ionChange)="startTime.set($any($event).detail.value)" presentation="date-time" [minuteValues]="minuteValues()"></ion-datetime>
           </ng-template>
         </ion-modal>
       </ion-item>

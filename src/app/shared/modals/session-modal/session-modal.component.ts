@@ -26,6 +26,8 @@ export class SessionModalComponent implements OnInit {
   price = signal<number>(300);
   participants = signal<any[]>([]);
 
+  datetimeId = `datetime-${Math.random().toString(36).substring(2, 9)}`;
+
   // Notifications
   enableNotification = signal<boolean>(true);
   reminderMode = signal<ReminderMode>('auto');
