@@ -117,14 +117,12 @@
                         }
                       </div>
                       <div class="session-status-col" slot="end">
-                        @if (session.isAttended === true) {
-                          <ion-icon name="checkmark-circle" color="success"></ion-icon>
-                        } @else if (session.isAttended === false) {
-                          <ion-icon name="close-circle" color="danger"></ion-icon>
-                        } @else {
-                          <ion-icon name="help-circle-outline" color="medium"></ion-icon>
-                        }
-                      </div>
+                    @if (session.status === 'COMPLETED' || session.status === 'MISSED') {
+                      <ion-badge [color]="getStatusColor(session.status)" mode="ios" class="status-badge">
+                        {{ getStatusLabel(session.status) }}
+                      </ion-badge>
+                    }
+                  </div>
                     </ion-item>
                   }
                 </ion-list>
