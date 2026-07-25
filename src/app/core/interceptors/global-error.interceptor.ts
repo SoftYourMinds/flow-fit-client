@@ -16,18 +16,23 @@ export const globalErrorInterceptor: HttpInterceptorFn = (req, next) => {
       // Skip silent errors
       if (!req.headers.has('x-silent-error')) {
         let errorMsg = 'Виникла помилка. Спробуйте ще раз.';
+        let shouldShowToast = true;
         
-        if (error.error && error.error.message) {
+        if (error.status === 401) {
+          if (req.url.includes('/login')) {
+            errorMsg = 'Невірний email або пароль.';
+          } else if (req.url.includes('/refresh')) {
+            errorMsg = 'Сесія закінчилась. Будь ласка, увійдіть знову.';
+          } else {
+            shouldShowToast = false;
+          }
+        } else if (error.error && error.error.message) {
           // If backend returns a specific error message
           errorMsg = Array.isArray(error.error.message) 
             ? error.error.message.join(', ') 
             : error.error.message;
         } else if (error.status === 0) {
           errorMsg = 'Відсутнє підключення до інтернету або сервер недоступний.';
-        } else if (error.status === 401) {
-          // We can let auth interceptor handle this silently if refreshing,
-          // but if we show it here, it might be spammy. Let's show a standard message.
-          errorMsg = 'Помилка авторизації. Будь ласка, увійдіть знову.';
         } else if (error.status === 403) {
           errorMsg = 'У вас немає доступу до цієї дії.';
         } else if (error.status === 404) {
@@ -36,7 +41,9 @@ export const globalErrorInterceptor: HttpInterceptorFn = (req, next) => {
           errorMsg = 'Помилка сервера. Спробуйте пізніше.';
         }
         
-        uiService.showErrorToast(errorMsg);
+        if (shouldShowToast) {
+          uiService.showErrorToast(errorMsg);
+        }
       }
 
       return throwError(() => error);

@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap, catchError, share, finalize } from 'rxjs/operators';
 import { throwError, Observable } from 'rxjs';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 export interface User {
@@ -21,7 +22,7 @@ export class AuthService {
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(false);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     this.checkAuthOnLoad();
   }
 
@@ -87,6 +88,7 @@ export class AuthService {
     localStorage.removeItem('refresh_token');
     this.isAuthenticated.set(false);
     this.currentUser.set(null);
+    this.router.navigate(['/login']);
   }
 
   private handleAuthResponse(res: { accessToken: string, refreshToken: string }) {
