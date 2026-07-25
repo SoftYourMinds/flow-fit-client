@@ -14,7 +14,7 @@
     <!-- Type Selector -->
     <div class="form-group">
       <ion-label class="form-label">Тип тренування</ion-label>
-      <ion-segment [(ngModel)]="type" mode="ios">
+      <ion-segment [value]="type()" (ionChange)="type.set($any($event).detail.value)" mode="ios">
         <ion-segment-button value="INDIVIDUAL">
           <ion-icon name="person-outline"></ion-icon>
           <ion-label>Індивідуальне</ion-label>
@@ -31,7 +31,7 @@
       <ion-label class="form-label">Локація</ion-label>
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
-        <ion-select [(ngModel)]="locationId" placeholder="Оберіть локацію" interface="popover" style="width: 100%;">
+        <ion-select [value]="locationId()" (ionChange)="locationId.set($any($event).detail.value)" placeholder="Оберіть локацію" interface="popover" style="width: 100%;">
           @for (loc of locations; track loc.id) {
             <ion-select-option [value]="loc.id">{{ loc.name }} ({{ loc.type }})</ion-select-option>
           }
@@ -47,7 +47,7 @@
         <ion-datetime-button datetime="startTimePicker"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
-            <ion-datetime id="startTimePicker" [(ngModel)]="startTime" presentation="date-time"></ion-datetime>
+            <ion-datetime id="startTimePicker" [value]="startTime()" (ionChange)="startTime.set($any($event).detail.value)" presentation="date-time" [minuteValues]="minuteValues()"></ion-datetime>
           </ng-template>
         </ion-modal>
       </ion-item>
@@ -56,20 +56,20 @@
     <div class="form-group ion-margin-top">
       <ion-label class="form-label">Тривалість тренування</ion-label>
       <div class="duration-chips">
-        <ion-chip [color]="duration === 30 ? 'primary' : 'medium'" [outline]="duration !== 30" (click)="duration = 30">
-          @if (duration === 30) {
+        <ion-chip [color]="duration() === 30 ? 'primary' : 'medium'" [outline]="duration() !== 30" (click)="duration.set(30)">
+          @if (duration() === 30) {
             <ion-icon name="checkmark-circle"></ion-icon>
           }
           <ion-label>30 хв</ion-label>
         </ion-chip>
-        <ion-chip [color]="duration === 50 ? 'primary' : 'medium'" [outline]="duration !== 50" (click)="duration = 50">
-          @if (duration === 50) {
+        <ion-chip [color]="duration() === 50 ? 'primary' : 'medium'" [outline]="duration() !== 50" (click)="duration.set(50)">
+          @if (duration() === 50) {
             <ion-icon name="checkmark-circle"></ion-icon>
           }
           <ion-label>50 хв</ion-label>
         </ion-chip>
-        <ion-chip [color]="duration === 120 ? 'primary' : 'medium'" [outline]="duration !== 120" (click)="duration = 120">
-          @if (duration === 120) {
+        <ion-chip [color]="duration() === 120 ? 'primary' : 'medium'" [outline]="duration() !== 120" (click)="duration.set(120)">
+          @if (duration() === 120) {
             <ion-icon name="checkmark-circle"></ion-icon>
           }
           <ion-label>120 хв</ion-label>
@@ -82,7 +82,7 @@
       <ion-label class="form-label">Ціна за тренування (грн)</ion-label>
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="cash-outline" slot="start" color="primary"></ion-icon>
-        <ion-input type="number" [(ngModel)]="price" placeholder="800"></ion-input>
+        <ion-input type="number" [value]="price()" (ionInput)="price.set(+$any($event).detail.value)" placeholder="800"></ion-input>
       </ion-item>
     </div>
 
@@ -93,13 +93,13 @@
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="notifications-outline" slot="start" color="primary"></ion-icon>
         <ion-label>Увімкнути нагадування</ion-label>
-        <ion-toggle slot="end" [(ngModel)]="enableNotification"></ion-toggle>
+        <ion-toggle slot="end" [checked]="enableNotification()" (ionChange)="enableNotification.set($any($event).detail.checked)"></ion-toggle>
       </ion-item>
 
-      <ion-item *ngIf="enableNotification" lines="none" class="custom-input-item ion-margin-top">
+      <ion-item *ngIf="enableNotification()" lines="none" class="custom-input-item ion-margin-top">
         <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
         <ion-label color="medium">Час нагадування</ion-label>
-        <ion-select [(ngModel)]="reminderMode" interface="popover" style="width: 100%;">
+        <ion-select [value]="reminderMode()" (ionChange)="reminderMode.set($any($event).detail.value)" interface="popover" style="width: 100%;">
           @for (mode of reminderModes; track mode.value) {
             <ion-select-option [value]="mode.value">{{ mode.label }}</ion-select-option>
           }
@@ -110,7 +110,7 @@
     <!-- Participants Section (Only on Creation) -->
     <div *ngIf="!session" class="participants-section ion-margin-top ion-padding-top" style="border-top: 1px solid var(--ion-color-step-150, #eee);">
       <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Учасники ({{ participants.length }})</h3>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Учасники ({{ participants().length }})</h3>
         <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
           <ion-icon name="person-add-outline" slot="start"></ion-icon>
           Додати
@@ -118,7 +118,7 @@
       </div>
 
       <ion-list lines="none" class="participants-list">
-        @for (p of participants; track p.clientId || p.customName; let i = $index) {
+        @for (p of participants(); track p.clientId || p.customName; let i = $index) {
           <ion-item class="participant-item">
             <ion-avatar slot="start">
               <div class="avatar-placeholder" style="background: var(--ion-color-light); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium);">
@@ -143,7 +143,7 @@
     </div>
 
     <div class="ion-margin-top ion-padding-top">
-      <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!locationId">
+      <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!locationId()">
         {{ session ? 'Зберегти зміни' : 'Створити тренування' }}
       </ion-button>
     </div>
