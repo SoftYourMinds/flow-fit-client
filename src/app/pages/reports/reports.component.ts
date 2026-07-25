@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,6 +29,7 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
   endDate: string = '';
   summary: ReportSummary | null = null;
   isLoading: boolean = false;
+  isGeneratingReport: boolean = false;
   
   locations: Location[] = [];
   selectedLocationId: number | null = null;
@@ -158,6 +160,100 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
       ];
       // Trigger change detection for chart
       this.pieChartData = { ...this.pieChartData };
+    }
+  }
+
+  async generateTextReport() {
+    if (!this.startDate || !this.endDate) return;
+
+    this.isGeneratingReport = true;
+    try {
+      const filters: any = { 
+        startDate: this.startDate, 
+        endDate: this.endDate 
+      };
+      
+      if (this.selectedLocationId) {
+        filters.locationId = this.selectedLocationId;
+      }
+      
+      if (this.selectedWorkoutTypes && this.selectedWorkoutTypes.length > 0) {
+        filters.workoutTypes = this.selectedWorkoutTypes.join(','); 
+      }
+
+      // Fetch sessions for the period
+      const sessions = await firstValueFrom(this.sessionsService.getAll(filters));
+
+      // Filter locally to match the UI filters just in case
+      let filteredSessions = sessions.filter(s => {
+        if (s.status !== 'COMPLETED') return false; 
+        
+        if (this.selectedLocationId && s.locationId !== this.selectedLocationId) return false;
+        
+        if (this.selectedWorkoutTypes && this.selectedWorkoutTypes.length > 0) {
+           const hasMatchedType = s.workoutTypes?.some(type => this.selectedWorkoutTypes.includes(type));
+           if (!hasMatchedType && s.workoutTypes && s.workoutTypes.length > 0) return false;
+        }
+
+        if (this.reportType === 'individual' && s.type !== 'INDIVIDUAL') return false;
+        if (this.reportType === 'group' && s.type !== 'GROUP') return false;
+
+        return true;
+      });
+
+      // Sort by date ascending
+      filteredSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+      let reportText = `Звіт за період: ${this.startDate} по ${this.endDate}\n\n`;
+      let totalSum = 0;
+
+      if (filteredSessions.length === 0) {
+        reportText += `Тренувань не знайдено.\n`;
+      } else {
+        filteredSessions.forEach((s, index) => {
+          const date = new Date(s.startTime);
+          const dateStr = date.toLocaleDateString('uk-UA', { 
+            day: '2-digit', month: '2-digit', year: 'numeric'
+          });
+          const timeStr = date.toLocaleTimeString('uk-UA', {
+            hour: '2-digit', minute: '2-digit'
+          });
+          const typeStr = s.type === 'INDIVIDUAL' ? 'Інд.' : 'Груп.';
+          const price = s.price || 0;
+          totalSum += price;
+          
+          let workoutTypesStr = '';
+          if (s.workoutTypes && s.workoutTypes.length > 0) {
+            workoutTypesStr = ` (${s.workoutTypes.join(', ')})`;
+          }
+
+          reportText += `${index + 1}. ${dateStr} ${timeStr} - ${typeStr}${workoutTypesStr} - ${price} ₴\n`;
+        });
+        reportText += `\n------------------------\n`;
+        reportText += `Загальна сума: ${totalSum} ₴\n`;
+      }
+
+      await navigator.clipboard.writeText(reportText);
+      
+      const toast = await this.toastCtrl.create({
+        message: 'Звіт скопійовано',
+        duration: 2000,
+        color: 'success',
+        position: 'top'
+      });
+      await toast.present();
+      
+    } catch (err) {
+      console.error('Failed to generate report', err);
+      const toast = await this.toastCtrl.create({
+        message: 'Помилка при генерації звіту',
+        duration: 2000,
+        color: 'danger',
+        position: 'top'
+      });
+      await toast.present();
+    } finally {
+      this.isGeneratingReport = false;
     }
   }
 }
