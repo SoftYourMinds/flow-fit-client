@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://flow-fit-api.vercel.app'
+  apiUrl: 'https://flow-fit-api.vercel.app',
+  clientUrl: 'http://localhost:4200'
 };
 
 /*

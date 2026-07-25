@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ClientsService } from '../../../core/services/clients.service';
 import { NoteModalComponent } from '../../../shared/modals/note-modal/note-modal.component';
 import { MediaViewerModalComponent } from '../../../shared/modals/media-viewer-modal/media-viewer-modal.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-client-details',
@@ -158,7 +159,7 @@ export class DetailsComponent implements OnInit {
     }
     
     // Create public url
-    const url = `${window.location.origin}/portal/${token}`;
+    const url = `${environment.clientUrl}/portal/${token}`;
     
     try {
       await navigator.clipboard.writeText(url);
