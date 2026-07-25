@@ -24,11 +24,11 @@ export class ClientsService {
     if (searchQuery) {
       params = params.append('search', searchQuery);
     }
-    return this.http.get<Client[]>(this.apiUrl, { params });
+    return this.http.get<Client[]>(this.apiUrl, { params, headers: { 'x-silent-request': 'true' } });
   }
 
   getOne(id: number) {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/${id}`, { headers: { 'x-silent-request': 'true' } });
   }
 
   create(data: Partial<Client>) {

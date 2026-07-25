@@ -12,6 +12,6 @@ export class TelegramService {
   constructor(private http: HttpClient) {}
 
   getLinkToken(): Observable<{ token: string }> {
-    return this.http.get<{ token: string }>(`${this.apiUrl}/link-token`);
+    return this.http.get<{ token: string }>(`${this.apiUrl}/link-token`, { headers: { 'x-silent-request': 'true' } });
   }
 }

@@ -31,7 +31,7 @@ export class AuthService {
     if (token) {
       this.isAuthenticated.set(true);
       // Ideally decode JWT to get user info or fetch /me
-      this.http.get<User>(`${this.apiUrl}/me`).subscribe({
+      this.http.get<User>(`${this.apiUrl}/me`, { headers: { 'x-silent-request': 'true' } }).subscribe({
         next: (user) => this.currentUser.set(user),
         error: (err) => {
           if (err.status === 401 || err.status === 403) {
@@ -95,6 +95,6 @@ export class AuthService {
     localStorage.setItem('access_token', res.accessToken);
     localStorage.setItem('refresh_token', res.refreshToken);
     this.isAuthenticated.set(true);
-    this.http.get<User>(`${this.apiUrl}/me`).subscribe(user => this.currentUser.set(user));
+    this.http.get<User>(`${this.apiUrl}/me`, { headers: { 'x-silent-request': 'true' } }).subscribe(user => this.currentUser.set(user));
   }
 }

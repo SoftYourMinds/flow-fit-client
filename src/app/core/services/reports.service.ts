@@ -35,6 +35,7 @@ export class ReportsService {
     
     return this.http.get<ReportSummary>(`${this.apiUrl}/summary`, {
       params,
+      headers: { 'x-silent-request': 'true' }
     });
   }
 }

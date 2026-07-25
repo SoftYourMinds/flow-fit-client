@@ -18,7 +18,7 @@ export class LocationsService {
   constructor(private http: HttpClient) {}
 
   getAll() {
-    return this.http.get<Location[]>(this.apiUrl);
+    return this.http.get<Location[]>(this.apiUrl, { headers: { 'x-silent-request': 'true' } });
   }
 
   create(data: Partial<Location>) {

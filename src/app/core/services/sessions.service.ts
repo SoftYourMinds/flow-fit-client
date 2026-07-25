@@ -42,11 +42,11 @@ export class SessionsService {
         }
       });
     }
-    return this.http.get<WorkoutSession[]>(this.apiUrl, { params });
+    return this.http.get<WorkoutSession[]>(this.apiUrl, { params, headers: { 'x-silent-request': 'true' } });
   }
 
   getById(id: number): Observable<WorkoutSession> {
-    return this.http.get<WorkoutSession>(`${this.apiUrl}/${id}`);
+    return this.http.get<WorkoutSession>(`${this.apiUrl}/${id}`, { headers: { 'x-silent-request': 'true' } });
   }
 
   create(data: any): Observable<WorkoutSession> {
