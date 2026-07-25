@@ -50,6 +50,16 @@ export class SchedulerComponent implements OnInit {
   filterStatus = signal<string>('ALL');
   filterType = signal<string>('ALL');
   filterLocationId = signal<number | null>(null);
+  filterWorkoutTypes = signal<string[]>([]);
+
+  readonly WORKOUT_TYPE_OPTIONS = [
+    'stretching',
+    'fly stretching',
+    'yoga',
+    'functional',
+    'pilates',
+    'power pilates'
+  ];
 
   // Week days computed (Monday - Sunday of the week containing selectedDate)
   weekDays = computed<DayTab[]>(() => {
@@ -139,6 +149,15 @@ export class SchedulerComponent implements OnInit {
     // Location filter
     if (locId !== null) {
       list = list.filter(s => s.locationId === locId);
+    }
+
+    // Workout Types filter
+    const wTypes = this.filterWorkoutTypes();
+    if (wTypes && wTypes.length > 0) {
+      list = list.filter(s => {
+        if (!s.workoutTypes || s.workoutTypes.length === 0) return false;
+        return wTypes.some(t => s.workoutTypes!.includes(t));
+      });
     }
 
     return list;

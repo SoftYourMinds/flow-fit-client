@@ -8,6 +8,8 @@
 - Updated `session-detail` to display selected workout types as badges.
 - Enhanced statistics page (`reports.component`) with a multi-select filter for workout types.
 - Updated `portal.component` to compute and display unique workout types for a client's past sessions.
+- [Hotfix] Added `workoutTypes` badges to the session cards on the scheduler page.
+- [Hotfix] Added a multi-select filter for `workoutTypes` to the scheduler page filter bar.
 
 ### ⚠️ Pending / Known Issues
 - Need to ensure backend API is deployed and aligned with these frontend changes.

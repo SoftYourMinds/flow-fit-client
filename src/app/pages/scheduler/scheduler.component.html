@@ -65,6 +65,16 @@
           }
         </ion-select>
       </ion-chip>
+
+      <!-- Workout Type Select -->
+      <ion-chip class="filter-chip">
+        <ion-icon name="fitness-outline"></ion-icon>
+        <ion-select [value]="filterWorkoutTypes()" (ionChange)="filterWorkoutTypes.set($event.detail.value)" [multiple]="true" placeholder="Всі напрями" interface="popover">
+          @for (type of WORKOUT_TYPE_OPTIONS; track type) {
+            <ion-select-option [value]="type">{{ type }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-chip>
     </div>
   </ion-toolbar>
 </ion-header>
@@ -141,6 +151,15 @@
                 <p>Ціна: <strong>{{ session.price || 0 }} грн</strong></p>
               </div>
 
+              <!-- Workout Types -->
+              @if (session.workoutTypes && session.workoutTypes.length > 0) {
+                <div class="workout-types-chips" style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
+                  @for (type of session.workoutTypes; track type) {
+                    <ion-badge color="tertiary" mode="ios" style="font-size: 0.65rem; padding: 2px 6px;">{{ type }}</ion-badge>
+                  }
+                </div>
+              }
+
               <!-- Participants Section -->
               <div class="participants-section">
                 <div class="participants-header">
@@ -211,6 +230,15 @@
                 <div class="price-info">
                   <p>Ціна: <strong>{{ session.price || 0 }} грн</strong></p>
                 </div>
+
+                <!-- Workout Types -->
+                @if (session.workoutTypes && session.workoutTypes.length > 0) {
+                  <div class="workout-types-chips" style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
+                    @for (type of session.workoutTypes; track type) {
+                      <ion-badge color="tertiary" mode="ios" style="font-size: 0.65rem; padding: 2px 6px;">{{ type }}</ion-badge>
+                    }
+                  </div>
+                }
 
                 <div class="participants-chips">
                   @for (p of session.participants.slice(0, 3); track p.id) {
