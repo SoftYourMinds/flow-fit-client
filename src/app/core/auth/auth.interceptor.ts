@@ -8,9 +8,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
   const token = localStorage.getItem('access_token');
 
+  const isPublicUrl = req.url.includes('/refresh') || req.url.includes('/login') || req.url.includes('/portal');
+
   let authReq = req;
-  // Skip adding token for refresh endpoint
-  if (token && !req.url.includes('/refresh')) {
+  // Skip adding token for public endpoints
+  if (token && !isPublicUrl) {
     authReq = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
@@ -18,7 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !req.url.includes('/refresh') && !req.url.includes('/login')) {
+      if (error.status === 401 && !isPublicUrl) {
         const authService = injector.get(AuthService);
         // Try refreshing token
         return authService.refreshToken().pipe(

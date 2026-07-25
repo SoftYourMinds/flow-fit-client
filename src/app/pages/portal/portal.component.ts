@@ -154,7 +154,12 @@ export class PortalComponent implements OnInit {
   loadProfile(token: string) {
     this.isLoading.set(true);
     this.error.set(null);
-    this.http.get(`${environment.apiUrl}/portal/client/${token}`).subscribe({
+    this.http.get(`${environment.apiUrl}/portal/client/${token}`, {
+      headers: {
+        'x-silent-request': 'true',
+        'x-silent-error': 'true'
+      }
+    }).subscribe({
       next: (data) => {
         this.profile.set(data);
         this.isLoading.set(false);
