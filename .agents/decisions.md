@@ -29,3 +29,7 @@
 - **Date**: 2026-07-12
 - **Decision**: Use `ionViewWillEnter` instead of `ngOnInit` for data fetching on pages that may be cached by Ionic's navigation stack.
 - **Rationale**: Ionic caches pages in the navigation stack — `ngOnInit` only fires once. `ionViewWillEnter` fires every time the page becomes visible (including re-entering from back navigation), ensuring data is always fresh.
+
+### 2026-07-25
+- **Decision**: Disable the `/auth/register` route in the backend.
+- **Reasoning**: To prevent unauthorized users from creating trainer accounts until a proper admin management system is implemented.

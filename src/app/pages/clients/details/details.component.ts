@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ClientsService } from '../../../core/services/clients.service';
 import { NoteModalComponent } from '../../../shared/modals/note-modal/note-modal.component';
@@ -25,7 +25,8 @@ export class DetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private clientsService: ClientsService,
     private modalCtrl: ModalController,
-    private router: Router
+    private router: Router,
+    private toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
@@ -143,4 +144,35 @@ export class DetailsComponent implements OnInit {
       default: return status;
     }
   }
+
+  async shareProfile() {
+    const token = this.client()?.shareToken;
+    if (!token) {
+      const toast = await this.toastCtrl.create({
+        message: 'Профіль ще не синхронізовано для поширення.',
+        duration: 3000,
+        color: 'warning'
+      });
+      toast.present();
+      return;
+    }
+    
+    // Create public url
+    const url = `${window.location.origin}/portal/${token}`;
+    
+    try {
+      await navigator.clipboard.writeText(url);
+      const toast = await this.toastCtrl.create({
+        message: 'Посилання на публічний профіль скопійовано!',
+        duration: 3000,
+        color: 'success',
+        icon: 'checkmark-circle-outline',
+        position: 'top'
+      });
+      toast.present();
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  }
 }
+

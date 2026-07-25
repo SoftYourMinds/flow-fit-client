@@ -109,3 +109,5 @@ Use `/git-commit` workflow. Format: `type(scope): description` (Conventional Com
 - Import order: Angular → Ionic → third-party → local
 - Enums over magic strings
 - `async/await` only
+
+- **2026-07-25**: Disabled sign-up route until admin management system is built.

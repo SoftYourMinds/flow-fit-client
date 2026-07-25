@@ -1,0 +1,95 @@
+<ion-content class="portal-content">
+  @if (isLoading()) {
+    <div class="center-content">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="center-content error-state">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <h2>Помилка</h2>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (!isLoading() && profile()) {
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="avatar-circle">
+        <ion-icon name="person"></ion-icon>
+      </div>
+      <h1 class="client-name">{{ profile().fullName }}</h1>
+      <p class="trainer-name">Тренер: {{ profile().trainerName }}</p>
+    </div>
+
+    <div class="content-wrapper ion-padding">
+      
+      <!-- Goal Card -->
+      @if (profile().goal) {
+        <ion-card class="premium-card goal-card">
+          <div class="card-glow"></div>
+          <ion-card-header>
+            <ion-card-subtitle><ion-icon name="flag-outline"></ion-icon> Моя Мета</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <p class="goal-text">{{ profile().goal }}</p>
+          </ion-card-content>
+        </ion-card>
+      }
+
+      <!-- Current Stats Card -->
+      <ion-card class="premium-card stats-card">
+        <ion-card-header>
+          <ion-card-subtitle><ion-icon name="bar-chart-outline"></ion-icon> Поточні показники</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="label">Поточна вага</span>
+              <span class="value">{{ profile().currentWeight ? profile().currentWeight + ' кг' : '-' }}</span>
+            </div>
+            
+            @if (profile().latestMetrics) {
+              @if (profile().latestMetrics.bodyFatPercentage) {
+                <div class="stat-item">
+                  <span class="label">Відсоток жиру</span>
+                  <span class="value">{{ profile().latestMetrics.bodyFatPercentage }}%</span>
+                </div>
+              }
+              <div class="stat-item full-width">
+                <span class="label">Останні заміри</span>
+                <span class="date">{{ profile().latestMetrics.date | date:'mediumDate' }}</span>
+              </div>
+            }
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Upcoming Sessions -->
+      @if (profile().upcomingSessions && profile().upcomingSessions.length > 0) {
+        <h2 class="section-title">Майбутні тренування</h2>
+        @for (session of profile().upcomingSessions; track session.id) {
+          <ion-card class="premium-card session-card">
+            <ion-card-content>
+              <div class="session-info">
+                <div class="session-date">
+                  <span class="day">{{ session.startTime | date:'dd' }}</span>
+                  <span class="month">{{ session.startTime | date:'MMM' }}</span>
+                </div>
+                <div class="session-details">
+                  <h3>{{ session.startTime | date:'HH:mm' }} - {{ session.endTime | date:'HH:mm' }}</h3>
+                  <p><ion-icon name="location-outline"></ion-icon> {{ session.locationName }}</p>
+                </div>
+                <div class="session-type">
+                  <ion-badge color="tertiary">{{ session.type === 'INDIVIDUAL' ? 'Інд.' : 'Група' }}</ion-badge>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        }
+      }
+
+    </div>
+  }
+</ion-content>

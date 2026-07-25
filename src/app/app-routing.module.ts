@@ -13,6 +13,10 @@ const routes: Routes = [
     loadComponent: () => import('./pages/auth/register/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'portal/:token',
+    loadComponent: () => import('./pages/portal/portal.component').then(m => m.PortalComponent)
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
