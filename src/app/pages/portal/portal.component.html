@@ -63,10 +63,13 @@
         @if (activeTab() === 'history') {
           <!-- Next Session / Plan -->
           @if (nextSession()) {
-            <ion-card class="premium-card next-session-card">
+            <ion-card class="premium-card next-session-card" [class.is-active]="nextSession().status === 'ACTIVE'">
               <div class="accent-bar"></div>
               <ion-card-header>
-                <ion-card-subtitle><ion-icon name="flash-outline"></ion-icon> Наступне тренування</ion-card-subtitle>
+                <ion-card-subtitle>
+                  <ion-icon name="flash-outline"></ion-icon> 
+                  {{ nextSession().status === 'ACTIVE' ? 'Зараз триває' : 'Наступне тренування' }}
+                </ion-card-subtitle>
               </ion-card-header>
               <ion-card-content>
                 <div class="next-session-info">
@@ -115,21 +118,26 @@
                       <div class="session-info-col">
                         <div class="time-type">
                           <span class="time">{{ session.startTime | date:'HH:mm' }}</span>
-                          <ion-badge [color]="session.type === 'INDIVIDUAL' ? 'tertiary' : 'secondary'" mode="ios">
+                          <span class="type-text" [class.group]="session.type === 'GROUP'">
                             {{ session.type === 'INDIVIDUAL' ? 'Персональне' : 'Групове' }}
-                          </ion-badge>
+                          </span>
                         </div>
-                        @if (session.locationName) {
-                          <span class="location"><ion-icon name="location-outline"></ion-icon> {{ session.locationName }}</span>
-                        }
+                        <div class="details-row">
+                          @if (session.workoutTypes && session.workoutTypes.length > 0) {
+                            <span class="workout-types"><ion-icon name="fitness-outline"></ion-icon> {{ session.workoutTypes.join(', ') }}</span>
+                          }
+                          @if (session.locationName) {
+                            <span class="location"><ion-icon name="location-outline"></ion-icon> {{ session.locationName }}</span>
+                          }
+                        </div>
                       </div>
                       <div class="session-status-col" slot="end">
-                    @if (session.status === 'COMPLETED' || session.status === 'MISSED') {
-                      <ion-badge [color]="getStatusColor(session.status)" mode="ios" class="status-badge">
-                        {{ getStatusLabel(session.status) }}
-                      </ion-badge>
-                    }
-                  </div>
+                        @if (session.status === 'COMPLETED' || session.status === 'MISSED') {
+                          <div class="status-indicator" [class]="'status-' + session.status.toLowerCase()">
+                            {{ getStatusLabel(session.status) }}
+                          </div>
+                        }
+                      </div>
                     </ion-item>
                   }
                 </ion-list>

@@ -45,10 +45,16 @@ export class PortalComponent implements OnInit {
   nextSession = computed(() => {
     const prof = this.profile();
     if (prof && prof.sessions) {
+      // First check for any ACTIVE session
+      const activeSession = prof.sessions.find((s: any) => s.status === 'ACTIVE');
+      if (activeSession) return activeSession;
+
+      // Otherwise find the closest UPCOMING session
       const now = new Date().getTime();
       const upcoming = prof.sessions
-        .filter((s: any) => new Date(s.startTime).getTime() >= now && s.status !== 'MISSED' && s.status !== 'COMPLETED')
+        .filter((s: any) => s.status === 'UPCOMING' && new Date(s.startTime).getTime() >= now - (2 * 60 * 60 * 1000))
         .sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      
       return upcoming.length > 0 ? upcoming[0] : null;
     }
     return null;
@@ -57,9 +63,8 @@ export class PortalComponent implements OnInit {
   recentSessions = computed(() => {
     const prof = this.profile();
     if (prof && prof.sessions) {
-      const now = new Date().getTime();
       return prof.sessions
-        .filter((s: any) => new Date(s.startTime).getTime() < now)
+        .filter((s: any) => s.status === 'COMPLETED' || s.status === 'MISSED')
         .sort((a: any, b: any) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
         .slice(0, 5); // Show last 5 sessions
     }
