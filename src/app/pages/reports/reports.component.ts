@@ -30,7 +30,9 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
   summary: ReportSummary | null = null;
   isLoading: boolean = false;
   isGeneratingReport: boolean = false;
-  
+  isFallbackModalOpen: boolean = false;
+  fallbackReportText: string = '';
+
   locations: Location[] = [];
   selectedLocationId: number | null = null;
   
@@ -113,7 +115,9 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
 
   }
 
-
+  closeFallbackModal() {
+    this.isFallbackModalOpen = false;
+  }
 
   loadLocations() {
     this.locationsService.getAll().subscribe({
@@ -271,19 +275,28 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
         
         try {
           const successful = document.execCommand('copy');
-          if (!successful) throw new Error('execCommand copy failed');
+          if (successful) {
+            copySuccess = true;
+          }
+        } catch (err) {
+          console.warn('execCommand copy failed', err);
         } finally {
           document.body.removeChild(textArea);
         }
       }
       
-      const toast = await this.toastCtrl.create({
-        message: 'Звіт скопійовано',
-        duration: 2000,
-        color: 'success',
-        position: 'top'
-      });
-      await toast.present();
+      if (copySuccess) {
+        const toast = await this.toastCtrl.create({
+          message: 'Звіт скопійовано',
+          duration: 2000,
+          color: 'success',
+          position: 'top'
+        });
+        await toast.present();
+      } else {
+        this.fallbackReportText = reportText;
+        this.isFallbackModalOpen = true;
+      }
       
     } catch (err) {
       console.error('Failed to generate report', err);
