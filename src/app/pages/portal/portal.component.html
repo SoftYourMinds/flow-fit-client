@@ -38,101 +38,173 @@
         </ion-card>
       }
 
-      <!-- Next Session / Plan -->
-      @if (nextSession()) {
-        <ion-card class="premium-card next-session-card">
-          <div class="accent-bar"></div>
-          <ion-card-header>
-            <ion-card-subtitle><ion-icon name="flash-outline"></ion-icon> Наступне тренування</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="next-session-info">
-              <div class="datetime-block">
-                <span class="date">{{ nextSession().startTime | date:'d MMMM' }}</span>
-                <span class="time">{{ nextSession().startTime | date:'HH:mm' }}</span>
+      <!-- Tabs Segment -->
+      <ion-segment [value]="activeTab()" (ionChange)="activeTab.set($any($event).detail.value)" mode="ios" class="main-tabs-segment">
+        <ion-segment-button value="history">
+          <ion-label>Тренування</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="metrics">
+          <ion-label>Метрики</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <div class="tab-content">
+        @if (activeTab() === 'history') {
+          <!-- Next Session / Plan -->
+          @if (nextSession()) {
+            <ion-card class="premium-card next-session-card">
+              <div class="accent-bar"></div>
+              <ion-card-header>
+                <ion-card-subtitle><ion-icon name="flash-outline"></ion-icon> Наступне тренування</ion-card-subtitle>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="next-session-info">
+                  <div class="datetime-block">
+                    <span class="date">{{ nextSession().startTime | date:'d MMMM' }}</span>
+                    <span class="time">{{ nextSession().startTime | date:'HH:mm' }}</span>
+                  </div>
+                  <div class="location-block">
+                    <span class="loc-name"><ion-icon name="location-outline"></ion-icon> {{ nextSession().locationName }}</span>
+                    <ion-badge color="tertiary">{{ nextSession().type === 'INDIVIDUAL' ? 'Персональне' : 'Групове' }}</ion-badge>
+                  </div>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          }
+
+          <!-- Calendar History -->
+          <ion-card class="premium-card calendar-card">
+            <ion-card-header>
+              <ion-card-subtitle><ion-icon name="calendar-outline"></ion-icon> Історія активності</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content class="no-padding-bottom">
+              <ion-datetime 
+                presentation="date" 
+                [highlightedDates]="highlightedDates()"
+                readonly="true"
+                size="cover">
+              </ion-datetime>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Recent Sessions List -->
+          @if (recentSessions().length > 0) {
+            <ion-card class="premium-card recent-sessions-card">
+              <ion-card-header>
+                <ion-card-subtitle><ion-icon name="time-outline"></ion-icon> Останні тренування</ion-card-subtitle>
+              </ion-card-header>
+              <ion-card-content class="no-padding">
+                <ion-list lines="full" class="transparent-list">
+                  @for (session of recentSessions(); track session.id) {
+                    <ion-item class="session-item">
+                      <div class="session-date-col">
+                        <span class="day">{{ session.startTime | date:'dd' }}</span>
+                        <span class="month">{{ session.startTime | date:'MMM' }}</span>
+                      </div>
+                      <div class="session-info-col">
+                        <div class="time-type">
+                          <span class="time">{{ session.startTime | date:'HH:mm' }}</span>
+                          <ion-badge [color]="session.type === 'INDIVIDUAL' ? 'tertiary' : 'secondary'" mode="ios">
+                            {{ session.type === 'INDIVIDUAL' ? 'Персональне' : 'Групове' }}
+                          </ion-badge>
+                        </div>
+                        @if (session.locationName) {
+                          <span class="location"><ion-icon name="location-outline"></ion-icon> {{ session.locationName }}</span>
+                        }
+                      </div>
+                      <div class="session-status-col" slot="end">
+                        @if (session.isAttended === true) {
+                          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                        } @else if (session.isAttended === false) {
+                          <ion-icon name="close-circle" color="danger"></ion-icon>
+                        } @else {
+                          <ion-icon name="help-circle-outline" color="medium"></ion-icon>
+                        }
+                      </div>
+                    </ion-item>
+                  }
+                </ion-list>
+              </ion-card-content>
+            </ion-card>
+          }
+        }
+
+        @if (activeTab() === 'metrics') {
+          <!-- Progress Chart -->
+          @if (profile().metrics && profile().metrics.length > 1) {
+            <ion-card class="premium-card chart-card">
+              <ion-card-header>
+                <ion-card-subtitle><ion-icon name="trending-up-outline"></ion-icon> Динаміка показників</ion-card-subtitle>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-segment [value]="activeChartMetric()" (ionChange)="activeChartMetric.set($any($event).detail.value)" mode="ios" class="chart-segment">
+                  <ion-segment-button value="weight">
+                    <ion-label>Вага</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="bodyFatPercentage">
+                    <ion-label>Жир %</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="chest">
+                    <ion-label>Груди</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="waist">
+                    <ion-label>Талія</ion-label>
+                  </ion-segment-button>
+                </ion-segment>
+
+                <div class="chart-container">
+                  <canvas baseChart
+                    [data]="lineChartData()"
+                    [options]="lineChartOptions"
+                    [type]="lineChartType">
+                  </canvas>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          }
+
+          <!-- Current Stats Card -->
+          <ion-card class="premium-card stats-card">
+            <ion-card-header>
+              <ion-card-subtitle><ion-icon name="bar-chart-outline"></ion-icon> Останні показники</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="label">Вага</span>
+                  <span class="value">{{ latestMetrics()?.weight || profile().currentWeight || '-' }} <small>кг</small></span>
+                </div>
+                
+                @if (latestMetrics()?.bodyFatPercentage) {
+                  <div class="stat-item">
+                    <span class="label">Відсоток жиру</span>
+                    <span class="value">{{ latestMetrics()?.bodyFatPercentage }}<small>%</small></span>
+                  </div>
+                }
+
+                @if (latestMetrics()?.chest) {
+                  <div class="stat-item">
+                    <span class="label">Груди</span>
+                    <span class="value">{{ latestMetrics()?.chest }}<small>см</small></span>
+                  </div>
+                }
+
+                @if (latestMetrics()?.waist) {
+                  <div class="stat-item">
+                    <span class="label">Талія</span>
+                    <span class="value">{{ latestMetrics()?.waist }}<small>см</small></span>
+                  </div>
+                }
+
+                <div class="stat-item full-width">
+                  <span class="label">Дата замірів</span>
+                  <span class="date">{{ (latestMetrics()?.date || profile().updatedAt) | date:'mediumDate' }}</span>
+                </div>
               </div>
-              <div class="location-block">
-                <span class="loc-name"><ion-icon name="location-outline"></ion-icon> {{ nextSession().locationName }}</span>
-                <ion-badge color="tertiary">{{ nextSession().type === 'INDIVIDUAL' ? 'Персональне' : 'Групове' }}</ion-badge>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      }
-
-      <!-- Calendar History -->
-      <ion-card class="premium-card calendar-card">
-        <ion-card-header>
-          <ion-card-subtitle><ion-icon name="calendar-outline"></ion-icon> Історія активності</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content class="no-padding-bottom">
-          <ion-datetime 
-            presentation="date" 
-            [highlightedDates]="highlightedDates()"
-            readonly="true"
-            size="cover">
-          </ion-datetime>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Progress Chart -->
-      @if (profile().metrics && profile().metrics.length > 1) {
-        <ion-card class="premium-card chart-card">
-          <ion-card-header>
-            <ion-card-subtitle><ion-icon name="trending-up-outline"></ion-icon> Динаміка ваги</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="chart-container">
-              <canvas baseChart
-                [data]="lineChartData()"
-                [options]="lineChartOptions"
-                [type]="lineChartType">
-              </canvas>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      }
-
-      <!-- Current Stats Card -->
-      <ion-card class="premium-card stats-card">
-        <ion-card-header>
-          <ion-card-subtitle><ion-icon name="bar-chart-outline"></ion-icon> Останні показники</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <span class="label">Вага</span>
-              <span class="value">{{ latestMetrics()?.weight || profile().currentWeight || '-' }} <small>кг</small></span>
-            </div>
-            
-            @if (latestMetrics()?.bodyFatPercentage) {
-              <div class="stat-item">
-                <span class="label">Відсоток жиру</span>
-                <span class="value">{{ latestMetrics()?.bodyFatPercentage }}<small>%</small></span>
-              </div>
-            }
-
-            @if (latestMetrics()?.chest) {
-              <div class="stat-item">
-                <span class="label">Груди</span>
-                <span class="value">{{ latestMetrics()?.chest }}<small>см</small></span>
-              </div>
-            }
-
-            @if (latestMetrics()?.waist) {
-              <div class="stat-item">
-                <span class="label">Талія</span>
-                <span class="value">{{ latestMetrics()?.waist }}<small>см</small></span>
-              </div>
-            }
-
-            <div class="stat-item full-width">
-              <span class="label">Дата замірів</span>
-              <span class="date">{{ (latestMetrics()?.date || profile().updatedAt) | date:'mediumDate' }}</span>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+            </ion-card-content>
+          </ion-card>
+        }
+      </div>
 
     </div>
   }

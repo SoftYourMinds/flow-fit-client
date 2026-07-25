@@ -19,6 +19,9 @@ export class PortalComponent implements OnInit {
   isLoading = signal(true);
   error = signal<string | null>(null);
 
+  activeTab = signal<'history' | 'metrics'>('history');
+  activeChartMetric = signal<'weight' | 'bodyFatPercentage' | 'chest' | 'waist'>('weight');
+
   // Computed properties
   initials = computed(() => {
     const prof = this.profile();
@@ -50,6 +53,18 @@ export class PortalComponent implements OnInit {
     return null;
   });
 
+  recentSessions = computed(() => {
+    const prof = this.profile();
+    if (prof && prof.sessions) {
+      const now = new Date().getTime();
+      return prof.sessions
+        .filter((s: any) => new Date(s.startTime).getTime() < now)
+        .sort((a: any, b: any) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+        .slice(0, 5); // Show last 5 sessions
+    }
+    return [];
+  });
+
   highlightedDates = computed(() => {
     const prof = this.profile();
     if (prof && prof.sessions) {
@@ -79,7 +94,14 @@ export class PortalComponent implements OnInit {
       return { datasets: [], labels: [] };
     }
 
-    const weightData = prof.metrics.map((m: any) => m.weight);
+    const metricKey = this.activeChartMetric();
+    const data = prof.metrics.map((m: any) => m[metricKey] || null); // Use null for missing data points
+    
+    let label = 'Вага (кг)';
+    if (metricKey === 'bodyFatPercentage') label = 'Відсоток жиру (%)';
+    if (metricKey === 'chest') label = 'Груди (см)';
+    if (metricKey === 'waist') label = 'Талія (см)';
+
     const labels = prof.metrics.map((m: any) => {
       const d = new Date(m.date);
       return `${d.getDate()}/${d.getMonth() + 1}`;
@@ -88,8 +110,8 @@ export class PortalComponent implements OnInit {
     return {
       datasets: [
         {
-          data: weightData,
-          label: 'Вага (кг)',
+          data: data,
+          label: label,
           backgroundColor: 'rgba(200, 138, 114, 0.2)', // primary with opacity
           borderColor: '#C88A72', // primary
           pointBackgroundColor: '#C88A72',
@@ -97,7 +119,8 @@ export class PortalComponent implements OnInit {
           pointHoverBackgroundColor: '#fff',
           pointHoverBorderColor: '#C88A72',
           fill: 'origin',
-          tension: 0.4
+          tension: 0.4,
+          spanGaps: true // Connect lines even if some data points are null
         }
       ],
       labels: labels
