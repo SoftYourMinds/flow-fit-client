@@ -27,6 +27,14 @@
             }
           </ion-select>
         </ion-item>
+        <ion-item lines="none" class="location-item" style="margin-top: 10px;">
+          <ion-label position="stacked">Напрям тренувань</ion-label>
+          <ion-select [(ngModel)]="selectedWorkoutTypes" (ionChange)="onWorkoutTypeChange()" [multiple]="true" placeholder="Всі напрями" interface="popover">
+            @for (type of WORKOUT_TYPE_OPTIONS; track type) {
+              <ion-select-option [value]="type">{{ type }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
       </ion-card-content>
     </ion-card>
 

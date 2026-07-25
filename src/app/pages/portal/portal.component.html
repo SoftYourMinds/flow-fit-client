@@ -25,6 +25,13 @@
       </div>
       <h1 class="client-name">{{ profile().fullName }}</h1>
       <p class="trainer-name">Тренер: {{ profile().trainerName }}</p>
+      @if (uniqueWorkoutTypes().length > 0) {
+        <div class="workout-types-chips" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px;">
+          @for (type of uniqueWorkoutTypes(); track type) {
+            <ion-badge color="tertiary" mode="ios">{{ type }}</ion-badge>
+          }
+        </div>
+      }
     </div>
 
     <div class="content-wrapper ion-padding">

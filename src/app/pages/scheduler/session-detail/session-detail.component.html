@@ -40,12 +40,26 @@
       </div>
 
       <div class="info-row">
-        <div class="info-icon"><ion-icon name="fitness-outline"></ion-icon></div>
+        <div class="info-icon"><ion-icon name="people-outline"></ion-icon></div>
         <div class="info-content">
-          <h4>Тип</h4>
+          <h4>Формат</h4>
           <p>{{ session()!.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}</p>
         </div>
       </div>
+
+      @if (session()!.workoutTypes && session()!.workoutTypes!.length > 0) {
+        <div class="info-row">
+          <div class="info-icon"><ion-icon name="fitness-outline"></ion-icon></div>
+          <div class="info-content">
+            <h4>Напрями</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+              @for (type of session()!.workoutTypes; track type) {
+                <ion-badge color="tertiary" mode="ios">{{ type }}</ion-badge>
+              }
+            </div>
+          </div>
+        </div>
+      }
 
       <div class="info-row">
         <div class="info-icon"><ion-icon name="cash-outline"></ion-icon></div>

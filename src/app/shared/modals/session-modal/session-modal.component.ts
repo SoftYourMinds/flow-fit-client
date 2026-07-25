@@ -24,7 +24,17 @@ export class SessionModalComponent implements OnInit {
   startTime = signal<string>(this.getLocalIsoString(new Date()));
   duration = signal<number>(50);
   price = signal<number>(300);
+  workoutTypes = signal<string[]>([]);
   participants = signal<any[]>([]);
+
+  readonly WORKOUT_TYPE_OPTIONS = [
+    'stretching',
+    'fly stretching',
+    'yoga',
+    'functional',
+    'pilates',
+    'power pilates'
+  ];
 
   datetimeId = `datetime-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -65,6 +75,10 @@ export class SessionModalComponent implements OnInit {
       const start = new Date(this.session.startTime);
       const end = new Date(this.session.endTime);
       this.duration.set(Math.round((end.getTime() - start.getTime()) / 60000));
+      
+      if (this.session.workoutTypes) {
+        this.workoutTypes.set([...this.session.workoutTypes]);
+      }
       
       this.participants.set(this.session.participants ? [...this.session.participants] : []);
     }
@@ -111,6 +125,7 @@ export class SessionModalComponent implements OnInit {
       price: +this.price(),
       status: this.session ? this.session.status : 'UPCOMING',
       isPaid: this.session ? this.session.isPaid : false,
+      workoutTypes: this.workoutTypes(),
       participants: this.participants(),
       enableNotification: this.enableNotification(),
       reminderMode: this.reminderMode()

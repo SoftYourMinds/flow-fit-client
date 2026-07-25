@@ -9,6 +9,10 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Added support for `workoutTypes` (e.g. stretching, yoga, pilates) array on `WorkoutSession`.
+- Added multi-select `workoutTypes` to `session-modal` and updated `session-detail` to display them.
+- Updated `reports.component` to allow filtering statistics by `workoutTypes`.
+- Updated Client Portal (`portal.component`) to dynamically compute and display the unique `workoutTypes` a client has participated in.
 - Added Telegram Bot integration to Settings page, redirecting users to Telegram with a secure deep-linking token.
 - Increased footer tab bar font and icon sizes to improve visual proportions and eliminate excessive empty whitespace.
 - Removed rounded corners between the menu content and the cancel button in the options action sheet.

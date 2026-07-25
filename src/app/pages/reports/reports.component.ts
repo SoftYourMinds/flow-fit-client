@@ -31,6 +31,16 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
   
   locations: Location[] = [];
   selectedLocationId: number | null = null;
+  
+  selectedWorkoutTypes: string[] = [];
+  readonly WORKOUT_TYPE_OPTIONS = [
+    'stretching',
+    'fly stretching',
+    'yoga',
+    'functional',
+    'pilates',
+    'power pilates'
+  ];
 
   // Segment for displaying metrics
   reportType: 'all' | 'individual' | 'group' = 'all';
@@ -87,7 +97,7 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
     if (!this.startDate || !this.endDate) return;
 
     this.isLoading = true;
-    this.reportsService.getSummary(this.startDate, this.endDate, this.selectedLocationId).subscribe({
+    this.reportsService.getSummary(this.startDate, this.endDate, this.selectedLocationId, this.selectedWorkoutTypes).subscribe({
       next: (data) => {
         this.summary = data;
         this.updateChartData();
@@ -117,6 +127,10 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
   }
 
   onLocationChange() {
+    this.loadData();
+  }
+
+  onWorkoutTypeChange() {
     this.loadData();
   }
 

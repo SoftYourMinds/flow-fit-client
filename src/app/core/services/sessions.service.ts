@@ -21,6 +21,7 @@ export interface WorkoutSession {
   price: number;
   status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'MISSED' | 'REQUIRED_ACTION';
   isPaid: boolean;
+  workoutTypes?: string[];
   participants: SessionParticipant[];
 }
 

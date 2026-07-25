@@ -13,7 +13,7 @@
   <div class="form-container">
     <!-- Type Selector -->
     <div class="form-group">
-      <ion-label class="form-label">Тип тренування</ion-label>
+      <ion-label class="form-label">Формат тренування</ion-label>
       <ion-segment [value]="type()" (ionChange)="type.set($any($event).detail.value)" mode="ios">
         <ion-segment-button value="INDIVIDUAL">
           <ion-icon name="person-outline"></ion-icon>
@@ -24,6 +24,19 @@
           <ion-label>Групове</ion-label>
         </ion-segment-button>
       </ion-segment>
+    </div>
+
+    <!-- Workout Types Selector -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Напрями тренування</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="fitness-outline" slot="start" color="primary"></ion-icon>
+        <ion-select [value]="workoutTypes()" (ionChange)="workoutTypes.set($any($event).detail.value)" [multiple]="true" placeholder="Оберіть напрями" interface="popover" style="width: 100%;">
+          @for (option of WORKOUT_TYPE_OPTIONS; track option) {
+            <ion-select-option [value]="option">{{ option }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
     </div>
 
     <!-- Location Selector -->

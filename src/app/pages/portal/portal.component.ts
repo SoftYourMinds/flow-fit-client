@@ -88,6 +88,20 @@ export class PortalComponent implements OnInit {
     return [];
   });
 
+  uniqueWorkoutTypes = computed(() => {
+    const prof = this.profile();
+    if (prof && prof.sessions) {
+      const types = new Set<string>();
+      prof.sessions.forEach((session: any) => {
+        if (session.workoutTypes && Array.isArray(session.workoutTypes)) {
+          session.workoutTypes.forEach((type: string) => types.add(type));
+        }
+      });
+      return Array.from(types);
+    }
+    return [];
+  });
+
   // Chart configuration
   public lineChartData = computed<ChartConfiguration['data']>(() => {
     const prof = this.profile();
