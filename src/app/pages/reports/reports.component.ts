@@ -173,18 +173,14 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
     this.isGeneratingReport = true;
     try {
       const filters: any = { 
-        startDate: this.startDate, 
-        endDate: this.endDate 
+        start: this.startDate, 
+        end: this.endDate 
       };
       
       if (this.selectedLocationId) {
         filters.locationId = this.selectedLocationId;
       }
       
-      if (this.selectedWorkoutTypes && this.selectedWorkoutTypes.length > 0) {
-        filters.workoutTypes = this.selectedWorkoutTypes.join(','); 
-      }
-
       // Fetch sessions for the period
       const sessions = await firstValueFrom(this.sessionsService.getAll(filters));
 
@@ -195,8 +191,9 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
         if (this.selectedLocationId && s.locationId !== this.selectedLocationId) return false;
         
         if (this.selectedWorkoutTypes && this.selectedWorkoutTypes.length > 0) {
-           const hasMatchedType = s.workoutTypes?.some(type => this.selectedWorkoutTypes.includes(type));
-           if (!hasMatchedType && s.workoutTypes && s.workoutTypes.length > 0) return false;
+           if (!s.workoutTypes || s.workoutTypes.length === 0) return false;
+           const hasMatchedType = s.workoutTypes.some(type => this.selectedWorkoutTypes.includes(type));
+           if (!hasMatchedType) return false;
         }
 
         if (this.reportType === 'individual' && s.type !== 'INDIVIDUAL') return false;
@@ -208,7 +205,25 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
       // Sort by date ascending
       filteredSessions.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-      let reportText = `Звіт за період: ${this.startDate} по ${this.endDate}\n\n`;
+      let reportText = `Звіт за період: ${this.startDate} по ${this.endDate}\n`;
+      
+      let filterText = [];
+      if (this.selectedLocationId) {
+         const loc = this.locations.find(l => l.id === this.selectedLocationId);
+         if (loc) filterText.push(`Локація: ${loc.name}`);
+      }
+      if (this.selectedWorkoutTypes && this.selectedWorkoutTypes.length > 0) {
+         filterText.push(`Напрям: ${this.selectedWorkoutTypes.join(', ')}`);
+      }
+      if (this.reportType !== 'all') {
+         filterText.push(`Тип: ${this.reportType === 'individual' ? 'Індивідуальні' : 'Групові'}`);
+      }
+
+      if (filterText.length > 0) {
+         reportText += `Фільтри: ${filterText.join(' | ')}\n`;
+      }
+      reportText += `\n`;
+
       let totalSum = 0;
 
       if (filteredSessions.length === 0) {
@@ -235,6 +250,14 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
         });
         reportText += `\n------------------------\n`;
         reportText += `Загальна сума: ${totalSum} ₴\n`;
+      }
+
+      if (this.summary) {
+        reportText += `\n--- Статистика ---\n`;
+        reportText += `Дохід: ${this.displayedIncome} ₴\n`;
+        reportText += `Клієнтів: ${this.displayedStats.totalClients}\n`;
+        reportText += `Всього тренувань: ${this.displayedStats.totalSessions}\n`;
+        reportText += `Відсоток пропусків: ${this.displayedStats.missedRate}%\n`;
       }
 
       let copySuccess = false;
