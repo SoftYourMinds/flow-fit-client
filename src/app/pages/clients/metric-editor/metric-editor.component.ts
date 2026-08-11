@@ -37,6 +37,7 @@ export class MetricEditorComponent implements OnInit {
   // Legacy fields (optional)
   bodyFatPercentage: number | null = null;
 
+  name: string = '';
   note: string = '';
   photos: string[] = [];
 
@@ -90,6 +91,7 @@ export class MetricEditorComponent implements OnInit {
           this.armLeft = metric.armLeft;
           this.armRight = metric.armRight;
           this.bodyFatPercentage = metric.bodyFatPercentage;
+          this.name = metric.name || '';
           this.note = metric.note || '';
           this.photos = metric.photos ? [...metric.photos] : [];
         }
@@ -162,6 +164,7 @@ export class MetricEditorComponent implements OnInit {
       armLeft: this.armLeft ? +this.armLeft : undefined,
       armRight: this.armRight ? +this.armRight : undefined,
       bodyFatPercentage: this.bodyFatPercentage ? +this.bodyFatPercentage : undefined,
+      name: this.name.trim() || undefined,
       note: this.note.trim() || undefined,
       photos: this.photos
     };

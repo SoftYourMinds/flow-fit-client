@@ -93,7 +93,16 @@
             <ion-card class="modern-card" (click)="editMetric(metric)" button="true">
               <ion-card-content>
                 <div class="metric-header">
-                  <h3>Вага: <strong>{{ metric.weight || '-' }} кг</strong></h3>
+                  <h3>
+                    @if (metric.name) {
+                      {{ metric.name }} 
+                      @if (metric.weight) {
+                        <small>({{ metric.weight }} кг)</small>
+                      }
+                    } @else {
+                      Вага: <strong>{{ metric.weight || '-' }} кг</strong>
+                    }
+                  </h3>
                   <span class="date">{{ (metric.date || metric.createdAt) | date:'shortDate' }}</span>
                 </div>
                 @if (metric.bodyFatPercentage) {

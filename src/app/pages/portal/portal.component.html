@@ -187,7 +187,10 @@
           <!-- Current Stats Card -->
           <ion-card class="premium-card stats-card">
             <ion-card-header>
-              <ion-card-subtitle><ion-icon name="bar-chart-outline"></ion-icon> Останні показники</ion-card-subtitle>
+              <ion-card-subtitle>
+                <ion-icon name="bar-chart-outline"></ion-icon> 
+                {{ latestMetrics()?.name || 'Останні показники' }}
+              </ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
               <div class="stats-grid">

@@ -22,8 +22,17 @@
   } @else {
     <div class="form-container">
       
-      <!-- Date -->
+      <!-- Name -->
       <div class="form-group">
+        <ion-label class="form-label">Назва (необов'язково)</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="text-outline" slot="start" color="secondary"></ion-icon>
+          <ion-input type="text" [(ngModel)]="name" placeholder="напр. Контрольні заміри"></ion-input>
+        </ion-item>
+      </div>
+
+      <!-- Date -->
+      <div class="form-group ion-margin-top">
         <ion-label class="form-label">Дата заміру</ion-label>
         <ion-item lines="none" class="custom-input-item">
           <ion-icon name="calendar-outline" slot="start" color="secondary"></ion-icon>
