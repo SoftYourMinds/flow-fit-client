@@ -114,3 +114,5 @@ Use `/git-commit` workflow. Format: `type(scope): description` (Conventional Com
 - **2026-07-25**: Enhanced Client Portal with tabs (Workout History / Body Metrics), light/dark theme switcher, recent sessions list with status badges, and body metrics switcher for progress charts.
 - **2026-08-22**: Implemented standalone WeekView (hourly timetable grid with day columns and capacity indicator) and MonthView (calendar grid with event dots and date-scoped session list) components in Scheduler. Added `maxParticipants` field support.
 - **2026-08-22**: Configured full Progressive Web App (PWA) support: generated icon suite (72px to 512px, maskable, apple-touch-icon), added Web App Manifest with standalone display mode, and configured Angular ServiceWorker for offline shell caching.
+- **2026-08-22**: Implemented App Initialization & Serverless Wake-up Splash Screen (`SplashLoaderComponent` + `AppInitService`) with sequential step status progression, terracotta pulse branding, background data pre-fetching, offline/timeout retry actions, and smooth exit fade-out.
+

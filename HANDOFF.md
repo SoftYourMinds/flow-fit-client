@@ -1,19 +1,20 @@
 ## Last Session Summary
-**Date:** 2026-07-25
-**Session focus:** Workout Types Implementation
+
+**Date:** 2026-08-22
+**Session focus:** App Initialization & Serverless Wake-up Splash Screen
 
 ### ✅ Accomplished
-- Updated `WorkoutSession` interface to support `workoutTypes`.
-- Modified `session-modal` to include a multi-select for workout directions (stretching, yoga, etc.).
-- Updated `session-detail` to display selected workout types as badges.
-- Enhanced statistics page (`reports.component`) with a multi-select filter for workout types.
-- Updated `portal.component` to compute and display unique workout types for a client's past sessions.
-- [Hotfix] Added `workoutTypes` badges to the session cards on the scheduler page.
-- [Hotfix] Added a multi-select filter for `workoutTypes` to the scheduler page filter bar.
+
+- **`AppInitService`**: Built application startup coordinator managing serverless pinging, wake-up detection, stage signals, data pre-fetching, and timeout recovery.
+- **`SplashLoaderComponent`**: Designed standalone luxury splash screen with animated terracotta pulse branding (`#C88A72`), animated progress bar, dynamic status indicators, dark/light theme support, and retry/skip controls.
+- **Root Integration**: Seamlessly integrated into `AppComponent` template via Angular `@if` reactive overlay with smooth exit animation.
+- **Clean Code & Linting**: Refactored `AppComponent` to use `inject()` and modular private helpers; validated production build.
 
 ### ⚠️ Pending / Known Issues
-- Need to ensure backend API is deployed and aligned with these frontend changes.
+
+- None. Production build (`npm run build`) compiles cleanly with code 0.
 
 ### 🚀 Immediate Next Steps
-1. Create dedicated metrics sub-page screen (`/tabs/clients/:id/add-metric`).
-2. Add recurring workout generation system (`/sessions/recurring`).
+
+1. Test app cold start on staging/production backend deployment (`https://flow-fit-api.vercel.app`).
+2. Proceed with next scheduled CRM feature (e.g. dedicated metrics editor or recurring sessions).

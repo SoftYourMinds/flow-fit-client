@@ -1,20 +1,20 @@
 ## Last Session Summary
 
 **Date:** 2026-08-22
-**Session focus:** Progressive Web App (PWA) Setup & Installation Support
+**Session focus:** App Initialization & Serverless Wake-up Splash Screen
 
 ### ✅ Accomplished
 
-- **PWA Icons**: Generated full icon suite (72x72 to 512x512, maskable icon, apple-touch-icon) in `src/assets/icons/` from master high-res asset.
-- **Web App Manifest**: Added `src/manifest.webmanifest` with standalone display mode, portrait orientation, dark theme `#141211`, and primary terracotta `#C88A72`.
-- **Angular Service Worker**: Installed `@angular/service-worker` (20.3.25), created `ngsw-config.json`, and registered `provideServiceWorker` in `AppModule`.
-- **HTML Meta & Build**: Updated `src/index.html` with iOS/Android PWA meta tags and `angular.json` assets and build configuration.
+- **`AppInitService`**: Built application startup coordinator managing serverless pinging, wake-up detection, stage signals, data pre-fetching, and timeout recovery.
+- **`SplashLoaderComponent`**: Designed standalone luxury splash screen with animated terracotta pulse branding (`#C88A72`), animated progress bar, dynamic status indicators, dark/light theme support, and retry/skip controls.
+- **Root Integration**: Seamlessly integrated into `AppComponent` template via Angular `@if` reactive overlay with smooth exit animation.
+- **Clean Code & Linting**: Refactored `AppComponent` to use `inject()` and modular private helpers; validated production build.
 
 ### ⚠️ Pending / Known Issues
 
-- None. Production build (`npm run build:prod`) compiles cleanly with `ngsw.json` and `manifest.webmanifest` bundled in `www/`.
+- None. Production build (`npm run build`) compiles cleanly with code 0.
 
 ### 🚀 Immediate Next Steps
 
-1. Test installation flow on real iOS and Android devices or Chrome DevTools Application tab.
-2. Deploy client build to production/staging hosting (HTTPS required for PWA installation).
+1. Test app cold start on staging/production backend deployment (`https://flow-fit-api.vercel.app`).
+2. Proceed with next scheduled CRM feature (e.g. dedicated metrics editor or recurring sessions).

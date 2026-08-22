@@ -35,6 +35,8 @@
 - Updated Client list UI to navigate directly to the full profile (`/tabs/clients/:id`) on click, bypassing the bottom sheet.
 - Updated Client profile session history to display session price and location name instead of `isPaid` boolean.
 - Added navigation from Client profile session history to the detailed Session edit page.
+- Implemented App Initialization & Serverless Wake-up Splash Screen (`SplashLoaderComponent` + `AppInitService`) with terracotta halo branding, stepped progress bar, friendly Ukrainian cold-start messaging, data pre-fetching, timeout retry handling, and smooth fade-out into the app.
 
 ## Known Issues
 - None. Build completes successfully.
+
