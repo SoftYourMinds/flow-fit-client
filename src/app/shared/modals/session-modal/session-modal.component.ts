@@ -24,6 +24,7 @@ export class SessionModalComponent implements OnInit {
   startTime = signal<string>(this.getLocalIsoString(new Date()));
   duration = signal<number>(50);
   price = signal<number>(300);
+  maxParticipants = signal<number | null>(null);
   workoutTypes = signal<string[]>([]);
   participants = signal<any[]>([]);
 
@@ -71,6 +72,7 @@ export class SessionModalComponent implements OnInit {
       this.type.set(this.session.type);
       this.startTime.set(this.getLocalIsoString(new Date(this.session.startTime)));
       this.price.set(this.session.price);
+      this.maxParticipants.set(this.session.maxParticipants ?? null);
       
       const start = new Date(this.session.startTime);
       const end = new Date(this.session.endTime);
@@ -123,6 +125,7 @@ export class SessionModalComponent implements OnInit {
       startTime: start.toISOString(),
       endTime: end.toISOString(),
       price: +this.price(),
+      maxParticipants: this.maxParticipants() ? Number(this.maxParticipants()) : null,
       status: this.session ? this.session.status : 'UPCOMING',
       isPaid: this.session ? this.session.isPaid : false,
       workoutTypes: this.workoutTypes(),

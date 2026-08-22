@@ -10,6 +10,8 @@ import { SessionModalComponent } from '../../shared/modals/session-modal/session
 import { ParticipantModalComponent } from '../../shared/modals/participant-modal/participant-modal.component';
 import { forkJoin } from 'rxjs';
 import { NotificationService } from '../../core/services/notification.service';
+import { WeekViewComponent } from './week-view/week-view.component';
+import { MonthViewComponent } from './month-view/month-view.component';
 
 export interface DayTab {
   date: Date;
@@ -30,7 +32,7 @@ function getLocalDateString(date: Date): string {
 @Component({
   selector: 'app-scheduler',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, WeekViewComponent, MonthViewComponent],
   templateUrl: './scheduler.component.html',
   styleUrls: ['./scheduler.component.scss']
 })
@@ -253,6 +255,27 @@ export class SchedulerComponent implements OnInit {
 
   goToToday() {
     this.selectedDate.set(new Date());
+  }
+
+  // ── Week / Month child view handlers ──────────────────────────────────────
+  onWeekSessionClicked(sessionId: number) {
+    this.router.navigate(['/tabs/sessions', sessionId]);
+  }
+
+  onWeekDateChanged(date: Date) {
+    this.selectedDate.set(date);
+  }
+
+  onMonthSessionClicked(sessionId: number) {
+    this.router.navigate(['/tabs/sessions', sessionId]);
+  }
+
+  onMonthDateSelected(date: Date) {
+    this.selectedDate.set(date);
+  }
+
+  onMonthChanged(date: Date) {
+    this.selectedDate.set(date);
   }
 
   async openCreateSessionModal() {

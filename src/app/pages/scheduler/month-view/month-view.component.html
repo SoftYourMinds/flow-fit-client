@@ -1,0 +1,86 @@
+<div class="month-view">
+
+  <!-- Month navigation -->
+  <div class="month-nav">
+    <button class="nav-btn" (click)="previousMonth()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </button>
+    <div class="month-title">
+      <h2>{{ monthLabel() }}</h2>
+      <span class="year">{{ yearLabel() }}</span>
+    </div>
+    <button class="nav-btn" (click)="nextMonth()">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Weekday labels -->
+  <div class="weekday-row">
+    @for (label of WEEKDAY_LABELS; track label) {
+      <div class="weekday-label">{{ label }}</div>
+    }
+  </div>
+
+  <!-- Calendar grid -->
+  <div class="calendar-grid">
+    @for (week of calendarWeeks(); track $index) {
+      @for (day of week; track day.dateStr) {
+        <div
+          class="day-cell"
+          [class.other-month]="!day.isCurrentMonth"
+          [class.is-today]="day.isToday"
+          [class.is-selected]="activeDateStr() === day.dateStr"
+          (click)="selectDay(day)"
+        >
+          <span class="day-num">{{ day.dayNum }}</span>
+          @if (day.sessionCount > 0) {
+            <div class="event-dots">
+              @for (i of dotsArray(day.sessionCount); track $index) {
+                <span class="dot"></span>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Session list for selected date -->
+  <div class="day-sessions">
+    <div class="day-sessions-header">
+      <span class="date-label">{{ activeDateLabel() }}</span>
+    </div>
+
+    @if (activeDateSessions().length > 0) {
+      <div class="sessions-list">
+        @for (session of activeDateSessions(); track session.id) {
+          <div class="session-row" (click)="onSessionClick(session.id)">
+            <div class="session-time-block">
+              <span class="time">{{ formatTime(session.startTime) }}</span>
+              <span class="end-time">{{ formatTime(session.endTime) }}</span>
+            </div>
+            <div class="session-info">
+              <div class="session-name">{{ getSessionName(session) }}</div>
+              <div class="session-meta">
+                <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
+                  {{ getStatusLabel(session.status) }}
+                </ion-badge>
+                <span class="capacity">
+                  <ion-icon name="people-outline"></ion-icon>
+                  {{ getCapacity(session) }}
+                </span>
+              </div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <ion-icon name="calendar-clear-outline"></ion-icon>
+        <p>Жодної події</p>
+      </div>
+    }
+  </div>
+
+</div>

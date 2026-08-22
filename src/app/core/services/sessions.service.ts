@@ -22,6 +22,7 @@ export interface WorkoutSession {
   status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'MISSED' | 'REQUIRED_ACTION';
   isPaid: boolean;
   workoutTypes?: string[];
+  maxParticipants?: number;
   participants: SessionParticipant[];
 }
 

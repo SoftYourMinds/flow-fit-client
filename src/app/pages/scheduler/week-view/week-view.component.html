@@ -1,0 +1,67 @@
+<div class="week-view">
+  <!-- Navigation header -->
+  <div class="week-nav">
+    <button class="nav-btn" (click)="previousWeek()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </button>
+
+    <div class="day-headers">
+      @for (col of weekColumns(); track col.dateStr) {
+        <div class="day-header" [class.is-today]="col.isToday">
+          <span class="day-name">{{ col.dayName }}</span>
+          <span class="day-date">{{ col.dayNum }} {{ col.month }}</span>
+        </div>
+      }
+    </div>
+
+    <button class="nav-btn" (click)="nextWeek()">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Timetable grid -->
+  <div class="timetable-scroll">
+    <div class="timetable">
+      @for (hour of timeSlots(); track hour) {
+        <div class="time-row">
+          <!-- Time label -->
+          <div class="time-label">
+            <span>{{ hour | number:'2.0-0' }}:00</span>
+          </div>
+
+          <!-- Day columns -->
+          @for (col of weekColumns(); track col.dateStr) {
+            <div class="day-cell">
+              @for (session of getSessionsAt(col.dateStr, hour); track session.id) {
+                <div
+                  class="session-card"
+                  [class.has-participants]="session.participants.length > 0"
+                  [class.is-full]="isFull(session)"
+                  (click)="onSessionClick(session.id)"
+                >
+                  <div class="session-time">
+                    {{ formatTime(session.startTime) }} {{ getSessionName(session) }}
+                  </div>
+                  <div class="session-capacity">
+                    ——————————— {{ getCapacity(session) }}
+                  </div>
+                  <div class="session-meta">
+                    <span>Учасників: {{ session.participants.length }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Empty state -->
+    @if (!hasAnySessions()) {
+      <div class="empty-state">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <p>Немає тренувань на цей тиждень</p>
+      </div>
+    }
+  </div>
+</div>

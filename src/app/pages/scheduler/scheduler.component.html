@@ -84,32 +84,34 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <!-- Week Navigation Strip -->
-  <div class="week-strip-container">
-    <ion-button fill="clear" size="small" (click)="previousWeek()">
-      <ion-icon name="chevron-back-outline"></ion-icon>
-    </ion-button>
+  <!-- Week Navigation Strip — only in Day mode -->
+  @if (viewMode() === 'day') {
+    <div class="week-strip-container">
+      <ion-button fill="clear" size="small" (click)="previousWeek()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
 
-    <div class="week-days-row">
-      @for (day of weekDays(); track day.dateStr) {
-        <div 
-          class="day-tab" 
-          [class.active]="selectedDateStr() === day.dateStr"
-          [class.is-today]="day.isToday"
-          (click)="selectDay(day)">
-          <span class="day-name">{{ day.dayName }}</span>
-          <span class="day-num">{{ day.dayNum }}</span>
-          @if (day.count > 0) {
-            <span class="day-badge">{{ day.count }}</span>
-          }
-        </div>
-      }
+      <div class="week-days-row">
+        @for (day of weekDays(); track day.dateStr) {
+          <div
+            class="day-tab"
+            [class.active]="selectedDateStr() === day.dateStr"
+            [class.is-today]="day.isToday"
+            (click)="selectDay(day)">
+            <span class="day-name">{{ day.dayName }}</span>
+            <span class="day-num">{{ day.dayNum }}</span>
+            @if (day.count > 0) {
+              <span class="day-badge">{{ day.count }}</span>
+            }
+          </div>
+        }
+      </div>
+
+      <ion-button fill="clear" size="small" (click)="nextWeek()">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </ion-button>
     </div>
-
-    <ion-button fill="clear" size="small" (click)="nextWeek()">
-      <ion-icon name="chevron-forward-outline"></ion-icon>
-    </ion-button>
-  </div>
+  }
 
   <!-- Loading State -->
   @if (isLoading()) {
@@ -118,9 +120,9 @@
     </div>
   } @else {
 
-    <!-- Sessions List -->
-    <div class="sessions-wrapper ion-padding-horizontal">
-      @if (viewMode() === 'day') {
+    <!-- Sessions List — Day View (padded) -->
+    @if (viewMode() === 'day') {
+      <div class="sessions-wrapper ion-padding-horizontal">
         @for (session of filteredSessions(); track session.id) {
           <ion-card class="session-card modern-card" (click)="goToSessionDetail(session.id)" style="cursor: pointer;">
             <ion-card-header>
@@ -194,77 +196,30 @@
             </ion-button>
           </div>
         }
-      } @else {
-        <!-- List View Grouped by Date -->
-        @for (group of groupedSessions(); track group.dateLabel) {
-          <div class="group-header">
-            <h4>{{ group.dateLabel }}</h4>
-          </div>
+      </div>
+    }
 
-          @for (session of group.items; track session.id) {
-            <ion-card class="session-card modern-card" (click)="goToSessionDetail(session.id)" style="cursor: pointer;">
-              <ion-card-header>
-                <div class="card-header-flex">
-                  <div class="header-left">
-                    <div class="info-row location-row">
-                      <ion-icon name="location-outline"></ion-icon>
-                      <h3>{{ session.location?.name || ('Локація #' + session.locationId) }}</h3>
-                    </div>
-                    <div class="info-row time-row">
-                      <ion-icon name="time-outline"></ion-icon>
-                      <span>{{ session.startTime | date:'HH:mm' }} - {{ session.endTime | date:'HH:mm' }}</span>
-                    </div>
-                  </div>
-                  <div class="header-right">
-                    <span class="type-tag" [class.group]="session.type === 'GROUP'">
-                      {{ session.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
-                    </span>
-                    <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
-                      {{ getStatusLabel(session.status) }}
-                    </ion-badge>
-                  </div>
-                </div>
-              </ion-card-header>
+    <!-- Week View — full width -->
+    @if (viewMode() === 'week') {
+      <app-week-view
+        [sessions]="sessions()"
+        [selectedDate]="selectedDate()"
+        (sessionClicked)="onWeekSessionClicked($event)"
+        (dateChanged)="onWeekDateChanged($event)"
+      ></app-week-view>
+    }
 
-              <ion-card-content>
-                <div class="price-info">
-                  <p>Ціна: <strong>{{ session.price || 0 }} грн</strong></p>
-                </div>
-
-                <!-- Workout Types -->
-                @if (session.workoutTypes && session.workoutTypes.length > 0) {
-                  <div class="workout-types-chips" style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
-                    @for (type of session.workoutTypes; track type) {
-                      <ion-badge color="tertiary" mode="ios" style="font-size: 0.65rem; padding: 2px 6px;">{{ type }}</ion-badge>
-                    }
-                  </div>
-                }
-
-                <div class="participants-chips">
-                  @for (p of session.participants.slice(0, 3); track p.id) {
-                    <ion-chip class="participant-chip">
-                      <ion-icon name="person-circle-outline" color="primary"></ion-icon>
-                      <ion-label>{{ p.client?.fullName || p.customName }}</ion-label>
-                    </ion-chip>
-                  }
-                  @if (session.participants.length > 3) {
-                    <ion-chip class="participant-chip see-more-chip" color="medium">
-                      <ion-label>+{{ session.participants.length - 3 }} ще</ion-label>
-                    </ion-chip>
-                  }
-                </div>
-              </ion-card-content>
-            </ion-card>
-          }
-        } @empty {
-          <div class="empty-state ion-padding ion-text-center">
-            <ion-icon name="list-outline" class="empty-icon"></ion-icon>
-            <h3>Список порожній</h3>
-            <p>За обраними фільтрами занять не знайдено</p>
-          </div>
-        }
-      }
-    </div>
+    <!-- Month View — full width -->
+    @if (viewMode() === 'month') {
+      <app-month-view
+        [sessions]="sessions()"
+        [selectedDate]="selectedDate()"
+        (sessionClicked)="onMonthSessionClicked($event)"
+        (dateSelected)="onMonthDateSelected($event)"
+        (monthChanged)="onMonthChanged($event)"
+      ></app-month-view>
+    }
 
   }
 </ion-content>
+
