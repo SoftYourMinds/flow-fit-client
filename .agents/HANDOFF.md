@@ -1,20 +1,20 @@
 ## Last Session Summary
 
-**Date:** 2026-08-22
-**Session focus:** App Initialization & Serverless Wake-up Splash Screen
+**Date:** 2026-08-23
+**Session focus:** Scheduler Week View Mobile Redesign (2-Column Horizontal Scroll)
 
 ### ✅ Accomplished
 
-- **`AppInitService`**: Built application startup coordinator managing serverless pinging, wake-up detection, stage signals, data pre-fetching, and timeout recovery.
-- **`SplashLoaderComponent`**: Designed standalone luxury splash screen with animated terracotta pulse branding (`#C88A72`), animated progress bar, dynamic status indicators, dark/light theme support, and retry/skip controls.
-- **Root Integration**: Seamlessly integrated into `AppComponent` template via Angular `@if` reactive overlay with smooth exit animation.
-- **Clean Code & Linting**: Refactored `AppComponent` to use `inject()` and modular private helpers; validated production build.
+- **2-Column Fixed-Width Mobile Grid**: Adjusted day column layout in `WeekViewComponent` to `calc((100vw - 60px) / 2)`, fitting exactly 2 day columns on mobile viewports while enabling horizontal scrolling across the 7-day week.
+- **Sticky Time Column & Synced Headers**: Maintained sticky time labels (`07:00`..`21:00`) on horizontal scroll and synchronized header scroll position with grid scroll events.
+- **Card Redesign**: Increased scale (100px min-height), prominent time + session name title, workout direction chips/badges (`session.workoutTypes`), and simplified participant icon + count.
+- **Clean Build**: Verified production compilation passes cleanly (`ng build`).
 
 ### ⚠️ Pending / Known Issues
 
-- None. Production build (`npm run build`) compiles cleanly with code 0.
+- None.
 
 ### 🚀 Immediate Next Steps
 
-1. Test app cold start on staging/production backend deployment (`https://flow-fit-api.vercel.app`).
-2. Proceed with next scheduled CRM feature (e.g. dedicated metrics editor or recurring sessions).
+1. Test week view on real mobile device or emulator with different screen widths.
+2. Proceed with next scheduled CRM feature.

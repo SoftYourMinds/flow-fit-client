@@ -115,4 +115,5 @@ Use `/git-commit` workflow. Format: `type(scope): description` (Conventional Com
 - **2026-08-22**: Implemented standalone WeekView (hourly timetable grid with day columns and capacity indicator) and MonthView (calendar grid with event dots and date-scoped session list) components in Scheduler. Added `maxParticipants` field support.
 - **2026-08-22**: Configured full Progressive Web App (PWA) support: generated icon suite (72px to 512px, maskable, apple-touch-icon), added Web App Manifest with standalone display mode, and configured Angular ServiceWorker for offline shell caching.
 - **2026-08-22**: Implemented App Initialization & Serverless Wake-up Splash Screen (`SplashLoaderComponent` + `AppInitService`) with sequential step status progression, terracotta pulse branding, background data pre-fetching, offline/timeout retry actions, and smooth exit fade-out.
+- **2026-08-23**: Redesigned Scheduler WeekView with 2-column mobile layout, horizontal grid scrolling with sticky time labels and synchronized header, increased visual scale, and modernized session cards with workout type chips and participant counter.
 
