@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
@@ -22,7 +22,6 @@ interface DayColumn {
 
 @Component({
   selector: 'app-week-view',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, IonicModule],
   templateUrl: './week-view.component.html',
@@ -37,6 +36,9 @@ export class WeekViewComponent {
 
   readonly DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
   readonly MONTH_SHORT = ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
+
+  @ViewChild('headerScroll') headerScrollRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('gridScroll') gridScrollRef!: ElementRef<HTMLDivElement>;
 
   // ── Week columns ─────────────────────────────────────────────────────────
   readonly weekColumns = computed<DayColumn[]>(() => {
@@ -101,6 +103,8 @@ export class WeekViewComponent {
     return grid;
   });
 
+  // ─── Public Methods ─────────────────────────────────────────────
+
   getSessionsAt(dateStr: string, hour: number): WorkoutSession[] {
     return this.sessionGrid().get(`${dateStr}__${hour}`) ?? [];
   }
@@ -116,7 +120,7 @@ export class WeekViewComponent {
     if (session.workoutTypes && session.workoutTypes.length > 0) {
       return session.workoutTypes
         .map(t => t.charAt(0).toUpperCase() + t.slice(1))
-        .join(', ');
+        .join(' + ');
     }
     return session.type === 'GROUP' ? 'Групове' : 'Індивідуальне';
   }
@@ -150,5 +154,11 @@ export class WeekViewComponent {
 
   hasAnySessions(): boolean {
     return this.weekSessions().length > 0;
+  }
+
+  syncHeaderScroll(): void {
+    if (!this.headerScrollRef?.nativeElement || !this.gridScrollRef?.nativeElement) return;
+    const scrollLeft = this.gridScrollRef.nativeElement.scrollLeft;
+    this.headerScrollRef.nativeElement.scrollLeft = scrollLeft;
   }
 }

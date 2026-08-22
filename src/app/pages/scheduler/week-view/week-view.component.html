@@ -5,13 +5,15 @@
       <ion-icon name="chevron-back-outline"></ion-icon>
     </button>
 
-    <div class="day-headers">
-      @for (col of weekColumns(); track col.dateStr) {
-        <div class="day-header" [class.is-today]="col.isToday">
-          <span class="day-name">{{ col.dayName }}</span>
-          <span class="day-date">{{ col.dayNum }} {{ col.month }}</span>
-        </div>
-      }
+    <div class="day-headers-scroll" #headerScroll>
+      <div class="day-headers">
+        @for (col of weekColumns(); track col.dateStr) {
+          <div class="day-header" [class.is-today]="col.isToday">
+            <span class="day-name">{{ col.dayName }}</span>
+            <span class="day-date">{{ col.dayNum }} {{ col.month }}</span>
+          </div>
+        }
+      </div>
     </div>
 
     <button class="nav-btn" (click)="nextWeek()">
@@ -20,11 +22,11 @@
   </div>
 
   <!-- Timetable grid -->
-  <div class="timetable-scroll">
+  <div class="timetable-scroll" #gridScroll (scroll)="syncHeaderScroll()">
     <div class="timetable">
       @for (hour of timeSlots(); track hour) {
         <div class="time-row">
-          <!-- Time label -->
+          <!-- Time label (sticky left) -->
           <div class="time-label">
             <span>{{ hour | number:'2.0-0' }}:00</span>
           </div>
@@ -42,11 +44,17 @@
                   <div class="session-time">
                     {{ formatTime(session.startTime) }} {{ getSessionName(session) }}
                   </div>
-                  <div class="session-capacity">
-                    ——————————— {{ getCapacity(session) }}
-                  </div>
+                  <!-- Workout type chips -->
+                  @if (session.workoutTypes && session.workoutTypes.length > 0) {
+                    <div class="session-types">
+                      @for (type of session.workoutTypes; track type) {
+                        <span class="session-type-chip">{{ type }}</span>
+                      }
+                    </div>
+                  }
+
                   <div class="session-meta">
-                    <ion-icon name="person-outline"></ion-icon>
+                    <ion-icon name="people-outline"></ion-icon>
                     <span>{{ session.participants.length }}</span>
                   </div>
                 </div>
