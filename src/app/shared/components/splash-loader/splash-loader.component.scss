@@ -1,0 +1,413 @@
+:host {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.splash-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--ion-background-color, #FAF7F4);
+  color: var(--ion-text-color, #2D2725);
+  overflow: hidden;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px)) 24px;
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  transform: scale(1);
+
+  &.fade-out {
+    opacity: 0;
+    transform: scale(1.02);
+    pointer-events: none;
+  }
+}
+
+/* Ambient Radial Glows */
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.35;
+  transition: opacity 0.3s ease;
+
+  &.glow-top {
+    top: -100px;
+    right: -80px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(200, 138, 114, 0.45) 0%, rgba(214, 167, 122, 0.1) 70%, transparent 100%);
+  }
+
+  &.glow-bottom {
+    bottom: -80px;
+    left: -60px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(200, 138, 114, 0.35) 0%, rgba(166, 138, 120, 0.1) 70%, transparent 100%);
+  }
+}
+
+:host-context(body.dark),
+:host-context(html.ion-palette-dark) {
+  .ambient-glow {
+    opacity: 0.22;
+  }
+}
+
+/* Main Content Column */
+.splash-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 380px;
+  min-height: 85vh;
+  margin: auto;
+}
+
+/* ─── Brand Section ───────────────────────────────────────────── */
+
+.brand-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: 24px;
+}
+
+.logo-wrapper {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-box {
+  position: relative;
+  z-index: 3;
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: var(--ion-card-background, #ffffff);
+  box-shadow: 0 12px 32px rgba(200, 138, 114, 0.22), 0 4px 12px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(200, 138, 114, 0.25);
+}
+
+.brand-logo {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  border-radius: 18px;
+}
+
+/* Breathing Halo / Pulse Rings */
+.pulse-ring {
+  position: absolute;
+  border-radius: 32px;
+  pointer-events: none;
+
+  &.ring-outer {
+    inset: -14px;
+    border: 1.5px solid rgba(200, 138, 114, 0.25);
+    animation: breatheOuter 2.8s ease-in-out infinite;
+  }
+
+  &.ring-inner {
+    inset: -6px;
+    background: rgba(200, 138, 114, 0.12);
+    animation: breatheInner 2.8s ease-in-out infinite;
+  }
+}
+
+@keyframes breatheOuter {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.8;
+  }
+}
+
+@keyframes breatheInner {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+.brand-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0 0 4px 0;
+  color: var(--ion-text-color, #2D2725);
+  background: linear-gradient(135deg, #C88A72 0%, #A68A78 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--ion-color-medium, #888888);
+  margin: 0;
+}
+
+/* ─── Status & Progress Section ────────────────────────────────── */
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: auto;
+}
+
+.status-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(200, 138, 114, 0.12);
+  color: #C88A72;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+
+  &.has-error {
+    background: rgba(201, 107, 107, 0.15);
+    color: #C96B6B;
+  }
+
+  .status-icon {
+    font-size: 1.6rem;
+  }
+
+  .pulse-icon {
+    animation: statusPulse 1.8s infinite ease-in-out;
+  }
+
+  .waking-icon {
+    animation: gentleWobble 2s infinite ease-in-out;
+  }
+
+  .success-icon {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .workout-icon {
+    animation: barbellLift 1.5s infinite ease-in-out;
+  }
+
+  .ready-icon {
+    animation: sparkleSpin 2s infinite linear;
+  }
+}
+
+@keyframes statusPulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes gentleWobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+@keyframes barbellLift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes sparkleSpin {
+  0% { transform: rotate(0deg) scale(0.95); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(0.95); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.text-container {
+  text-align: center;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.step-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  color: var(--ion-text-color, #2D2725);
+  transition: all 0.3s ease;
+}
+
+.step-description {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #777777);
+  margin: 0;
+  line-height: 1.4;
+  max-width: 320px;
+  transition: all 0.3s ease;
+}
+
+/* ─── Progress Bar ────────────────────────────────────────────── */
+
+.progress-container {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ion-color-step-100, rgba(200, 138, 114, 0.15));
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #C88A72 0%, #D6A77A 100%);
+  border-radius: 999px;
+  position: relative;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .progress-glow {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: #ffffff;
+    opacity: 0.6;
+    filter: blur(3px);
+  }
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium, #888888);
+  font-weight: 500;
+}
+
+.progress-value {
+  font-weight: 600;
+  color: #C88A72;
+}
+
+/* Stepper Dots */
+.stepper-dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ion-color-step-150, rgba(128, 128, 128, 0.25));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.active {
+    background: #C88A72;
+    transform: scale(1.25);
+    box-shadow: 0 0 8px rgba(200, 138, 114, 0.5);
+  }
+
+  &.completed {
+    background: #7EA172;
+  }
+}
+
+/* ─── Actions Section (Retry / Skip) ──────────────────────────── */
+
+.actions-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  animation: popIn 0.3s ease-out;
+}
+
+.retry-button {
+  --background: #C88A72;
+  --background-hover: #b07964;
+  --background-activated: #9e6c58;
+  --color: #ffffff;
+  --border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  height: 46px;
+}
+
+.skip-button {
+  --color: var(--ion-color-medium, #777777);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* ─── Footer Note ─────────────────────────────────────────────── */
+
+.footer-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium, #999999);
+  margin-top: 16px;
+  opacity: 0.85;
+
+  .footer-icon {
+    font-size: 0.9rem;
+    color: #C88A72;
+  }
+}

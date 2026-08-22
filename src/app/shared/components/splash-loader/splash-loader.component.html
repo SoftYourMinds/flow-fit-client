@@ -1,0 +1,104 @@
+<div class="splash-container" [class.fade-out]="appInitService.isFadingOut()">
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-top"></div>
+  <div class="ambient-glow glow-bottom"></div>
+
+  <div class="splash-content">
+    <!-- Brand Header & Logo -->
+    <div class="brand-section">
+      <div class="logo-wrapper">
+        <div class="pulse-ring ring-outer"></div>
+        <div class="pulse-ring ring-inner"></div>
+        <div class="logo-box">
+          <img src="assets/icon/app-icon-vector.png" alt="FlowFit" class="brand-logo" />
+        </div>
+      </div>
+
+      <h1 class="brand-title">FlowFit</h1>
+      <p class="brand-subtitle">Smart Fitness Management</p>
+    </div>
+
+    <!-- Status & Progress Section -->
+    <div class="status-section">
+      <!-- Status Icon / State Badge -->
+      <div class="status-badge" [class.has-error]="appInitService.currentStep() === 'error'">
+        @switch (appInitService.currentStep()) {
+          @case ('connecting') {
+            <ion-icon name="radio-outline" class="status-icon pulse-icon"></ion-icon>
+          }
+          @case ('waking') {
+            <ion-icon name="cafe-outline" class="status-icon waking-icon"></ion-icon>
+          }
+          @case ('server_ready') {
+            <ion-icon name="checkmark-circle-outline" class="status-icon success-icon"></ion-icon>
+          }
+          @case ('loading_data') {
+            <ion-icon name="barbell-outline" class="status-icon workout-icon"></ion-icon>
+          }
+          @case ('ready') {
+            <ion-icon name="sparkles-outline" class="status-icon ready-icon"></ion-icon>
+          }
+          @case ('error') {
+            <ion-icon name="alert-circle-outline" class="status-icon error-icon"></ion-icon>
+          }
+        }
+      </div>
+
+      <!-- Step Title & Description -->
+      <div class="text-container">
+        <h2 class="step-title">{{ appInitService.stepTitle() }}</h2>
+        <p class="step-description">{{ appInitService.stepDescription() }}</p>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="appInitService.progress()">
+            <div class="progress-glow"></div>
+          </div>
+        </div>
+        <div class="progress-meta">
+          <span class="progress-label">
+            @if (appInitService.currentStep() === 'waking') {
+              Пробудження хмари...
+            } @else if (appInitService.currentStep() === 'loading_data') {
+              Синхронізація розкладу...
+            } @else if (appInitService.currentStep() === 'ready') {
+              Готово!
+            } @else {
+              Підключення...
+            }
+          </span>
+          <span class="progress-value">{{ appInitService.progress() }}%</span>
+        </div>
+      </div>
+
+      <!-- Stepper Dots -->
+      <div class="stepper-dots">
+        <div class="step-dot" [class.active]="appInitService.progress() >= 20" [class.completed]="appInitService.progress() > 20"></div>
+        <div class="step-dot" [class.active]="appInitService.progress() >= 45" [class.completed]="appInitService.progress() > 45"></div>
+        <div class="step-dot" [class.active]="appInitService.progress() >= 70" [class.completed]="appInitService.progress() > 70"></div>
+        <div class="step-dot" [class.active]="appInitService.progress() >= 100" [class.completed]="appInitService.progress() === 100"></div>
+      </div>
+    </div>
+
+    <!-- Error / Retry Actions -->
+    @if (appInitService.canRetry()) {
+      <div class="actions-section">
+        <ion-button expand="block" class="retry-button" (click)="onRetry()">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Повторити спробу
+        </ion-button>
+        <ion-button fill="clear" class="skip-button" (click)="onSkip()">
+          Продовжити в додаток
+        </ion-button>
+      </div>
+    }
+
+    <!-- Footer Note -->
+    <div class="footer-note">
+      <ion-icon name="cloud-outline" class="footer-icon"></ion-icon>
+      <span>Хмарний сервер FlowFit</span>
+    </div>
+  </div>
+</div>

@@ -13,10 +13,17 @@ import { AppComponent } from './app.component';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { globalLoaderInterceptor } from './core/interceptors/global-loader.interceptor';
 import { globalErrorInterceptor } from './core/interceptors/global-error.interceptor';
+import { SplashLoaderComponent } from './shared/components/splash-loader/splash-loader.component';
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, QuillModule.forRoot()],
+  imports: [
+    BrowserModule,
+    IonicModule.forRoot(),
+    AppRoutingModule,
+    QuillModule.forRoot(),
+    SplashLoaderComponent
+  ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideHttpClient(withInterceptors([globalLoaderInterceptor, authInterceptor, globalErrorInterceptor])),
