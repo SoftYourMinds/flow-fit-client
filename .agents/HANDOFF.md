@@ -1,18 +1,20 @@
 ## Last Session Summary
-**Date:** 2026-07-25
-**Session focus:** Client Portal Enhancements (Tabs, Theme Switcher, Recent Sessions History, Metric Switching)
+
+**Date:** 2026-08-22
+**Session focus:** Progressive Web App (PWA) Setup & Installation Support
 
 ### ✅ Accomplished
-- **Frontend**: Added Light/Dark mode theme switcher button on the public Client Portal (`/portal/:token`).
-- **Frontend**: Restructured Client Portal into a tabbed layout ("Workout History" vs "Body Metrics") using `ion-segment` with smooth `fadeIn` transitions.
-- **Frontend**: Added "Recent Sessions" history list displaying past workouts with date, time, format, and location.
-- **Frontend**: Added dynamic status badges ("Відвідано" for `COMPLETED`, "Пропущено" for `MISSED`) while hiding `UPCOMING` statuses for past sessions.
-- **Frontend**: Added metric switcher on the progress chart to toggle between weight, body fat %, chest, and waist measurements.
-- **Frontend**: Ensured financial/pricing information is excluded from the client portal for privacy.
+
+- **PWA Icons**: Generated full icon suite (72x72 to 512x512, maskable icon, apple-touch-icon) in `src/assets/icons/` from master high-res asset.
+- **Web App Manifest**: Added `src/manifest.webmanifest` with standalone display mode, portrait orientation, dark theme `#141211`, and primary terracotta `#C88A72`.
+- **Angular Service Worker**: Installed `@angular/service-worker` (20.3.25), created `ngsw-config.json`, and registered `provideServiceWorker` in `AppModule`.
+- **HTML Meta & Build**: Updated `src/index.html` with iOS/Android PWA meta tags and `angular.json` assets and build configuration.
 
 ### ⚠️ Pending / Known Issues
-- Database migration `add_client_share_token` needs to be deployed on production if not already done.
+
+- None. Production build (`npm run build:prod`) compiles cleanly with `ngsw.json` and `manifest.webmanifest` bundled in `www/`.
 
 ### 🚀 Immediate Next Steps
-1. Commit and push the client portal updates (`git commit -m "feat(portal): enhance client portal UX..."`).
-2. Test theme switcher and tab navigation across various mobile screen sizes.
+
+1. Test installation flow on real iOS and Android devices or Chrome DevTools Application tab.
+2. Deploy client build to production/staging hosting (HTTPS required for PWA installation).
