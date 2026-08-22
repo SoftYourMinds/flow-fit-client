@@ -112,3 +112,4 @@ Use `/git-commit` workflow. Format: `type(scope): description` (Conventional Com
 
 - **2026-07-25**: Disabled sign-up route until admin management system is built.
 - **2026-07-25**: Enhanced Client Portal with tabs (Workout History / Body Metrics), light/dark theme switcher, recent sessions list with status badges, and body metrics switcher for progress charts.
+- **2026-08-22**: Implemented standalone WeekView (hourly timetable grid with day columns and capacity indicator) and MonthView (calendar grid with event dots and date-scoped session list) components in Scheduler. Added `maxParticipants` field support.
