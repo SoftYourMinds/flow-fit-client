@@ -87,9 +87,15 @@
   <!-- Week Navigation Strip — only in Day mode -->
   @if (viewMode() === 'day') {
     <div class="week-strip-container">
-      <ion-button fill="clear" size="small" (click)="previousWeek()">
-        <ion-icon name="chevron-back-outline"></ion-icon>
-      </ion-button>
+      <div class="week-strip-nav">
+        <ion-button fill="clear" size="small" (click)="previousWeek()" class="week-nav-btn" aria-label="Попередній тиждень">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+        <span class="week-month-label">{{ weekMonthLabel() }}</span>
+        <ion-button fill="clear" size="small" (click)="nextWeek()" class="week-nav-btn" aria-label="Наступний тиждень">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
 
       <div class="week-days-row">
         @for (day of weekDays(); track day.dateStr) {
@@ -100,16 +106,13 @@
             (click)="selectDay(day)">
             <span class="day-name">{{ day.dayName }}</span>
             <span class="day-num">{{ day.dayNum }}</span>
+            <span class="day-month">{{ day.monthShort }}</span>
             @if (day.count > 0) {
               <span class="day-badge">{{ day.count }}</span>
             }
           </div>
         }
       </div>
-
-      <ion-button fill="clear" size="small" (click)="nextWeek()">
-        <ion-icon name="chevron-forward-outline"></ion-icon>
-      </ion-button>
     </div>
   }
 
