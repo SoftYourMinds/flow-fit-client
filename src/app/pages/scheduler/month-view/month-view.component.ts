@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output, computed, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed, linkedSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
@@ -22,7 +22,6 @@ export interface CalendarDay {
 
 @Component({
   selector: 'app-month-view',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, IonicModule],
   templateUrl: './month-view.component.html',
@@ -42,8 +41,8 @@ export class MonthViewComponent {
   ];
   readonly WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
 
-  // Active selected date cell (for showing list below calendar)
-  readonly activeDateStr = signal<string>(getLocalDateString(new Date()));
+  // Active selected date cell (synchronized with selectedDate input, but locally overridable on cell tap)
+  readonly activeDateStr = linkedSignal(() => getLocalDateString(this.selectedDate()));
 
   // ── Calendar grid ─────────────────────────────────────────────────────────
   readonly calendarWeeks = computed<CalendarDay[][]>(() => {
@@ -68,13 +67,14 @@ export class MonthViewComponent {
     for (let i = startDow - 1; i >= 0; i--) {
       const d = new Date(year, month, -i);
       const dStr = getLocalDateString(d);
+      const count = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr).length;
       cells.push({
         date: d,
         dateStr: dStr,
         dayNum: d.getDate(),
         isCurrentMonth: false,
         isToday: dStr === todayStr,
-        sessionCount: 0,
+        sessionCount: count,
       });
     }
 
@@ -99,13 +99,14 @@ export class MonthViewComponent {
       for (let i = 1; i <= 7 - remainder; i++) {
         const d = new Date(year, month + 1, i);
         const dStr = getLocalDateString(d);
+        const count = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr).length;
         cells.push({
           date: d,
           dateStr: dStr,
           dayNum: i,
           isCurrentMonth: false,
           isToday: dStr === todayStr,
-          sessionCount: 0,
+          sessionCount: count,
         });
       }
     }
