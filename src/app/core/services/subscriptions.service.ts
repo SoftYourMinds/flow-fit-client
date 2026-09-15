@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 
+import { WorkoutSession } from './sessions.service';
+
 export interface ClientSubscription {
   id: number;
   trainerId: number;
@@ -30,6 +32,19 @@ export interface CreateSubscriptionPayload {
   endDate?: string;
   price?: number;
   isPaid?: boolean;
+}
+
+export interface CreateSubscriptionWithRecurringPayload {
+  clientId: number;
+  locationId: number;
+  daysOfWeek: number[];
+  startTime: string;
+  endTime: string;
+  dateFrom: string;
+  dateTo: string;
+  price?: number;
+  isPaid?: boolean;
+  workoutTypes?: string[];
 }
 
 @Injectable({
@@ -81,5 +96,18 @@ export class SubscriptionsService {
 
   togglePayment(id: number, isPaid: boolean): Observable<ClientSubscription> {
     return this.http.put<ClientSubscription>(`${this.apiUrl}/${id}`, { isPaid });
+  }
+
+  createWithRecurring(
+    data: CreateSubscriptionWithRecurringPayload,
+  ): Observable<{ subscription: ClientSubscription; sessionsCount: number }> {
+    return this.http.post<{ subscription: ClientSubscription; sessionsCount: number }>(
+      `${this.apiUrl}/with-recurring`,
+      data,
+    );
+  }
+
+  getSubscriptionSessions(subscriptionId: number): Observable<WorkoutSession[]> {
+    return this.http.get<WorkoutSession[]>(`${this.apiUrl}/${subscriptionId}/sessions`);
   }
 }
