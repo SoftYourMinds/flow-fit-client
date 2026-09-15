@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,6 +22,18 @@ import { environment } from '../../../../environments/environment';
   styleUrls: ['./details.component.scss']
 })
 export class DetailsComponent implements OnInit {
+  // ─── Injected Dependencies ─────────────────────────────────────
+  private readonly route = inject(ActivatedRoute);
+  private readonly clientsService = inject(ClientsService);
+  private readonly subscriptionsService = inject(SubscriptionsService);
+  private readonly locationsService = inject(LocationsService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly router = inject(Router);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly alertCtrl = inject(AlertController);
+
+  // ─── State Signals ─────────────────────────────────────────────
   client = signal<any>(null);
   selectedTab = signal<'notes' | 'metrics' | 'sessions' | 'subscriptions'>('notes');
   isLoading = signal(true);
@@ -30,17 +42,11 @@ export class DetailsComponent implements OnInit {
   pastSessions = signal<any[]>([]);
   subscriptions = signal<ClientSubscription[]>([]);
 
-  constructor(
-    private route: ActivatedRoute,
-    private clientsService: ClientsService,
-    private subscriptionsService: SubscriptionsService,
-    private locationsService: LocationsService,
-    private notificationService: NotificationService,
-    private modalCtrl: ModalController,
-    private router: Router,
-    private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
-  ) {}
+  readonly activeSubscriptions = computed(() =>
+    this.subscriptions().filter((s) => s.status === 'ACTIVE'),
+  );
+  readonly activeSubscription = computed(() => this.activeSubscriptions()[0] || null);
+  readonly hasMultipleActiveSubscriptions = computed(() => this.activeSubscriptions().length > 1);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -65,6 +71,10 @@ export class DetailsComponent implements OnInit {
         }
         
         this.client.set(data);
+
+        if (data.subscriptions && data.subscriptions.length > 0) {
+          this.subscriptions.set(data.subscriptions);
+        }
         
         const now = new Date();
         if (data.participations) {
@@ -210,8 +220,12 @@ export class DetailsComponent implements OnInit {
           });
         }
         this.loadSubscriptions(this.client().id);
+        this.showToast('Абонемент успішно збережено', 'success');
       },
-      error: () => this.showToast('Помилка при створенні абонементу', 'danger'),
+      error: (err) => {
+        const msg = err?.error?.message || 'Помилка при створенні абонементу';
+        this.showToast(msg, 'danger');
+      },
     });
   }
 
@@ -237,8 +251,12 @@ export class DetailsComponent implements OnInit {
           this.notificationService.cancelSubscriptionExpiry(sub.id);
         }
         this.loadSubscriptions(this.client().id);
+        this.showToast('Абонемент оновлено', 'success');
       },
-      error: () => this.showToast('Помилка при оновленні абонементу', 'danger'),
+      error: (err) => {
+        const msg = err?.error?.message || 'Помилка при оновленні абонементу';
+        this.showToast(msg, 'danger');
+      },
     });
   }
 
@@ -331,6 +349,11 @@ export class DetailsComponent implements OnInit {
   private loadSubscriptions(clientId: number): void {
     this.subscriptionsService.getAll({ clientId }).subscribe({
       next: (subs) => this.subscriptions.set(subs),
+      error: (err) => {
+        console.error('Failed to load subscriptions', err);
+        const fallbackSubs = this.client()?.subscriptions || [];
+        this.subscriptions.set(fallbackSubs);
+      },
     });
   }
 

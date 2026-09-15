@@ -99,6 +99,7 @@ export class CreateWizardModalComponent implements OnInit {
   readonly subWorkoutTypes = signal<string[]>([]);
   readonly subPreviewItems = signal<RecurringPreviewItem[]>([]);
   readonly isSubPreviewLoading = signal<boolean>(false);
+  readonly subClientActiveSubscriptions = signal<ClientSubscription[]>([]);
 
   // ─── Step 2B: Single Session State ─────────────────────────────
   readonly singleType = signal<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
@@ -139,6 +140,21 @@ export class CreateWizardModalComponent implements OnInit {
     return this.subPreviewItems().filter((item) => item.hasConflict).length;
   });
 
+  readonly hasOverlappingActiveSubscription = computed(() => {
+    return this.subClientActiveSubscriptions().length > 0;
+  });
+
+  readonly activeSubDescription = computed(() => {
+    const subs = this.subClientActiveSubscriptions();
+    if (subs.length === 0) return '';
+    const sub = subs[0];
+    if (sub.type === 'SESSIONS_BASED') {
+      const left = (sub.totalSessions || 0) - sub.usedSessions;
+      return `по кількості (залишилось ${left} з ${sub.totalSessions})`;
+    }
+    return `по датах (до ${new Date(sub.endDate || '').toLocaleDateString('uk-UA')})`;
+  });
+
   // ─── Lifecycle ─────────────────────────────────────────────────
   ngOnInit(): void {
     if (this.locations.length > 0) {
@@ -150,6 +166,7 @@ export class CreateWizardModalComponent implements OnInit {
       this.subClientId.set(this.preselectedClientId);
       this.singleClientId.set(this.preselectedClientId);
       this.loadSingleClientSubscriptions(this.preselectedClientId);
+      this.checkSubClientActiveSubscriptions(this.preselectedClientId);
     }
 
     if (this.preselectedDate) {
@@ -177,6 +194,7 @@ export class CreateWizardModalComponent implements OnInit {
   setSubClient(event: CustomEvent): void {
     const id = Number(event.detail.value);
     this.subClientId.set(id || null);
+    this.checkSubClientActiveSubscriptions(id || null);
     this.subPreviewItems.set([]);
     this.generateSubPreview();
   }
@@ -245,6 +263,12 @@ export class CreateWizardModalComponent implements OnInit {
     }
     if (!locationId) {
       this.errorMessage.set('Будь ласка, оберіть локацію');
+      return;
+    }
+    if (this.hasOverlappingActiveSubscription()) {
+      this.errorMessage.set(
+        'У клієнта вже є активний абонемент. Не можна створити декілька абонементів на один термін.',
+      );
       return;
     }
 
@@ -373,6 +397,17 @@ export class CreateWizardModalComponent implements OnInit {
   }
 
   // ─── Private Helpers ───────────────────────────────────────────
+  private checkSubClientActiveSubscriptions(clientId: number | null): void {
+    if (!clientId) {
+      this.subClientActiveSubscriptions.set([]);
+      return;
+    }
+    this.subscriptionsService.getActiveForClient(clientId).subscribe({
+      next: (subs) => this.subClientActiveSubscriptions.set(subs),
+      error: () => this.subClientActiveSubscriptions.set([]),
+    });
+  }
+
   private loadSingleClientSubscriptions(clientId: number): void {
     this.subscriptionsService.getActiveForClient(clientId).subscribe({
       next: (subs) => {

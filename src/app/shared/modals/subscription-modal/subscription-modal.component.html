@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>{{ isEditing() ? 'Редагувати абонемент' : 'Новий абонемент' }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="confirm()" [strong]="true" color="primary">
+      <ion-button (click)="confirm()" [strong]="true" color="primary" [disabled]="!isEditing() && hasActiveSubscription()">
         {{ isEditing() ? 'Зберегти' : 'Створити' }}
       </ion-button>
     </ion-buttons>
@@ -13,6 +13,18 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  @if (!isEditing() && hasActiveSubscription()) {
+    <ion-card color="warning" class="ion-no-margin ion-margin-bottom" style="border-radius: 12px;">
+      <ion-card-content style="display: flex; align-items: center; gap: 10px; padding: 12px 14px;">
+        <ion-icon name="warning-outline" style="font-size: 24px; flex-shrink: 0;"></ion-icon>
+        <div style="font-size: 13px; line-height: 1.4;">
+          <strong>У клієнта вже є активний абонемент!</strong><br />
+          Не можна створити декілька активних абонементів на один термін.
+        </div>
+      </ion-card-content>
+    </ion-card>
+  }
+
   <ion-list>
     <!-- Subscription Type -->
     <ion-item>

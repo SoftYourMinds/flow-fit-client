@@ -92,6 +92,14 @@
             }
           </ion-select>
         </ion-item>
+        @if (hasOverlappingActiveSubscription()) {
+          <div class="alert-box warning ion-margin-top">
+            <ion-icon name="warning-outline"></ion-icon>
+            <span>
+              У клієнта вже є активний абонемент {{ activeSubDescription() }}. Створення другого абонемента на цей термін не дозволено.
+            </span>
+          </div>
+        }
       </div>
 
       <!-- Subscription Specs -->
@@ -302,7 +310,7 @@
           expand="block"
           shape="round"
           color="primary"
-          [disabled]="isSubmitting() || !subClientId() || !subLocationId()"
+          [disabled]="isSubmitting() || !subClientId() || !subLocationId() || hasOverlappingActiveSubscription()"
           (click)="submitSubscription()">
           @if (isSubmitting()) {
             <ion-spinner name="crescent"></ion-spinner>

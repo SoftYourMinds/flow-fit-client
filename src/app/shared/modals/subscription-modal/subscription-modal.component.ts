@@ -1,8 +1,8 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 
-import { ClientSubscription } from '../../../core/services/subscriptions.service';
+import { ClientSubscription, SubscriptionsService } from '../../../core/services/subscriptions.service';
 
 @Component({
   selector: 'app-subscription-modal',
@@ -13,6 +13,7 @@ import { ClientSubscription } from '../../../core/services/subscriptions.service
 })
 export class SubscriptionModalComponent implements OnInit {
   private readonly modalCtrl = inject(ModalController);
+  private readonly subscriptionsService = inject(SubscriptionsService);
 
   @Input() clientId!: number;
   @Input() subscription?: ClientSubscription;
@@ -24,20 +25,30 @@ export class SubscriptionModalComponent implements OnInit {
   price = signal<number>(0);
   isPaid = signal<boolean>(false);
 
+  readonly activeSubscriptions = signal<ClientSubscription[]>([]);
+  readonly hasActiveSubscription = computed(() => this.activeSubscriptions().length > 0);
   protected readonly isEditing = signal(false);
 
   // ─── Lifecycle ────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    if (!this.subscription) return;
+    if (this.subscription) {
+      this.isEditing.set(true);
+      this.type.set(this.subscription.type);
+      this.totalSessions.set(this.subscription.totalSessions ?? 8);
+      if (this.subscription.startDate) this.startDate.set(this.subscription.startDate);
+      if (this.subscription.endDate) this.endDate.set(this.subscription.endDate);
+      this.price.set(this.subscription.price);
+      this.isPaid.set(this.subscription.isPaid);
+      return;
+    }
 
-    this.isEditing.set(true);
-    this.type.set(this.subscription.type);
-    this.totalSessions.set(this.subscription.totalSessions ?? 8);
-    if (this.subscription.startDate) this.startDate.set(this.subscription.startDate);
-    if (this.subscription.endDate) this.endDate.set(this.subscription.endDate);
-    this.price.set(this.subscription.price);
-    this.isPaid.set(this.subscription.isPaid);
+    if (this.clientId) {
+      this.subscriptionsService.getActiveForClient(this.clientId).subscribe({
+        next: (subs) => this.activeSubscriptions.set(subs),
+        error: () => this.activeSubscriptions.set([]),
+      });
+    }
   }
 
   // ─── Public Methods ─────────────────────────────────────────────

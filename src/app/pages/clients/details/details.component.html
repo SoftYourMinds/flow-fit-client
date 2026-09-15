@@ -27,6 +27,75 @@
       @if (client().goal) {
         <p class="goal">{{ client().goal }}</p>
       }
+
+      <!-- Warning if multiple active subscriptions exist -->
+      @if (hasMultipleActiveSubscriptions()) {
+        <div class="multi-sub-banner" (click)="setTab('subscriptions')">
+          <ion-icon name="alert-circle"></ion-icon>
+          <span>У клієнта <strong>{{ activeSubscriptions().length }}</strong> активних абонементи. Клікніть для перегляду.</span>
+        </div>
+      }
+
+      <!-- Active Subscription Card -->
+      @if (activeSubscription()) {
+        <div class="hero-sub-card" (click)="openSubscriptionDetail(activeSubscription()!)">
+          <div class="hero-sub-top">
+            <div class="hero-sub-title">
+              <ion-icon name="ticket-outline"></ion-icon>
+              <span>{{ activeSubscription()!.type === 'SESSIONS_BASED' ? 'Абонемент на заняття' : 'Абонемент на період' }}</span>
+            </div>
+            <div class="hero-sub-price">{{ activeSubscription()!.price }} ₴</div>
+          </div>
+
+          <div class="hero-sub-body">
+            @if (activeSubscription()!.type === 'SESSIONS_BASED') {
+              <div class="hero-sub-counter">
+                <span class="count-big">{{ (activeSubscription()!.totalSessions || 0) - activeSubscription()!.usedSessions }}</span>
+                <span class="count-unit">з {{ activeSubscription()!.totalSessions }} занять залишилось</span>
+              </div>
+              <div class="hero-sub-progress">
+                <div
+                  class="hero-sub-bar"
+                  [style.width.%]="activeSubscription()!.totalSessions ? (activeSubscription()!.usedSessions / activeSubscription()!.totalSessions!) * 100 : 0"
+                ></div>
+              </div>
+            } @else {
+              <div class="hero-sub-dates">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>{{ activeSubscription()!.startDate | date:'dd.MM.yyyy' }} — {{ activeSubscription()!.endDate | date:'dd.MM.yyyy' }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="hero-sub-bottom">
+            <button
+              type="button"
+              class="hero-sub-pill"
+              [class.paid]="activeSubscription()!.isPaid"
+              (click)="$event.stopPropagation(); togglePayment(activeSubscription()!)"
+            >
+              <ion-icon [name]="activeSubscription()!.isPaid ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+              <span>{{ activeSubscription()!.isPaid ? 'Оплачено' : 'Не оплачено' }}</span>
+            </button>
+
+            <div class="hero-sub-link">
+              <span>Календар та графік</span>
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="hero-sub-empty" (click)="addSubscription()">
+          <div class="empty-info">
+            <ion-icon name="card-outline"></ion-icon>
+            <span>Немає активного абонементу</span>
+          </div>
+          <button type="button" class="empty-add-btn" (click)="$event.stopPropagation(); addSubscription()">
+            <ion-icon name="add-outline"></ion-icon>
+            Оформити
+          </button>
+        </div>
+      }
     </div>
 
     <!-- Tabs inside the view -->
