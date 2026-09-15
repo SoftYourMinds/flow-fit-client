@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import {
@@ -27,7 +27,7 @@ const PENDING_SOFT_LIMIT = 50;
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  constructor(private alertCtrl: AlertController) {}
+  private readonly alertCtrl = inject(AlertController);
 
   // ─── Permission ──────────────────────────────────────────────────────────
 
@@ -50,11 +50,13 @@ export class NotificationService {
    * @param session  WorkoutSession object (must have id, startTime, locationId)
    * @param locationName  Human-readable location name
    * @param reminderMode  'auto' or a fixed number of minutes before the session
+   * @param isLastSubscriptionSession whether this is the final session in client's subscription
    */
   async scheduleForSession(
     session: { id: number; startTime: string; locationId: number },
     locationName: string,
-    reminderMode: ReminderMode = 'auto'
+    reminderMode: ReminderMode = 'auto',
+    isLastSubscriptionSession = false,
   ): Promise<void> {
     if (!this.isNative()) return;
 
@@ -71,10 +73,15 @@ export class NotificationService {
       return;
     }
 
+    let body = this.buildBody(session.startTime, locationName, reminderMode);
+    if (isLastSubscriptionSession) {
+      body += '\n⚠️ Останнє заняття по абонементу!';
+    }
+
     const notification: LocalNotificationSchema = {
       id: session.id,
       title: '🏋️ Нагадування про тренування',
-      body: this.buildBody(session.startTime, locationName, reminderMode),
+      body,
       schedule: { at: notificationAt },
       sound: 'default',
       channelId: 'default',
@@ -82,6 +89,53 @@ export class NotificationService {
 
     const options: ScheduleOptions = { notifications: [notification] };
     await LocalNotifications.schedule(options);
+  }
+
+  /**
+   * Schedule native push notification for subscription expiration (3 days before endDate).
+   */
+  async scheduleSubscriptionExpiry(sub: {
+    id: number;
+    endDate: string;
+    clientName: string;
+  }): Promise<void> {
+    if (!this.isNative()) return;
+
+    const subNotificationId = 1_000_000 + sub.id;
+    await this.cancelSubscriptionExpiry(sub.id);
+
+    const endDate = new Date(sub.endDate);
+    const fireDate = new Date(endDate);
+    fireDate.setDate(fireDate.getDate() - 3);
+    fireDate.setHours(10, 0, 0, 0);
+
+    if (fireDate <= new Date()) return;
+
+    const limited = await this.isAtLimit();
+    if (limited) {
+      await this.showLimitAlert();
+      return;
+    }
+
+    const notification: LocalNotificationSchema = {
+      id: subNotificationId,
+      title: '⚠️ Абонемент закінчується',
+      body: `Через 3 дні закінчується абонемент клієнта ${sub.clientName}. Запропонуйте продовження!`,
+      schedule: { at: fireDate },
+      sound: 'default',
+      channelId: 'default',
+    };
+
+    await LocalNotifications.schedule({ notifications: [notification] });
+  }
+
+  async cancelSubscriptionExpiry(subId: number): Promise<void> {
+    if (!this.isNative()) return;
+    try {
+      await LocalNotifications.cancel({ notifications: [{ id: 1_000_000 + subId }] });
+    } catch {
+      // Ignore – notification may not exist
+    }
   }
 
   // ─── Cancel ──────────────────────────────────────────────────────────────
