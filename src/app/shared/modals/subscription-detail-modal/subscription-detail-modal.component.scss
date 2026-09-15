@@ -1,0 +1,349 @@
+:host {
+  --page-max-width: 520px;
+}
+
+// ── Summary Card ───────────────────────────────────────────────────────────
+.summary-card {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  background: var(--ion-card-background, #fff);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+}
+
+.summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+
+  .client-meta {
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ion-text-color, #2D2725);
+      margin: 0 0 4px;
+    }
+
+    .sub-type-badge {
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      font-weight: 500;
+    }
+  }
+
+  .status-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+}
+
+.progress-section {
+  margin-bottom: 14px;
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--ion-color-dark);
+
+    .count {
+      strong {
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+
+  ion-progress-bar {
+    height: 8px;
+    border-radius: 4px;
+  }
+}
+
+.financial-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--ion-color-step-100, rgba(0, 0, 0, 0.06));
+
+  .price-val {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--ion-color-primary-shade, #b07964);
+  }
+
+  .payment-chip {
+    cursor: pointer;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.view-switcher {
+  max-width: var(--page-max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// ── Month Calendar ─────────────────────────────────────────────────────────
+.calendar-container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  background: var(--ion-card-background, #fff);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+}
+
+.month-nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .current-month-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+  }
+
+  .nav-arrow-btn {
+    background: transparent;
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ion-color-medium);
+
+    &:active {
+      background: var(--ion-color-step-100);
+    }
+
+    ion-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+.weekday-header-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 8px;
+
+  .weekday-col {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+  }
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+
+  .day-number {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  &.other-month {
+    opacity: 0.3;
+  }
+
+  &.is-today {
+    border: 1.5px solid var(--ion-color-primary);
+  }
+
+  &.is-selected {
+    background: rgba(var(--ion-color-primary-rgb), 0.15);
+    border-color: var(--ion-color-primary);
+  }
+
+  &.has-workout {
+    background: rgba(var(--ion-color-success-rgb), 0.15);
+
+    .day-number {
+      font-weight: 800;
+      color: var(--ion-color-success-shade, #1e7e34);
+    }
+  }
+
+  .workout-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+
+    ion-icon {
+      font-size: 10px;
+      color: var(--ion-color-success);
+    }
+  }
+}
+
+.selected-day-details {
+  border-top: 1px solid var(--ion-color-step-100, rgba(0, 0, 0, 0.06));
+  padding-top: 14px;
+
+  h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+    margin: 0 0 10px;
+  }
+}
+
+.workout-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(var(--ion-color-success-rgb), 0.08);
+  border-left: 3px solid var(--ion-color-success);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+
+  .time-col {
+    display: flex;
+    flex-direction: column;
+
+    .time-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+    }
+
+    .loc-text {
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      margin-top: 2px;
+    }
+  }
+}
+
+.empty-day-box {
+  padding: 12px 0;
+  text-align: center;
+  color: var(--ion-color-medium);
+  font-size: 13px;
+}
+
+// ── Sessions List ──────────────────────────────────────────────────────────
+.sessions-list-container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+}
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.session-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--ion-card-background, #fff);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+  border-left: 4px solid var(--ion-color-primary);
+
+  .date-column {
+    display: flex;
+    flex-direction: column;
+
+    .ukrainian-day {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--ion-color-dark);
+      text-transform: capitalize;
+    }
+
+    .time-range {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ion-color-primary-shade, #b07964);
+      margin-top: 2px;
+    }
+  }
+
+  .info-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+
+    .location-name {
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      font-weight: 600;
+    }
+
+    .tags-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .covered-tag {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ion-color-success-shade, #1e7e34);
+        background: rgba(var(--ion-color-success-rgb), 0.12);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    }
+  }
+}
+
+.empty-sessions-box {
+  .empty-icon {
+    font-size: 40px;
+    color: var(--ion-color-medium);
+    opacity: 0.4;
+    margin-bottom: 8px;
+  }
+
+  h4 {
+    margin: 4px 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ion-color-medium);
+  }
+}

@@ -11,6 +11,7 @@ import { NoteModalComponent } from '../../../shared/modals/note-modal/note-modal
 import { MediaViewerModalComponent } from '../../../shared/modals/media-viewer-modal/media-viewer-modal.component';
 import { SubscriptionModalComponent } from '../../../shared/modals/subscription-modal/subscription-modal.component';
 import { RecurringModalComponent } from '../../../shared/modals/recurring-modal/recurring-modal.component';
+import { SubscriptionDetailModalComponent } from '../../../shared/modals/subscription-detail-modal/subscription-detail-modal.component';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -268,6 +269,20 @@ export class DetailsComponent implements OnInit {
     this.subscriptionsService.togglePayment(sub.id, !sub.isPaid).subscribe({
       next: () => this.loadSubscriptions(this.client().id),
     });
+  }
+
+  async openSubscriptionDetail(sub: ClientSubscription): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: SubscriptionDetailModalComponent,
+      componentProps: {
+        subscription: sub,
+        client: this.client(),
+      },
+    });
+    await modal.present();
+
+    await modal.onWillDismiss();
+    this.loadSubscriptions(this.client().id);
   }
 
   async scheduleRecurringForSubscription(sub: ClientSubscription): Promise<void> {

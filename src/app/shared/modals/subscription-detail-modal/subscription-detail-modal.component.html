@@ -1,0 +1,190 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Деталі абонементу</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- SUBSCRIPTION SUMMARY CARD                                            -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div class="summary-card">
+    <div class="summary-top">
+      <div class="client-meta">
+        <h3>{{ client?.fullName || subscription.client?.fullName || 'Клієнт' }}</h3>
+        <span class="sub-type-badge">
+          {{ subscription.type === 'SESSIONS_BASED' ? 'По кількості занять' : 'По періоду' }}
+        </span>
+      </div>
+      <ion-badge [color]="subscription.status === 'ACTIVE' ? 'success' : 'medium'" class="status-badge">
+        {{ subscription.status === 'ACTIVE' ? 'Активний' : 'Завершений' }}
+      </ion-badge>
+    </div>
+
+    <!-- Progress info -->
+    @if (subscription.type === 'SESSIONS_BASED') {
+      <div class="progress-section">
+        <div class="progress-labels">
+          <span class="label">Використано занять:</span>
+          <span class="count">
+            <strong>{{ subscription.usedSessions }}</strong> / {{ subscription.totalSessions }}
+          </span>
+        </div>
+        <ion-progress-bar
+          [value]="subscription.totalSessions ? subscription.usedSessions / subscription.totalSessions : 0"
+          [color]="subscription.totalSessions && subscription.usedSessions >= subscription.totalSessions ? 'danger' : 'primary'"
+        ></ion-progress-bar>
+      </div>
+    }
+
+    <!-- Financial info & Toggle -->
+    <div class="financial-row">
+      <div class="price-box">
+        <span class="price-val">{{ subscription.price }} ₴</span>
+      </div>
+      <ion-chip
+        [color]="isPaid() ? 'success' : 'warning'"
+        class="payment-chip"
+        (click)="togglePaymentStatus()">
+        <ion-icon [name]="isPaid() ? 'checkmark-circle' : 'time-outline'"></ion-icon>
+        <ion-label>{{ isPaid() ? 'Оплачено' : 'Не оплачено' }}</ion-label>
+      </ion-chip>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- VIEW SEGMENT: CALENDAR vs LIST                                       -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div class="view-switcher ion-margin-top ion-margin-bottom">
+    <ion-segment
+      [value]="activeTab()"
+      (ionChange)="activeTab.set($any($event).detail.value)"
+      mode="ios">
+      <ion-segment-button value="CALENDAR">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-label>Календар</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="LIST">
+        <ion-icon name="list-outline"></ion-icon>
+        <ion-label>Список тренувань</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 1: MONTH CALENDAR VIEW                                           -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'CALENDAR') {
+    <div class="calendar-container">
+      <!-- Month Navigation -->
+      <div class="month-nav-header">
+        <button class="nav-arrow-btn" (click)="previousMonth()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        <span class="current-month-text">{{ monthLabel() }}</span>
+        <button class="nav-arrow-btn" (click)="nextMonth()">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Weekday Header Row -->
+      <div class="weekday-header-row">
+        @for (dayName of WEEKDAY_LABELS; track dayName) {
+          <div class="weekday-col">{{ dayName }}</div>
+        }
+      </div>
+
+      <!-- Calendar Days Grid -->
+      <div class="calendar-grid">
+        @for (week of calendarWeeks(); track $index) {
+          @for (cell of week; track cell.dateStr) {
+            <div
+              class="day-cell"
+              [class.other-month]="!cell.isCurrentMonth"
+              [class.is-today]="cell.isToday"
+              [class.is-selected]="selectedDateStr() === cell.dateStr"
+              [class.has-workout]="cell.hasSession"
+              (click)="selectDay(cell)">
+              <span class="day-number">{{ cell.dayNum }}</span>
+              @if (cell.hasSession) {
+                <span class="workout-marker">
+                  <ion-icon name="ticket-outline"></ion-icon>
+                </span>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Selected Date Sessions Section -->
+      <div class="selected-day-details ion-margin-top">
+        <h4>Тренування на обраний день:</h4>
+        @if (selectedDateSessions().length > 0) {
+          <div class="day-sessions-cards">
+            @for (s of selectedDateSessions(); track s.id) {
+              <div class="workout-item-card">
+                <div class="time-col">
+                  <span class="time-text">{{ formatTimeRange(s.startTime, s.endTime) }}</span>
+                  <span class="loc-text">{{ s.location?.name || ('Локація #' + s.locationId) }}</span>
+                </div>
+                <div class="badge-col">
+                  <ion-badge [color]="getStatusColor(s.status)">
+                    {{ getStatusLabel(s.status) }}
+                  </ion-badge>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-day-box">
+            <p>На цю дату занять за абонементом не заплановано</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 2: SESSIONS LIST WITH UKRAINIAN DAYS OF WEEK                     -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'LIST') {
+    <div class="sessions-list-container">
+      @if (isLoading()) {
+        <div class="loading-box ion-padding ion-text-center">
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+        </div>
+      } @else if (sortedSessions().length > 0) {
+        <div class="sessions-list">
+          @for (s of sortedSessions(); track s.id) {
+            <div class="session-card-row">
+              <div class="date-column">
+                <span class="ukrainian-day">{{ formatUkrainianDateWithDay(s.startTime) }}</span>
+                <span class="time-range">{{ formatTimeRange(s.startTime, s.endTime) }}</span>
+              </div>
+              <div class="info-column">
+                <span class="location-name">{{ s.location?.name || ('Локація #' + s.locationId) }}</span>
+                <div class="tags-row">
+                  <ion-badge [color]="getStatusColor(s.status)" class="status-badge">
+                    {{ getStatusLabel(s.status) }}
+                  </ion-badge>
+                  <span class="covered-tag">🎟️ По абонементу</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-sessions-box ion-padding ion-text-center">
+          <ion-icon name="calendar-clear-outline" class="empty-icon"></ion-icon>
+          <h4>Немає запланованих занять</h4>
+          <p>Для цього абонементу ще не сформовано графік тренувань</p>
+        </div>
+      }
+    </div>
+  }
+</ion-content>

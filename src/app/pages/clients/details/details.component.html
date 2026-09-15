@@ -195,7 +195,7 @@
         </ion-button>
 
         @for (sub of subscriptions(); track sub.id) {
-          <ion-card class="modern-card">
+          <ion-card class="modern-card sub-interactive-card" (click)="openSubscriptionDetail(sub)" style="cursor: pointer;">
             <ion-card-content>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <ion-badge [color]="getSubscriptionStatusColor(sub.status)">
@@ -224,26 +224,30 @@
 
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: bold; font-size: 1.1rem;">{{ sub.price }} ₴</span>
-                <ion-chip [color]="sub.isPaid ? 'success' : 'warning'" (click)="togglePayment(sub)">
+                <ion-chip [color]="sub.isPaid ? 'success' : 'warning'" (click)="$event.stopPropagation(); togglePayment(sub)">
                   <ion-icon [name]="sub.isPaid ? 'checkmark-circle' : 'time-outline'"></ion-icon>
                   <ion-label>{{ sub.isPaid ? 'Оплачено' : 'Не оплачено' }}</ion-label>
                 </ion-chip>
               </div>
 
               <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: space-between; align-items: center;">
-                @if (sub.status === 'ACTIVE') {
-                  <ion-button fill="outline" size="small" color="primary" (click)="scheduleRecurringForSubscription(sub)">
-                    <ion-icon name="repeat-outline" slot="start"></ion-icon>
-                    Запланувати серію
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <ion-button fill="outline" size="small" color="primary" (click)="$event.stopPropagation(); openSubscriptionDetail(sub)">
+                    <ion-icon name="calendar-outline" slot="start"></ion-icon>
+                    Календар та графік
                   </ion-button>
-                } @else {
-                  <div></div>
-                }
+                  @if (sub.status === 'ACTIVE') {
+                    <ion-button fill="clear" size="small" color="secondary" (click)="$event.stopPropagation(); scheduleRecurringForSubscription(sub)">
+                      <ion-icon name="repeat-outline" slot="start"></ion-icon>
+                      Серія
+                    </ion-button>
+                  }
+                </div>
                 <div style="display: flex; gap: 4px;">
-                  <ion-button fill="clear" size="small" (click)="editSubscription(sub)">
+                  <ion-button fill="clear" size="small" (click)="$event.stopPropagation(); editSubscription(sub)">
                     <ion-icon name="create-outline" slot="icon-only"></ion-icon>
                   </ion-button>
-                  <ion-button fill="clear" size="small" color="danger" (click)="deleteSubscription(sub)">
+                  <ion-button fill="clear" size="small" color="danger" (click)="$event.stopPropagation(); deleteSubscription(sub)">
                     <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
                   </ion-button>
                 </div>
