@@ -7,39 +7,63 @@ export interface SessionParticipant {
   id: number;
   sessionId: number;
   clientId?: number;
-  client?: any;
+  client?: { id: number; fullName: string; phone?: string };
   customName?: string;
 }
 
 export interface WorkoutSession {
   id: number;
   locationId: number;
-  location?: any;
+  location?: { id: number; name: string };
   type: 'INDIVIDUAL' | 'GROUP';
   startTime: string;
   endTime: string;
   price: number;
   status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'MISSED' | 'REQUIRED_ACTION';
   isPaid: boolean;
+  subscriptionId?: number | null;
   workoutTypes?: string[];
   maxParticipants?: number;
   participants: SessionParticipant[];
+}
+
+export interface RecurringSessionsPayload {
+  clientId: number;
+  locationId: number;
+  daysOfWeek: number[];
+  startTime: string;
+  endTime: string;
+  dateFrom: string;
+  dateTo: string;
+  subscriptionId?: number;
+  price?: number;
+  workoutTypes?: string[];
+}
+
+export interface RecurringPreviewItem {
+  startTime: string;
+  endTime: string;
+  date: string;
+  dayOfWeek: number;
+  hasConflict: boolean;
+  conflictReason?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class SessionsService {
-  private apiUrl = `${environment.apiUrl}/sessions`;
+  private readonly apiUrl = `${environment.apiUrl}/sessions`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
-  getAll(filters?: any): Observable<WorkoutSession[]> {
+  getAll(filters?: Record<string, unknown>): Observable<WorkoutSession[]> {
     let params = new HttpParams();
     if (filters) {
       Object.keys(filters).forEach(key => {
-        if (filters[key] !== undefined && filters[key] !== null) {
-          params = params.append(key, filters[key]);
+        const val = filters[key];
+        if (val !== undefined && val !== null) {
+          params = params.append(key, String(val));
         }
       });
     }
@@ -50,11 +74,11 @@ export class SessionsService {
     return this.http.get<WorkoutSession>(`${this.apiUrl}/${id}`, { headers: { 'x-silent-request': 'true' } });
   }
 
-  create(data: any): Observable<WorkoutSession> {
+  create(data: unknown): Observable<WorkoutSession> {
     return this.http.post<WorkoutSession>(this.apiUrl, data);
   }
 
-  update(id: number, data: any): Observable<WorkoutSession> {
+  update(id: number, data: unknown): Observable<WorkoutSession> {
     return this.http.put<WorkoutSession>(`${this.apiUrl}/${id}`, data);
   }
 
@@ -62,7 +86,7 @@ export class SessionsService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  addParticipant(sessionId: number, data: any): Observable<SessionParticipant> {
+  addParticipant(sessionId: number, data: unknown): Observable<SessionParticipant> {
     return this.http.post<SessionParticipant>(`${this.apiUrl}/${sessionId}/participants`, data);
   }
 
@@ -72,5 +96,13 @@ export class SessionsService {
 
   duplicateWeek(sourceStart: string, targetStart: string): Observable<WorkoutSession[]> {
     return this.http.post<WorkoutSession[]>(`${this.apiUrl}/duplicate-week`, { sourceStart, targetStart });
+  }
+
+  previewRecurring(data: RecurringSessionsPayload): Observable<RecurringPreviewItem[]> {
+    return this.http.post<RecurringPreviewItem[]>(`${this.apiUrl}/recurring/preview`, data);
+  }
+
+  createRecurring(data: RecurringSessionsPayload): Observable<WorkoutSession[]> {
+    return this.http.post<WorkoutSession[]>(`${this.apiUrl}/recurring`, data);
   }
 }

@@ -9,6 +9,7 @@ import { LocationsService, Location } from '../../core/services/locations.servic
 import { ClientsService, Client } from '../../core/services/clients.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { SessionModalComponent } from '../../shared/modals/session-modal/session-modal.component';
+import { RecurringModalComponent } from '../../shared/modals/recurring-modal/recurring-modal.component';
 import { WeekViewComponent } from './week-view/week-view.component';
 import { MonthViewComponent } from './month-view/month-view.component';
 
@@ -325,6 +326,22 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
         this.loadData();
       }
     });
+  }
+
+  async openRecurringModal(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: RecurringModalComponent,
+      componentProps: {
+        locations: this.locations(),
+        clients: this.clients(),
+      },
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'confirm' && data?.created) {
+      this.loadData();
+    }
   }
 
   updateStatus(id: number, status: any): void {

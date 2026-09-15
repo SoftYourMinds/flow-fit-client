@@ -1,0 +1,96 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ion-color-step-600, #666);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.custom-input-item {
+  --background: var(--ion-color-step-50, #f8f9fa);
+  border-radius: 10px;
+  border: 1px solid var(--ion-color-step-150, #e0e0e0);
+}
+
+.days-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.day-chip {
+  cursor: pointer;
+  font-weight: 600;
+  min-width: 42px;
+  justify-content: center;
+}
+
+.time-inputs-row,
+.date-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-item,
+.date-item {
+  flex: 1;
+}
+
+.time-separator {
+  color: var(--ion-color-medium);
+  font-weight: bold;
+}
+
+.error-banner {
+  background: var(--ion-color-danger-tint, #ffe5e5);
+  color: var(--ion-color-danger, #eb445a);
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.preview-section {
+  background: var(--ion-color-step-50, #f8f9fa);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid var(--ion-color-step-150, #e0e0e0);
+}
+
+.preview-header {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ion-color-step-150, #e0e0e0);
+}
+
+.preview-item {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  border-bottom: 1px solid var(--ion-color-step-100, #f0f0f0);
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.conflict-item {
+  --background: rgba(var(--ion-color-danger-rgb, 235, 68, 90), 0.08);
+  border-radius: 8px;
+  padding: 4px 8px;
+}

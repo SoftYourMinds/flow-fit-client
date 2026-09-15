@@ -1,0 +1,216 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">Скасувати</ion-button>
+    </ion-buttons>
+    <ion-title>Серія тренувань</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [strong]="true" color="primary" (click)="confirmCreate()" [disabled]="isSubmitting() || !clientId() || !locationId()">
+        @if (isSubmitting()) {
+          <ion-spinner name="crescent" style="width: 20px; height: 20px;"></ion-spinner>
+        } @else {
+          Створити
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (errorMessage()) {
+    <div class="error-banner">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <div class="form-container">
+    <!-- Client Selection -->
+    <div class="form-group">
+      <ion-label class="form-label">Клієнт</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+        <ion-select
+          [value]="clientId()"
+          (ionChange)="onClientSelect($event)"
+          placeholder="Оберіть клієнта"
+          interface="popover"
+          style="width: 100%;"
+        >
+          @for (client of clients; track client.id) {
+            <ion-select-option [value]="client.id">{{ client.fullName }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <!-- Active Subscription Selection (Optional) -->
+    @if (clientSubscriptions().length > 0) {
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Прив'язати до абонементу</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="ticket-outline" slot="start" color="secondary"></ion-icon>
+          <ion-select
+            [value]="subscriptionId()"
+            (ionChange)="onSubscriptionSelect($event)"
+            placeholder="Без абонементу"
+            interface="popover"
+            style="width: 100%;"
+          >
+            <ion-select-option [value]="null">Без абонементу</ion-select-option>
+            @for (sub of clientSubscriptions(); track sub.id) {
+              <ion-select-option [value]="sub.id">
+                {{ sub.type === 'SESSIONS_BASED' ? 'По заліку' : 'По датах' }}
+                ({{ sub.type === 'SESSIONS_BASED' ? (sub.totalSessions! - sub.usedSessions) + ' зал.' : (sub.endDate | date:'dd.MM') }})
+              </ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+    }
+
+    <!-- Location -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Локація</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+        <ion-select
+          [value]="locationId()"
+          (ionChange)="locationId.set($event.detail.value); previewItems.set([]);"
+          placeholder="Оберіть локацію"
+          interface="popover"
+          style="width: 100%;"
+        >
+          @for (loc of locations; track loc.id) {
+            <ion-select-option [value]="loc.id">{{ loc.name }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <!-- Days of Week -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Дні тижня</ion-label>
+      <div class="days-chips-row">
+        @for (day of DAYS_OF_WEEK; track day.value) {
+          <ion-chip
+            [color]="isDaySelected(day.value) ? 'primary' : 'medium'"
+            [outline]="!isDaySelected(day.value)"
+            (click)="toggleDay(day.value)"
+            class="day-chip"
+          >
+            <ion-label>{{ day.label }}</ion-label>
+          </ion-chip>
+        }
+      </div>
+    </div>
+
+    <!-- Time Range -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Час проведення</ion-label>
+      <div class="time-inputs-row">
+        <ion-item lines="none" class="custom-input-item time-item">
+          <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+          <ion-input
+            type="time"
+            [value]="startTime()"
+            (ionInput)="startTime.set($any($event).detail.value); previewItems.set([]);"
+            placeholder="10:00"
+          ></ion-input>
+        </ion-item>
+        <span class="time-separator">—</span>
+        <ion-item lines="none" class="custom-input-item time-item">
+          <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+          <ion-input
+            type="time"
+            [value]="endTime()"
+            (ionInput)="endTime.set($any($event).detail.value); previewItems.set([]);"
+            placeholder="11:00"
+          ></ion-input>
+        </ion-item>
+      </div>
+    </div>
+
+    <!-- Date Range -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Період тренувань</ion-label>
+      <div class="date-inputs-row">
+        <ion-item lines="none" class="custom-input-item date-item">
+          <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
+          <ion-input
+            type="date"
+            [value]="dateFrom()"
+            (ionInput)="dateFrom.set($any($event).detail.value); previewItems.set([]);"
+          ></ion-input>
+        </ion-item>
+        <span class="time-separator">—</span>
+        <ion-item lines="none" class="custom-input-item date-item">
+          <ion-icon name="calendar-outline" slot="start" color="primary"></ion-icon>
+          <ion-input
+            type="date"
+            [value]="dateTo()"
+            (ionInput)="dateTo.set($any($event).detail.value); previewItems.set([]);"
+          ></ion-input>
+        </ion-item>
+      </div>
+    </div>
+
+    <!-- Price -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Ціна за одне тренування (₴)</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
+        <ion-input
+          type="number"
+          [value]="price()"
+          (ionInput)="price.set(+$any($event).detail.value)"
+          placeholder="300"
+        ></ion-input>
+      </ion-item>
+    </div>
+
+    <!-- Preview Action Button -->
+    <div class="ion-margin-top ion-margin-bottom">
+      <ion-button expand="block" fill="outline" color="primary" (click)="previewSchedule()" [disabled]="isPreviewLoading()">
+        @if (isPreviewLoading()) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+          Генеруємо розклад...
+        } @else {
+          <ion-icon name="eye-outline" slot="start"></ion-icon>
+          Попередній перегляд графіка
+        }
+      </ion-button>
+    </div>
+
+    <!-- Preview Results List -->
+    @if (previewItems().length > 0) {
+      <div class="preview-section">
+        <div class="preview-header">
+          <ion-label><strong>Знайдено занять: {{ previewItems().length }}</strong></ion-label>
+        </div>
+
+        <ion-list lines="none" class="preview-list">
+          @for (item of previewItems(); track item.date + item.startTime) {
+            <ion-item class="preview-item" [class.conflict-item]="item.hasConflict">
+              <ion-badge slot="start" [color]="item.hasConflict ? 'danger' : 'primary'">
+                {{ getDayLabel(item.dayOfWeek) }}
+              </ion-badge>
+              <ion-label>
+                <h3>{{ item.date | date:'dd MMM yyyy' }}</h3>
+                <p>{{ item.startTime | date:'HH:mm' }} – {{ item.endTime | date:'HH:mm' }}</p>
+                @if (item.hasConflict) {
+                  <ion-note color="danger">{{ item.conflictReason || 'Конфлікт часу!' }}</ion-note>
+                }
+              </ion-label>
+              @if (item.hasConflict) {
+                <ion-icon name="alert-circle" color="danger" slot="end"></ion-icon>
+              } @else {
+                <ion-icon name="checkmark-circle" color="success" slot="end"></ion-icon>
+              }
+            </ion-item>
+          }
+        </ion-list>
+      </div>
+    }
+  </div>
+</ion-content>
