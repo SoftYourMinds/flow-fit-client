@@ -233,6 +233,7 @@ export class CreateWizardModalComponent implements OnInit {
       endTime: this.calculateEndTime(this.subStartTime(), this.subDuration()),
       dateFrom: this.subDateFrom(),
       dateTo: this.subDateTo(),
+      timezoneOffset: new Date().getTimezoneOffset(),
       workoutTypes: this.subWorkoutTypes(),
     };
 
@@ -280,6 +281,7 @@ export class CreateWizardModalComponent implements OnInit {
       endTime: this.calculateEndTime(this.subStartTime(), this.subDuration()),
       dateFrom: this.subDateFrom(),
       dateTo: this.subDateTo(),
+      timezoneOffset: new Date().getTimezoneOffset(),
       price: +this.subPrice(),
       isPaid: this.subIsPaid(),
       workoutTypes: this.subWorkoutTypes(),
@@ -463,13 +465,19 @@ export class CreateWizardModalComponent implements OnInit {
 
   private getTodayDateString(): string {
     const now = new Date();
-    return now.toISOString().slice(0, 10);
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   private getDefaultDateToString(): string {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);
-    return date.toISOString().slice(0, 10);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   private getLocalIsoString(date: Date): string {

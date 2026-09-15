@@ -293,7 +293,7 @@
                 <div class="item-left">
                   <ion-icon [name]="item.hasConflict ? 'warning-outline' : 'checkmark-circle-outline'"
                             [color]="item.hasConflict ? 'warning' : 'success'"></ion-icon>
-                  <span class="preview-date">{{ formatPreviewDate(item.date) }}</span>
+                  <span class="preview-date">{{ formatPreviewDate(item.startTime) }}</span>
                 </div>
                 @if (item.hasConflict) {
                   <span class="conflict-tag">{{ item.conflictReason || 'Конфлікт' }}</span>

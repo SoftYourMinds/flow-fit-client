@@ -42,6 +42,7 @@ export interface CreateSubscriptionWithRecurringPayload {
   endTime: string;
   dateFrom: string;
   dateTo: string;
+  timezoneOffset?: number;
   price?: number;
   isPaid?: boolean;
   workoutTypes?: string[];

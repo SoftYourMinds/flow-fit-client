@@ -225,6 +225,7 @@ export class RecurringModalComponent implements OnInit {
       endTime: this.endTime(),
       dateFrom: this.dateFrom(),
       dateTo: this.dateTo(),
+      timezoneOffset: new Date().getTimezoneOffset(),
       subscriptionId: this.subscriptionId() ?? undefined,
       price: this.price(),
       workoutTypes: this.workoutTypes().length > 0 ? this.workoutTypes() : undefined,
@@ -248,12 +249,19 @@ export class RecurringModalComponent implements OnInit {
   }
 
   private getTodayDateString(): string {
-    return new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   private getDefaultDateToString(): string {
     const d = new Date();
     d.setDate(d.getDate() + 28); // 4 weeks
-    return d.toISOString().slice(0, 10);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 }

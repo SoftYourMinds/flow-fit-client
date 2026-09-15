@@ -35,6 +35,7 @@ export interface RecurringSessionsPayload {
   endTime: string;
   dateFrom: string;
   dateTo: string;
+  timezoneOffset?: number;
   subscriptionId?: number;
   price?: number;
   workoutTypes?: string[];

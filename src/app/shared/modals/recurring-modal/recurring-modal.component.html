@@ -196,7 +196,7 @@
                 {{ getDayLabel(item.dayOfWeek) }}
               </ion-badge>
               <ion-label>
-                <h3>{{ item.date | date:'dd MMM yyyy' }}</h3>
+                <h3>{{ item.startTime | date:'dd MMM yyyy' }}</h3>
                 <p>{{ item.startTime | date:'HH:mm' }} – {{ item.endTime | date:'HH:mm' }}</p>
                 @if (item.hasConflict) {
                   <ion-note color="danger">{{ item.conflictReason || 'Конфлікт часу!' }}</ion-note>
