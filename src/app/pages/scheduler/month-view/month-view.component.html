@@ -36,7 +36,7 @@
           @if (day.sessionCount > 0) {
             <div class="event-dots">
               @for (i of dotsArray(day.sessionCount); track $index) {
-                <span class="dot"></span>
+                <span class="dot" [class.sub-dot]="day.hasSubscription && $index === 0"></span>
               }
             </div>
           }
@@ -60,7 +60,15 @@
               <span class="end-time">{{ formatTime(session.endTime) }}</span>
             </div>
             <div class="session-info">
-              <div class="session-name">{{ getSessionName(session) }}</div>
+              <div class="session-name">
+                <span>{{ getSessionName(session) }}</span>
+                @if (session.subscriptionId) {
+                  <ion-badge color="success" class="sub-badge">
+                    <ion-icon name="ticket-outline"></ion-icon>
+                    Абонемент
+                  </ion-badge>
+                }
+              </div>
               <div class="session-meta">
                 <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
                   {{ getStatusLabel(session.status) }}

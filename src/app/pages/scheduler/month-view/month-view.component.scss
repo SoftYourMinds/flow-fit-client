@@ -157,6 +157,10 @@
   border-radius: 50%;
   background: var(--ion-color-primary);
   display: block;
+
+  &.sub-dot {
+    background: var(--ion-color-success) !important;
+  }
 }
 
 // ── Day Sessions List ──────────────────────────────────────────────────────
@@ -225,6 +229,9 @@
   min-width: 0;
 
   .session-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 14px;
     font-weight: 600;
     color: var(--ion-color-dark);
@@ -232,6 +239,20 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 4px;
+
+    .sub-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+
+      ion-icon {
+        font-size: 11px;
+      }
+    }
   }
 
   .session-meta {

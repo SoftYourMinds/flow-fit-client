@@ -18,6 +18,7 @@ export interface CalendarDay {
   isCurrentMonth: boolean;
   isToday: boolean;
   sessionCount: number;
+  hasSubscription?: boolean;
 }
 
 @Component({
@@ -67,14 +68,15 @@ export class MonthViewComponent {
     for (let i = startDow - 1; i >= 0; i--) {
       const d = new Date(year, month, -i);
       const dStr = getLocalDateString(d);
-      const count = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr).length;
+      const daySessions = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr);
       cells.push({
         date: d,
         dateStr: dStr,
         dayNum: d.getDate(),
         isCurrentMonth: false,
         isToday: dStr === todayStr,
-        sessionCount: count,
+        sessionCount: daySessions.length,
+        hasSubscription: daySessions.some(s => !!s.subscriptionId),
       });
     }
 
@@ -82,14 +84,15 @@ export class MonthViewComponent {
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const d = new Date(year, month, day);
       const dStr = getLocalDateString(d);
-      const count = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr).length;
+      const daySessions = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr);
       cells.push({
         date: d,
         dateStr: dStr,
         dayNum: day,
         isCurrentMonth: true,
         isToday: dStr === todayStr,
-        sessionCount: count,
+        sessionCount: daySessions.length,
+        hasSubscription: daySessions.some(s => !!s.subscriptionId),
       });
     }
 
@@ -99,14 +102,15 @@ export class MonthViewComponent {
       for (let i = 1; i <= 7 - remainder; i++) {
         const d = new Date(year, month + 1, i);
         const dStr = getLocalDateString(d);
-        const count = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr).length;
+        const daySessions = allSessions.filter(s => getLocalDateString(new Date(s.startTime)) === dStr);
         cells.push({
           date: d,
           dateStr: dStr,
           dayNum: i,
           isCurrentMonth: false,
           isToday: dStr === todayStr,
-          sessionCount: count,
+          sessionCount: daySessions.length,
+          hasSubscription: daySessions.some(s => !!s.subscriptionId),
         });
       }
     }

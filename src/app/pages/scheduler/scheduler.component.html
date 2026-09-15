@@ -2,9 +2,6 @@
   <ion-toolbar>
     <ion-title>Розклад тренувань</ion-title>
     <ion-buttons slot="end">
-      <ion-button color="medium" fill="clear" (click)="openRecurringModal()" title="Повторювані тренування">
-        <ion-icon name="repeat-outline" slot="icon-only"></ion-icon>
-      </ion-button>
       <ion-button color="primary" fill="solid" shape="round" (click)="openCreateSessionModal()" class="add-btn">
         <ion-icon name="add-outline" slot="start"></ion-icon>
         <ion-label>Нове</ion-label>
@@ -147,6 +144,12 @@
                   <span class="type-tag" [class.group]="session.type === 'GROUP'">
                     {{ session.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
                   </span>
+                  @if (session.subscriptionId) {
+                    <ion-badge color="success" style="display: inline-flex; align-items: center; gap: 3px; font-size: 0.7rem;">
+                      <ion-icon name="ticket-outline"></ion-icon>
+                      Абонемент
+                    </ion-badge>
+                  }
                   <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
                     {{ getStatusLabel(session.status) }}
                   </ion-badge>

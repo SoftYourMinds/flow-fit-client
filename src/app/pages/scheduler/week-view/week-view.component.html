@@ -44,6 +44,12 @@
                   <div class="session-time">
                     {{ formatTime(session.startTime) }} {{ getSessionName(session) }}
                   </div>
+                  @if (session.subscriptionId) {
+                    <div class="subscription-tag">
+                      <ion-icon name="ticket-outline"></ion-icon>
+                      <span>Абонемент</span>
+                    </div>
+                  }
                   <!-- Workout type chips -->
                   @if (session.workoutTypes && session.workoutTypes.length > 0) {
                     <div class="session-types">
