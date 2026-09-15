@@ -1,0 +1,556 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    @if (currentStep() !== 'TYPE_CHOICE') {
+      <ion-buttons slot="start">
+        <ion-button (click)="goToStep('TYPE_CHOICE')">
+          <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+    <ion-title>
+      @switch (currentStep()) {
+        @case ('TYPE_CHOICE') { Створити тренування }
+        @case ('SUBSCRIPTION') { Абонемент та розклад }
+        @case ('SINGLE') { Разове тренування }
+      }
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- STEP 1: TYPE CHOICE                                                  -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  @if (currentStep() === 'TYPE_CHOICE') {
+    <div class="choice-container">
+      <div class="step-intro">
+        <h2>Що ви хочете створити?</h2>
+        <p>Оберіть потрібний формат занять для швидкого планування</p>
+      </div>
+
+      <div class="choice-cards">
+        <!-- Choice 1: Subscription & Recurring Series -->
+        <div class="choice-card sub-card" (click)="goToStep('SUBSCRIPTION')">
+          <div class="card-icon-wrapper sub-icon">
+            <ion-icon name="ticket-outline"></ion-icon>
+          </div>
+          <div class="card-content-wrapper">
+            <div class="card-badge sub-badge">Серія занять</div>
+            <h3>По абонементу</h3>
+            <p>Створити абонемент клієнту та автоматично згенерувати розклад регулярних тренувань</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="card-arrow"></ion-icon>
+        </div>
+
+        <!-- Choice 2: Single Workout -->
+        <div class="choice-card single-card" (click)="goToStep('SINGLE')">
+          <div class="card-icon-wrapper single-icon">
+            <ion-icon name="flash-outline"></ion-icon>
+          </div>
+          <div class="card-content-wrapper">
+            <div class="card-badge single-badge">Разове</div>
+            <h3>Разове тренування</h3>
+            <p>Індивідуальне з клієнтом або групове заняття на конкретний день та час</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="card-arrow"></ion-icon>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- STEP 2A: SUBSCRIPTION (RECURRING TRAINING SERIES)                    -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  @if (currentStep() === 'SUBSCRIPTION') {
+    <div class="form-container">
+      <!-- Error Alert -->
+      @if (errorMessage()) {
+        <div class="alert-box danger">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Client Selection -->
+      <div class="form-group">
+        <ion-label class="form-label">Клієнт *</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+          <ion-select
+            [value]="subClientId()"
+            (ionChange)="setSubClient($event)"
+            placeholder="Оберіть клієнта"
+            interface="popover"
+            style="width: 100%;">
+            @for (c of clients; track c.id) {
+              <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Subscription Specs -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Кількість занять в абонементі</ion-label>
+        <div class="preset-chips">
+          @for (count of SESSION_COUNT_PRESETS; track count) {
+            <ion-chip
+              [color]="subTotalSessions() === count ? 'primary' : 'medium'"
+              [outline]="subTotalSessions() !== count"
+              (click)="setSubTotalSessions(count)">
+              {{ count }} занять
+            </ion-chip>
+          }
+        </div>
+      </div>
+
+      <!-- Price and Payment -->
+      <div class="grid-2-col ion-margin-top">
+        <div class="form-group">
+          <ion-label class="form-label">Ціна абонементу (грн)</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="cash-outline" slot="start" color="primary"></ion-icon>
+            <ion-input
+              type="number"
+              [value]="subPrice()"
+              (ionInput)="subPrice.set(+$any($event).detail.value)"
+              placeholder="2400"
+            ></ion-input>
+          </ion-item>
+        </div>
+
+        <div class="form-group">
+          <ion-label class="form-label">Статус оплати</ion-label>
+          <ion-item lines="none" class="custom-input-item toggle-item">
+            <ion-label>{{ subIsPaid() ? 'Оплачено' : 'Не оплачено' }}</ion-label>
+            <ion-toggle
+              slot="end"
+              color="success"
+              [checked]="subIsPaid()"
+              (ionChange)="subIsPaid.set($any($event).detail.checked)"
+            ></ion-toggle>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Schedule Section Divider -->
+      <div class="section-divider ion-margin-top">
+        <span>Налаштування розкладу</span>
+      </div>
+
+      <!-- Location Selector -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Локація *</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+          <ion-select
+            [value]="subLocationId()"
+            (ionChange)="subLocationId.set($any($event).detail.value); generateSubPreview()"
+            placeholder="Оберіть локацію"
+            interface="popover"
+            style="width: 100%;">
+            @for (loc of locations; track loc.id) {
+              <ion-select-option [value]="loc.id">{{ loc.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Days of Week Chips -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Дні тижня для тренувань</ion-label>
+        <div class="days-selector-row">
+          @for (d of DAYS_OF_WEEK; track d.value) {
+            <button
+              type="button"
+              class="day-circle-btn"
+              [class.active]="isDaySelected(d.value)"
+              (click)="toggleDay(d.value)">
+              {{ d.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Time and Duration -->
+      <div class="grid-2-col ion-margin-top">
+        <div class="form-group">
+          <ion-label class="form-label">Час початку</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+            <ion-input
+              type="time"
+              [value]="subStartTime()"
+              (ionChange)="subStartTime.set($any($event).detail.value); generateSubPreview()"
+            ></ion-input>
+          </ion-item>
+        </div>
+
+        <div class="form-group">
+          <ion-label class="form-label">Тривалість</ion-label>
+          <div class="duration-chips">
+            <ion-chip
+              [color]="subDuration() === 30 ? 'primary' : 'medium'"
+              [outline]="subDuration() !== 30"
+              (click)="subDuration.set(30); generateSubPreview()">
+              30хв
+            </ion-chip>
+            <ion-chip
+              [color]="subDuration() === 50 ? 'primary' : 'medium'"
+              [outline]="subDuration() !== 50"
+              (click)="subDuration.set(50); generateSubPreview()">
+              50хв
+            </ion-chip>
+            <ion-chip
+              [color]="subDuration() === 120 ? 'primary' : 'medium'"
+              [outline]="subDuration() !== 120"
+              (click)="subDuration.set(120); generateSubPreview()">
+              120хв
+            </ion-chip>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date Range (From - To) -->
+      <div class="grid-2-col ion-margin-top">
+        <div class="form-group">
+          <ion-label class="form-label">Початок серії</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input
+              type="date"
+              [value]="subDateFrom()"
+              (ionChange)="subDateFrom.set($any($event).detail.value); generateSubPreview()"
+            ></ion-input>
+          </ion-item>
+        </div>
+
+        <div class="form-group">
+          <ion-label class="form-label">Кінець серії</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-input
+              type="date"
+              [value]="subDateTo()"
+              (ionChange)="subDateTo.set($any($event).detail.value); generateSubPreview()"
+            ></ion-input>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Workout Types -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Напрями тренування</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="fitness-outline" slot="start" color="primary"></ion-icon>
+          <ion-select
+            [value]="subWorkoutTypes()"
+            (ionChange)="subWorkoutTypes.set($any($event).detail.value)"
+            [multiple]="true"
+            placeholder="Всі напрями"
+            interface="popover"
+            style="width: 100%;">
+            @for (type of WORKOUT_TYPE_OPTIONS; track type) {
+              <ion-select-option [value]="type">{{ type }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Preview Section -->
+      <div class="preview-section ion-margin-top">
+        <div class="preview-header">
+          <h4>Попередній графік тренувань</h4>
+          @if (isSubPreviewLoading()) {
+            <ion-spinner name="dots" size="small"></ion-spinner>
+          } @else if (subPreviewItems().length > 0) {
+            <ion-badge color="tertiary">{{ subPreviewItems().length }} занять</ion-badge>
+          }
+        </div>
+
+        @if (subConflictCount() > 0) {
+          <div class="alert-box warning ion-margin-bottom">
+            <ion-icon name="warning-outline"></ion-icon>
+            <span>Знайдено {{ subConflictCount() }} перетинів у розкладі</span>
+          </div>
+        }
+
+        @if (subPreviewItems().length > 0) {
+          <div class="preview-list">
+            @for (item of subPreviewItems(); track item.date) {
+              <div class="preview-item" [class.has-conflict]="item.hasConflict">
+                <div class="item-left">
+                  <ion-icon [name]="item.hasConflict ? 'warning-outline' : 'checkmark-circle-outline'"
+                            [color]="item.hasConflict ? 'warning' : 'success'"></ion-icon>
+                  <span class="preview-date">{{ formatPreviewDate(item.date) }}</span>
+                </div>
+                @if (item.hasConflict) {
+                  <span class="conflict-tag">{{ item.conflictReason || 'Конфлікт' }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <div class="actions-footer ion-margin-top">
+        <ion-button
+          expand="block"
+          shape="round"
+          color="primary"
+          [disabled]="isSubmitting() || !subClientId() || !subLocationId()"
+          (click)="submitSubscription()">
+          @if (isSubmitting()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+            Створити абонемент і розклад
+          }
+        </ion-button>
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!-- STEP 2B: SINGLE WORKOUT                                              -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  @if (currentStep() === 'SINGLE') {
+    <div class="form-container">
+      <!-- Error Alert -->
+      @if (errorMessage()) {
+        <div class="alert-box danger">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Format Segment -->
+      <div class="form-group">
+        <ion-label class="form-label">Формат тренування</ion-label>
+        <ion-segment
+          [value]="singleType()"
+          (ionChange)="singleType.set($any($event).detail.value)"
+          mode="ios">
+          <ion-segment-button value="INDIVIDUAL">
+            <ion-icon name="person-outline"></ion-icon>
+            <ion-label>Індивідуальне</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="GROUP">
+            <ion-icon name="people-outline"></ion-icon>
+            <ion-label>Групове</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <!-- Individual Client Selection (INLINE - No extra modal required!) -->
+      @if (singleType() === 'INDIVIDUAL') {
+        <div class="form-group ion-margin-top">
+          <ion-label class="form-label">Клієнт</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+            <ion-select
+              [value]="singleClientId()"
+              (ionChange)="onSingleClientChange($event)"
+              placeholder="Оберіть клієнта"
+              interface="popover"
+              style="width: 100%;">
+              @for (c of clients; track c.id) {
+                <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <!-- Active Subscription Deduction Banner -->
+        @if (activeSubscriptionForSingle()) {
+          @let sub = activeSubscriptionForSingle()!;
+          <div class="subscription-deduct-card ion-margin-top">
+            <div class="card-header-row">
+              <div class="badge-title">
+                <ion-icon name="ticket-outline" color="success"></ion-icon>
+                <span>Активний абонемент</span>
+              </div>
+              <ion-badge color="success">
+                {{ sub.usedSessions }} / {{ sub.totalSessions || '∞' }} занять
+              </ion-badge>
+            </div>
+            <p class="sub-description">У клієнта є оплачений абонемент</p>
+            <ion-item lines="none" class="deduct-toggle-item">
+              <ion-label>Списати це тренування з абонементу</ion-label>
+              <ion-toggle
+                slot="end"
+                color="success"
+                [checked]="deductFromSubscription()"
+                (ionChange)="deductFromSubscription.set($any($event).detail.checked)"
+              ></ion-toggle>
+            </ion-item>
+          </div>
+        }
+      }
+
+      <!-- Group Workout Options -->
+      @if (singleType() === 'GROUP') {
+        <div class="form-group ion-margin-top">
+          <ion-label class="form-label">Максимальна кількість учасників</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
+            <ion-input
+              type="number"
+              [value]="singleMaxParticipants()"
+              (ionInput)="singleMaxParticipants.set($any($event).detail.value ? +$any($event).detail.value : null)"
+              placeholder="Наприклад: 8 (або залиште порожнім)"
+              min="1"
+            ></ion-input>
+          </ion-item>
+        </div>
+      }
+
+      <!-- Location Selector -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Локація *</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+          <ion-select
+            [value]="singleLocationId()"
+            (ionChange)="singleLocationId.set($any($event).detail.value)"
+            placeholder="Оберіть локацію"
+            interface="popover"
+            style="width: 100%;">
+            @for (loc of locations; track loc.id) {
+              <ion-select-option [value]="loc.id">{{ loc.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Date and Time Picker -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Час початку</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+          <ion-datetime-button [datetime]="singleDatetimeId"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                [id]="singleDatetimeId"
+                [value]="singleStartTime()"
+                (ionChange)="singleStartTime.set($any($event).detail.value)"
+                presentation="date-time"
+              ></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </div>
+
+      <!-- Duration Chips -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Тривалість тренування</ion-label>
+        <div class="duration-chips">
+          <ion-chip
+            [color]="singleDuration() === 30 ? 'primary' : 'medium'"
+            [outline]="singleDuration() !== 30"
+            (click)="singleDuration.set(30)">
+            30 хв
+          </ion-chip>
+          <ion-chip
+            [color]="singleDuration() === 50 ? 'primary' : 'medium'"
+            [outline]="singleDuration() !== 50"
+            (click)="singleDuration.set(50)">
+            50 хв
+          </ion-chip>
+          <ion-chip
+            [color]="singleDuration() === 120 ? 'primary' : 'medium'"
+            [outline]="singleDuration() !== 120"
+            (click)="singleDuration.set(120)">
+            120 хв
+          </ion-chip>
+        </div>
+      </div>
+
+      <!-- Price (If not covered by subscription) -->
+      @if (!activeSubscriptionForSingle() || !deductFromSubscription()) {
+        <div class="form-group ion-margin-top">
+          <ion-label class="form-label">Ціна за тренування (грн)</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="cash-outline" slot="start" color="primary"></ion-icon>
+            <ion-input
+              type="number"
+              [value]="singlePrice()"
+              (ionInput)="singlePrice.set(+$any($event).detail.value)"
+              placeholder="300"
+            ></ion-input>
+          </ion-item>
+        </div>
+      }
+
+      <!-- Workout Types -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Напрями тренування</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="fitness-outline" slot="start" color="primary"></ion-icon>
+          <ion-select
+            [value]="singleWorkoutTypes()"
+            (ionChange)="singleWorkoutTypes.set($any($event).detail.value)"
+            [multiple]="true"
+            placeholder="Оберіть напрями"
+            interface="popover"
+            style="width: 100%;">
+            @for (type of WORKOUT_TYPE_OPTIONS; track type) {
+              <ion-select-option [value]="type">{{ type }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Notifications -->
+      <div class="notifications-section ion-margin-top ion-padding-top">
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="notifications-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>Нагадування про тренування</ion-label>
+          <ion-toggle
+            slot="end"
+            [checked]="enableNotification()"
+            (ionChange)="enableNotification.set($any($event).detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+
+        @if (enableNotification()) {
+          <ion-item lines="none" class="custom-input-item ion-margin-top">
+            <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+            <ion-label color="medium">Час нагадування</ion-label>
+            <ion-select
+              [value]="reminderMode()"
+              (ionChange)="reminderMode.set($any($event).detail.value)"
+              interface="popover"
+              style="width: 100%;">
+              @for (mode of REMINDER_MODES; track mode.value) {
+                <ion-select-option [value]="mode.value">{{ mode.label }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <div class="actions-footer ion-margin-top">
+        <ion-button
+          expand="block"
+          shape="round"
+          color="primary"
+          [disabled]="isSubmitting() || !singleLocationId()"
+          (click)="submitSingleSession()">
+          @if (isSubmitting()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+            Створити тренування
+          }
+        </ion-button>
+      </div>
+    </div>
+  }
+</ion-content>

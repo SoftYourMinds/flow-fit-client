@@ -1,0 +1,388 @@
+:host {
+  --page-max-width: 540px;
+}
+
+.choice-container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 12px 4px 24px;
+}
+
+.step-intro {
+  text-align: center;
+  margin-bottom: 24px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ion-color-dark);
+    margin: 0 0 6px;
+  }
+
+  p {
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// ── Choice Cards ─────────────────────────────────────────────────────────────
+.choice-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.choice-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--ion-card-background, #fff);
+  border-radius: 16px;
+  padding: 20px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.sub-card {
+    border-color: rgba(var(--ion-color-primary-rgb), 0.25);
+    background: linear-gradient(135deg, rgba(var(--ion-color-primary-rgb), 0.04) 0%, rgba(255, 255, 255, 1) 100%);
+
+    &:hover {
+      border-color: var(--ion-color-primary);
+      box-shadow: 0 6px 20px rgba(var(--ion-color-primary-rgb), 0.15);
+    }
+  }
+
+  &.single-card {
+    border-color: rgba(var(--ion-color-tertiary-rgb), 0.25);
+    background: linear-gradient(135deg, rgba(var(--ion-color-tertiary-rgb), 0.04) 0%, rgba(255, 255, 255, 1) 100%);
+
+    &:hover {
+      border-color: var(--ion-color-tertiary);
+      box-shadow: 0 6px 20px rgba(var(--ion-color-tertiary-rgb), 0.15);
+    }
+  }
+}
+
+.card-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 26px;
+  }
+
+  &.sub-icon {
+    background: rgba(var(--ion-color-primary-rgb), 0.12);
+    color: var(--ion-color-primary);
+  }
+
+  &.single-icon {
+    background: rgba(var(--ion-color-tertiary-rgb), 0.15);
+    color: var(--ion-color-tertiary-shade, #b07964);
+  }
+}
+
+.card-content-wrapper {
+  flex: 1;
+  min-width: 0;
+
+  .card-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    &.sub-badge {
+      background: rgba(var(--ion-color-primary-rgb), 0.15);
+      color: var(--ion-color-primary-shade);
+    }
+
+    &.single-badge {
+      background: rgba(var(--ion-color-tertiary-rgb), 0.15);
+      color: var(--ion-color-tertiary-shade);
+    }
+  }
+
+  h3 {
+    margin: 2px 0 4px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ion-text-color, #2D2725);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ion-color-medium);
+    line-height: 1.4;
+  }
+}
+
+.card-arrow {
+  font-size: 20px;
+  color: var(--ion-color-medium);
+  flex-shrink: 0;
+}
+
+// ── Form Container ─────────────────────────────────────────────────────────
+.form-container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin-bottom: 6px;
+}
+
+.custom-input-item {
+  --background: var(--ion-card-background, #fff);
+  --border-radius: 12px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --inner-padding-end: 0;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+
+  ion-icon[slot="start"] {
+    margin-inline-end: 10px;
+    font-size: 20px;
+  }
+
+  &.toggle-item {
+    --min-height: 48px;
+  }
+}
+
+.grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--ion-color-medium);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 20px 0 12px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+  }
+
+  span {
+    padding: 0 10px;
+  }
+}
+
+// ── Chips & Pickers ────────────────────────────────────────────────────────
+.preset-chips,
+.duration-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  ion-chip {
+    margin: 0;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.days-selector-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.day-circle-btn {
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--ion-color-step-200, rgba(0, 0, 0, 0.12));
+  background: var(--ion-card-background, #fff);
+  color: var(--ion-color-dark);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &.active {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast, #fff);
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
+}
+
+// ── Alerts ─────────────────────────────────────────────────────────────────
+.alert-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 14px;
+
+  ion-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  &.danger {
+    background: rgba(var(--ion-color-danger-rgb), 0.1);
+    color: var(--ion-color-danger);
+    border: 1px solid rgba(var(--ion-color-danger-rgb), 0.2);
+  }
+
+  &.warning {
+    background: rgba(var(--ion-color-warning-rgb), 0.12);
+    color: var(--ion-color-warning-shade, #c27d26);
+    border: 1px solid rgba(var(--ion-color-warning-rgb), 0.25);
+  }
+}
+
+// ── Subscription Deduct Card ───────────────────────────────────────────────
+.subscription-deduct-card {
+  background: rgba(var(--ion-color-success-rgb), 0.08);
+  border: 1.5px solid rgba(var(--ion-color-success-rgb), 0.3);
+  border-radius: 12px;
+  padding: 12px 14px;
+
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .badge-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ion-color-dark);
+  }
+
+  .sub-description {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    margin: 4px 0 8px;
+  }
+
+  .deduct-toggle-item {
+    --background: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+// ── Preview Section ────────────────────────────────────────────────────────
+.preview-section {
+  background: var(--ion-card-background, #fff);
+  border: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+  border-radius: 14px;
+  padding: 14px;
+
+  .preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    h4 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  .preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--ion-color-step-50, rgba(0, 0, 0, 0.02));
+    font-size: 12px;
+
+    &.has-conflict {
+      background: rgba(var(--ion-color-warning-rgb), 0.12);
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-date {
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+
+    .conflict-tag {
+      font-size: 11px;
+      color: var(--ion-color-warning-shade, #c27d26);
+      font-weight: 600;
+    }
+  }
+}
+
+// ── Actions Footer ─────────────────────────────────────────────────────────
+.actions-footer {
+  margin-top: 24px;
+
+  ion-button {
+    --box-shadow: 0 4px 14px rgba(var(--ion-color-primary-rgb), 0.35);
+    font-weight: 700;
+  }
+}

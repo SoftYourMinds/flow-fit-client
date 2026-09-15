@@ -10,6 +10,7 @@ import { ClientsService, Client } from '../../core/services/clients.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { SessionModalComponent } from '../../shared/modals/session-modal/session-modal.component';
 import { RecurringModalComponent } from '../../shared/modals/recurring-modal/recurring-modal.component';
+import { CreateWizardModalComponent } from '../../shared/modals/create-wizard-modal/create-wizard-modal.component';
 import { WeekViewComponent } from './week-view/week-view.component';
 import { MonthViewComponent } from './month-view/month-view.component';
 
@@ -290,42 +291,19 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
 
   async openCreateSessionModal(): Promise<void> {
     const modal = await this.modalCtrl.create({
-      component: SessionModalComponent,
+      component: CreateWizardModalComponent,
       componentProps: {
         locations: this.locations(),
-        clients: this.clients()
-      }
+        clients: this.clients(),
+        preselectedDate: this.selectedDateStr(),
+      },
     });
     await modal.present();
 
     const { data, role } = await modal.onWillDismiss();
-    if (role !== 'confirm' || !data) {
-      return;
+    if (role === 'confirm' && data?.created) {
+      this.loadData();
     }
-
-    const participants = data.participants || [];
-    const enableNotification = data.enableNotification;
-    const reminderMode = data.reminderMode;
-
-    delete data.participants;
-    delete data.enableNotification;
-    delete data.reminderMode;
-
-    this.sessionsService.create(data).subscribe((session) => {
-      if (enableNotification) {
-        const loc = this.locations().find(l => l.id === session.locationId);
-        if (loc) {
-          this.notificationService.scheduleForSession(session, loc.name, reminderMode);
-        }
-      }
-
-      if (participants.length > 0) {
-        const requests = participants.map((p: any) => this.sessionsService.addParticipant(session.id, p));
-        forkJoin(requests).subscribe(() => this.loadData());
-      } else {
-        this.loadData();
-      }
-    });
   }
 
   async openRecurringModal(): Promise<void> {
