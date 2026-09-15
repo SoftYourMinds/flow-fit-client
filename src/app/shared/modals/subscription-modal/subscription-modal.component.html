@@ -1,0 +1,99 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">Скасувати</ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEditing() ? 'Редагувати абонемент' : 'Новий абонемент' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="confirm()" [strong]="true" color="primary">
+        {{ isEditing() ? 'Зберегти' : 'Створити' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <!-- Subscription Type -->
+    <ion-item>
+      <ion-select
+        label="Тип абонементу"
+        labelPlacement="stacked"
+        [value]="type()"
+        (ionChange)="onTypeChange($any($event))"
+      >
+        <ion-select-option value="SESSIONS_BASED">По кількості тренувань</ion-select-option>
+        <ion-select-option value="DATE_RANGE">По датах</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Sessions count (for SESSIONS_BASED) -->
+    @if (type() === 'SESSIONS_BASED') {
+      <ion-item>
+        <ion-input
+          type="number"
+          label="Кількість тренувань"
+          labelPlacement="stacked"
+          [value]="totalSessions()"
+          (ionChange)="onTotalSessionsChange($any($event))"
+          [min]="1"
+        ></ion-input>
+      </ion-item>
+    }
+
+    <!-- Date range (for DATE_RANGE) -->
+    @if (type() === 'DATE_RANGE') {
+      <ion-item>
+        <ion-label position="stacked">Дата початку</ion-label>
+        <ion-datetime-button datetime="start-date"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="start-date"
+              presentation="date"
+              [value]="startDate()"
+              (ionChange)="onStartDateChange($any($event))"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Дата закінчення</ion-label>
+        <ion-datetime-button datetime="end-date"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="end-date"
+              presentation="date"
+              [value]="endDate()"
+              (ionChange)="onEndDateChange($any($event))"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+    }
+
+    <!-- Price -->
+    <ion-item>
+      <ion-input
+        type="number"
+        label="Ціна (₴)"
+        labelPlacement="stacked"
+        [value]="price()"
+        (ionChange)="onPriceChange($any($event))"
+        [min]="0"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Is Paid -->
+    <ion-item>
+      <ion-toggle
+        [checked]="isPaid()"
+        (ionChange)="onIsPaidChange($any($event))"
+      >
+        Оплачено
+      </ion-toggle>
+    </ion-item>
+  </ion-list>
+</ion-content>

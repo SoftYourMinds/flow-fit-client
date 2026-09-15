@@ -1,10 +1,16 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { ClientsService } from '../../../core/services/clients.service';
+import { SubscriptionsService, ClientSubscription } from '../../../core/services/subscriptions.service';
+import { LocationsService } from '../../../core/services/locations.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { NoteModalComponent } from '../../../shared/modals/note-modal/note-modal.component';
 import { MediaViewerModalComponent } from '../../../shared/modals/media-viewer-modal/media-viewer-modal.component';
+import { SubscriptionModalComponent } from '../../../shared/modals/subscription-modal/subscription-modal.component';
+import { RecurringModalComponent } from '../../../shared/modals/recurring-modal/recurring-modal.component';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -16,18 +22,23 @@ import { environment } from '../../../../environments/environment';
 })
 export class DetailsComponent implements OnInit {
   client = signal<any>(null);
-  selectedTab = signal<'notes' | 'metrics' | 'sessions'>('notes');
+  selectedTab = signal<'notes' | 'metrics' | 'sessions' | 'subscriptions'>('notes');
   isLoading = signal(true);
 
   upcomingSessions = signal<any[]>([]);
   pastSessions = signal<any[]>([]);
+  subscriptions = signal<ClientSubscription[]>([]);
 
   constructor(
     private route: ActivatedRoute,
     private clientsService: ClientsService,
+    private subscriptionsService: SubscriptionsService,
+    private locationsService: LocationsService,
+    private notificationService: NotificationService,
     private modalCtrl: ModalController,
     private router: Router,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
   ) {}
 
   ngOnInit() {
@@ -62,6 +73,7 @@ export class DetailsComponent implements OnInit {
           this.pastSessions.set(past);
         }
 
+        this.loadSubscriptions(id);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
@@ -158,7 +170,6 @@ export class DetailsComponent implements OnInit {
       return;
     }
     
-    // Create public url
     const url = `${environment.clientUrl}/portal/${token}`;
     
     try {
@@ -174,6 +185,143 @@ export class DetailsComponent implements OnInit {
     } catch (err) {
       console.error('Failed to copy', err);
     }
+  }
+
+  // ─── Subscriptions ──────────────────────────────────────────────
+
+  async addSubscription(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: SubscriptionModalComponent,
+      componentProps: { clientId: this.client().id },
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role !== 'confirm' || !data) return;
+
+    this.subscriptionsService.create(data).subscribe({
+      next: (created) => {
+        if (created.endDate && created.status === 'ACTIVE') {
+          this.notificationService.scheduleSubscriptionExpiry({
+            id: created.id,
+            endDate: created.endDate,
+            clientName: this.client()?.fullName || 'Клієнт',
+          });
+        }
+        this.loadSubscriptions(this.client().id);
+      },
+      error: () => this.showToast('Помилка при створенні абонементу', 'danger'),
+    });
+  }
+
+  async editSubscription(sub: ClientSubscription): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: SubscriptionModalComponent,
+      componentProps: { clientId: this.client().id, subscription: sub },
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role !== 'confirm' || !data) return;
+
+    this.subscriptionsService.update(sub.id, data).subscribe({
+      next: (updated) => {
+        if (updated.endDate && updated.status === 'ACTIVE') {
+          this.notificationService.scheduleSubscriptionExpiry({
+            id: updated.id,
+            endDate: updated.endDate,
+            clientName: this.client()?.fullName || 'Клієнт',
+          });
+        } else {
+          this.notificationService.cancelSubscriptionExpiry(sub.id);
+        }
+        this.loadSubscriptions(this.client().id);
+      },
+      error: () => this.showToast('Помилка при оновленні абонементу', 'danger'),
+    });
+  }
+
+  async deleteSubscription(sub: ClientSubscription): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Видалити абонемент?',
+      message: 'Цю дію неможливо скасувати.',
+      buttons: [
+        { text: 'Скасувати', role: 'cancel' },
+        {
+          text: 'Видалити',
+          role: 'destructive',
+          handler: () => {
+            this.subscriptionsService.delete(sub.id).subscribe({
+              next: () => {
+                this.notificationService.cancelSubscriptionExpiry(sub.id);
+                this.loadSubscriptions(this.client().id);
+              },
+            });
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  togglePayment(sub: ClientSubscription): void {
+    this.subscriptionsService.togglePayment(sub.id, !sub.isPaid).subscribe({
+      next: () => this.loadSubscriptions(this.client().id),
+    });
+  }
+
+  async scheduleRecurringForSubscription(sub: ClientSubscription): Promise<void> {
+    const locs = await firstValueFrom(this.locationsService.getAll());
+    const modal = await this.modalCtrl.create({
+      component: RecurringModalComponent,
+      componentProps: {
+        clients: [this.client()],
+        locations: locs,
+        preselectedClientId: this.client().id,
+        preselectedSubscriptionId: sub.id,
+      },
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role === 'confirm' && data?.created) {
+      this.loadClient(this.client().id);
+    }
+  }
+
+  getSubscriptionStatusColor(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'success';
+      case 'EXPIRED': return 'danger';
+      case 'EXHAUSTED': return 'warning';
+      default: return 'medium';
+    }
+  }
+
+  getSubscriptionStatusLabel(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'Активний';
+      case 'EXPIRED': return 'Прострочений';
+      case 'EXHAUSTED': return 'Вичерпаний';
+      default: return status;
+    }
+  }
+
+  getSubscriptionTypeLabel(type: string): string {
+    return type === 'SESSIONS_BASED' ? 'По кількості' : 'По датах';
+  }
+
+  // ─── Private Helpers ──────────────────────────────────────────────
+
+  private loadSubscriptions(clientId: number): void {
+    this.subscriptionsService.getAll({ clientId }).subscribe({
+      next: (subs) => this.subscriptions.set(subs),
+    });
+  }
+
+  private async showToast(message: string, color: string): Promise<void> {
+    const toast = await this.toastCtrl.create({ message, duration: 3000, color });
+    await toast.present();
   }
 }
 
