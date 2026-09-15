@@ -83,6 +83,59 @@
       }
     </div>
 
+    <!-- Subscription Section -->
+    @if (session()!.subscriptionId) {
+      <div class="subscription-section ion-padding-horizontal ion-margin-top">
+        <ion-card class="ion-no-margin" style="border-radius: 12px; box-shadow: none; border: 1px solid var(--ion-color-success-shade);">
+          <ion-card-content style="padding: 12px 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <ion-icon name="ticket-outline" color="success" style="font-size: 24px;"></ion-icon>
+                <div>
+                  <h4 style="margin: 0; font-weight: 600; font-size: 15px;">Списано з абонементу</h4>
+                  <p style="margin: 2px 0 0; color: var(--ion-color-medium); font-size: 13px;">
+                    Оплачено абонементом #{{ session()!.subscriptionId }}
+                  </p>
+                </div>
+              </div>
+              <ion-badge color="success">По абонементу</ion-badge>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    } @else if (session()!.type === 'INDIVIDUAL' && activeSubscriptions().length > 0) {
+      <div class="subscription-section ion-padding-horizontal ion-margin-top">
+        <ion-card class="ion-no-margin" style="border-radius: 12px; box-shadow: none; border: 1.5px dashed var(--ion-color-primary);">
+          <ion-card-content style="padding: 14px 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <ion-icon name="ticket-outline" color="primary" style="font-size: 20px;"></ion-icon>
+              <h4 style="margin: 0; font-weight: 600; font-size: 15px;">Списати з абонементу</h4>
+            </div>
+            @for (sub of activeSubscriptions(); track sub.id) {
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
+                <div>
+                  <span style="font-weight: 500; font-size: 14px;">
+                    {{ sub.type === 'SESSIONS_BASED' ? 'По кількості' : 'По датах' }}
+                  </span>
+                  <div style="font-size: 12px; color: var(--ion-color-medium);">
+                    @if (sub.type === 'SESSIONS_BASED') {
+                      Залишилось: {{ (sub.totalSessions || 0) - sub.usedSessions }} з {{ sub.totalSessions }}
+                    } @else {
+                      Діє до {{ sub.endDate | date:'dd.MM.yyyy' }}
+                    }
+                  </div>
+                </div>
+                <ion-button size="small" fill="solid" color="primary" (click)="deductFromSubscription(sub.id)">
+                  <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+                  Списати
+                </ion-button>
+              </div>
+            }
+          </ion-card-content>
+        </ion-card>
+      </div>
+    }
+
     <!-- Notifications Section -->
     <div class="notifications-section ion-padding">
       <div class="section-header">

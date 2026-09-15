@@ -1,9 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController, ModalController, ActionSheetController } from '@ionic/angular';
+import { IonicModule, NavController, ModalController, ActionSheetController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { SessionsService, WorkoutSession } from '../../../core/services/sessions.service';
+import { SubscriptionsService, ClientSubscription } from '../../../core/services/subscriptions.service';
 import { SessionModalComponent } from '../../../shared/modals/session-modal/session-modal.component';
 import { ParticipantModalComponent } from '../../../shared/modals/participant-modal/participant-modal.component';
 import { ClientsService, Client } from '../../../core/services/clients.service';
@@ -23,6 +24,7 @@ export class SessionDetailComponent implements OnInit {
   isLoading = signal(true);
   clients = signal<Client[]>([]);
   locations = signal<Location[]>([]);
+  activeSubscriptions = signal<ClientSubscription[]>([]);
 
   // Notification state
   notificationEnabled = false;
@@ -37,7 +39,9 @@ export class SessionDetailComponent implements OnInit {
     private locationsService: LocationsService,
     private modalCtrl: ModalController,
     private actionSheetCtrl: ActionSheetController,
-    private notificationService: NotificationService
+    private toastCtrl: ToastController,
+    private notificationService: NotificationService,
+    private subscriptionsService: SubscriptionsService,
   ) {}
 
   ngOnInit() {
@@ -63,6 +67,7 @@ export class SessionDetailComponent implements OnInit {
       next: (data) => {
         this.session.set(data);
         this.checkNotificationState(data.id);
+        this.loadActiveSubscriptions(data);
         this.isLoading.set(false);
       },
       error: () => {
@@ -251,5 +256,58 @@ export class SessionDetailComponent implements OnInit {
     } else {
       await this.notificationService.cancelForSession(s.id);
     }
+  }
+
+  deductFromSubscription(subscriptionId: number): void {
+    const s = this.session();
+    if (!s) return;
+
+    this.subscriptionsService.deductSession(subscriptionId, s.id).subscribe({
+      next: async () => {
+        const toast = await this.toastCtrl.create({
+          message: 'Тренування успішно списано з абонементу!',
+          duration: 2500,
+          color: 'success',
+          position: 'bottom',
+        });
+        await toast.present();
+        this.loadSession(s.id);
+      },
+      error: async (err) => {
+        const toast = await this.toastCtrl.create({
+          message: err?.error?.message || 'Помилка при списанні з абонементу',
+          duration: 3000,
+          color: 'danger',
+          position: 'bottom',
+        });
+        await toast.present();
+      },
+    });
+  }
+
+  // ─── Private Helpers ────────────────────────────────────────────
+
+  private loadActiveSubscriptions(session: WorkoutSession): void {
+    const isIndividual = session.type === 'INDIVIDUAL';
+    const alreadyDeducted = !!(session as any).subscriptionId;
+    if (!isIndividual || alreadyDeducted) {
+      this.activeSubscriptions.set([]);
+      return;
+    }
+
+    const clientIds = session.participants
+      .filter(p => p.clientId)
+      .map(p => p.clientId as number);
+
+    if (clientIds.length === 0) {
+      this.activeSubscriptions.set([]);
+      return;
+    }
+
+    // Load active subs for the first client participant
+    this.subscriptionsService.getActiveForClient(clientIds[0]).subscribe({
+      next: (subs) => this.activeSubscriptions.set(subs),
+      error: () => this.activeSubscriptions.set([]),
+    });
   }
 }
