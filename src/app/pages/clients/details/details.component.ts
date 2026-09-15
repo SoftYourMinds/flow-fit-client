@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
+import { IonicModule, ModalController, ToastController, AlertController, ViewWillEnter } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ClientsService } from '../../../core/services/clients.service';
@@ -16,12 +16,11 @@ import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-client-details',
-  standalone: true,
   imports: [CommonModule, IonicModule],
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.scss']
 })
-export class DetailsComponent implements OnInit {
+export class DetailsComponent implements OnInit, ViewWillEnter {
   // ─── Injected Dependencies ─────────────────────────────────────
   private readonly route = inject(ActivatedRoute);
   private readonly clientsService = inject(ClientsService);
@@ -34,6 +33,7 @@ export class DetailsComponent implements OnInit {
   private readonly alertCtrl = inject(AlertController);
 
   // ─── State Signals ─────────────────────────────────────────────
+  clientId?: number;
   client = signal<any>(null);
   selectedTab = signal<'notes' | 'metrics' | 'sessions' | 'subscriptions'>('notes');
   isLoading = signal(true);
@@ -52,9 +52,16 @@ export class DetailsComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
+        this.clientId = +id;
         this.loadClient(+id);
       }
     });
+  }
+
+  ionViewWillEnter() {
+    if (this.clientId) {
+      this.loadClient(this.clientId);
+    }
   }
 
   loadClient(id: number) {

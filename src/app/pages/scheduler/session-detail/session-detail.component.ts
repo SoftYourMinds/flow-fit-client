@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController, ModalController, ActionSheetController, ToastController } from '@ionic/angular';
+import { IonicModule, NavController, ModalController, ActionSheetController, ToastController, AlertController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { SessionsService, WorkoutSession } from '../../../core/services/sessions.service';
 import { SubscriptionsService, ClientSubscription } from '../../../core/services/subscriptions.service';
@@ -14,12 +14,25 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-session-detail',
-  standalone: true,
   imports: [CommonModule, FormsModule, IonicModule],
   templateUrl: './session-detail.component.html',
   styleUrls: ['./session-detail.component.scss']
 })
 export class SessionDetailComponent implements OnInit {
+  // ─── Injected Dependencies ─────────────────────────────────────
+  private readonly route = inject(ActivatedRoute);
+  private readonly navCtrl = inject(NavController);
+  private readonly sessionsService = inject(SessionsService);
+  private readonly clientsService = inject(ClientsService);
+  private readonly locationsService = inject(LocationsService);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly notificationService = inject(NotificationService);
+  private readonly subscriptionsService = inject(SubscriptionsService);
+
+  // ─── State Signals ─────────────────────────────────────────────
   session = signal<WorkoutSession | null>(null);
   isLoading = signal(true);
   clients = signal<Client[]>([]);
@@ -30,19 +43,6 @@ export class SessionDetailComponent implements OnInit {
   notificationEnabled = false;
   reminderMode: ReminderMode = 'auto';
   reminderModes = REMINDER_MODE_LABELS;
-
-  constructor(
-    private route: ActivatedRoute,
-    private navCtrl: NavController,
-    private sessionsService: SessionsService,
-    private clientsService: ClientsService,
-    private locationsService: LocationsService,
-    private modalCtrl: ModalController,
-    private actionSheetCtrl: ActionSheetController,
-    private toastCtrl: ToastController,
-    private notificationService: NotificationService,
-    private subscriptionsService: SubscriptionsService,
-  ) {}
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -276,6 +276,53 @@ export class SessionDetailComponent implements OnInit {
       error: async (err) => {
         const toast = await this.toastCtrl.create({
           message: err?.error?.message || 'Помилка при списанні з абонементу',
+          duration: 3000,
+          color: 'danger',
+          position: 'bottom',
+        });
+        await toast.present();
+      },
+    });
+  }
+
+  async confirmUnlinkSubscription(): Promise<void> {
+    const s = this.session();
+    if (!s || !s.subscriptionId) return;
+
+    const alert = await this.alertCtrl.create({
+      header: 'Відв’язати від абонементу',
+      message: 'Заняття буде повернуто в абонемент, а це тренування стане неоплаченим. Продовжити?',
+      buttons: [
+        {
+          text: 'Скасувати',
+          role: 'cancel',
+        },
+        {
+          text: 'Відв’язати',
+          role: 'destructive',
+          handler: () => this.unlinkFromSubscription(s.subscriptionId!, s.id),
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  private unlinkFromSubscription(subscriptionId: number, sessionId: number): void {
+    this.subscriptionsService.unlinkSession(subscriptionId, sessionId).subscribe({
+      next: async () => {
+        const toast = await this.toastCtrl.create({
+          message: 'Тренування успішно відв’язано від абонементу!',
+          duration: 2500,
+          color: 'success',
+          position: 'bottom',
+        });
+        await toast.present();
+        this.loadSession(sessionId);
+      },
+      error: async (err) => {
+        const toast = await this.toastCtrl.create({
+          message: err?.error?.message || 'Помилка при відв’язуванні від абонементу',
           duration: 3000,
           color: 'danger',
           position: 'bottom',

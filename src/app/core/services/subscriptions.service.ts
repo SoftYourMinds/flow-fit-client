@@ -111,4 +111,18 @@ export class SubscriptionsService {
   getSubscriptionSessions(subscriptionId: number): Observable<WorkoutSession[]> {
     return this.http.get<WorkoutSession[]>(`${this.apiUrl}/${subscriptionId}/sessions`);
   }
+
+  unlinkSession(subscriptionId: number, sessionId: number): Observable<ClientSubscription> {
+    return this.http.delete<ClientSubscription>(
+      `${this.apiUrl}/${subscriptionId}/sessions/${sessionId}`,
+    );
+  }
+
+  reconcile(subscriptionId: number): Observable<ClientSubscription> {
+    return this.http.post<ClientSubscription>(
+      `${this.apiUrl}/${subscriptionId}/reconcile`,
+      {},
+    );
+  }
 }
+

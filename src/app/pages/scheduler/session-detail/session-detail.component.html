@@ -88,7 +88,7 @@
       <div class="subscription-section ion-padding-horizontal ion-margin-top">
         <ion-card class="ion-no-margin" style="border-radius: 12px; box-shadow: none; border: 1px solid var(--ion-color-success-shade);">
           <ion-card-content style="padding: 12px 16px;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 10px;">
                 <ion-icon name="ticket-outline" color="success" style="font-size: 24px;"></ion-icon>
                 <div>
@@ -98,7 +98,13 @@
                   </p>
                 </div>
               </div>
-              <ion-badge color="success">По абонементу</ion-badge>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <ion-badge color="success">По абонементу</ion-badge>
+                <ion-button size="small" fill="outline" color="medium" (click)="confirmUnlinkSubscription()">
+                  <ion-icon name="close-outline" slot="start"></ion-icon>
+                  Відв'язати
+                </ion-button>
+              </div>
             </div>
           </ion-card-content>
         </ion-card>
