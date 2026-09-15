@@ -157,3 +157,126 @@ ion-toolbar {
     }
   }
 }
+
+.subscription-section {
+  .sub-sliding-list {
+    background: transparent;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .sub-item-sliding {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--ion-color-success-shade, #28ba62);
+    background: var(--ion-card-background, #fff);
+
+    .sub-card-item {
+      --background: var(--ion-card-background, #fff);
+      --padding-start: 12px;
+      --padding-end: 12px;
+      --inner-padding-end: 0;
+      cursor: pointer;
+      width: 100%;
+
+      .sub-card-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 8px 0;
+      }
+
+      .sub-card-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .sub-icon-wrapper {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: rgba(var(--ion-color-success-rgb, 45, 211, 111), 0.12);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          ion-icon {
+            font-size: 22px;
+          }
+        }
+
+        .sub-text-wrapper {
+          h4 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--ion-text-color, #2D2725);
+          }
+
+          p {
+            margin: 2px 0 0;
+            color: var(--ion-color-medium);
+            font-size: 13px;
+          }
+        }
+      }
+
+      .sub-badge-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        ion-badge {
+          font-size: 12px;
+          padding: 6px 10px;
+          border-radius: 8px;
+        }
+
+        .sub-action-btn {
+          --padding-start: 4px;
+          --padding-end: 4px;
+          margin: 0;
+          font-size: 20px;
+        }
+      }
+    }
+
+    .sub-slide-option {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0 16px;
+
+      ion-icon {
+        font-size: 20px;
+        margin-bottom: 2px;
+      }
+    }
+  }
+
+  .sub-swipe-hint {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--ion-color-medium);
+    opacity: 0.75;
+
+    ion-icon {
+      font-size: 13px;
+      animation: swipeCue 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes swipeCue {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-3px);
+  }
+}
+

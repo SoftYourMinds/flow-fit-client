@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController, ModalController, ActionSheetController, ToastController, AlertController } from '@ionic/angular';
+import { IonicModule, NavController, ModalController, ActionSheetController, ToastController, AlertController, IonItemSliding } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { SessionsService, WorkoutSession } from '../../../core/services/sessions.service';
 import { SubscriptionsService, ClientSubscription } from '../../../core/services/subscriptions.service';
@@ -285,20 +285,51 @@ export class SessionDetailComponent implements OnInit {
     });
   }
 
-  async confirmUnlinkSubscription(): Promise<void> {
+  async openSubscriptionActions(slidingItem?: IonItemSliding): Promise<void> {
+    const s = this.session();
+    if (!s || !s.subscriptionId) return;
+
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: `Абонемент #${s.subscriptionId}`,
+      subHeader: 'Управління списанням за цим тренуванням',
+      buttons: [
+        {
+          text: 'Відмінити списання з абонементу',
+          role: 'destructive',
+          icon: 'arrow-undo-outline',
+          handler: () => {
+            this.confirmUnlinkSubscription(slidingItem);
+          },
+        },
+        {
+          text: 'Закрити',
+          role: 'cancel',
+          icon: 'close',
+        },
+      ],
+    });
+
+    await actionSheet.present();
+  }
+
+  async confirmUnlinkSubscription(slidingItem?: IonItemSliding): Promise<void> {
+    if (slidingItem) {
+      await slidingItem.close();
+    }
+
     const s = this.session();
     if (!s || !s.subscriptionId) return;
 
     const alert = await this.alertCtrl.create({
-      header: 'Відв’язати від абонементу',
-      message: 'Заняття буде повернуто в абонемент, а це тренування стане неоплаченим. Продовжити?',
+      header: 'Відмінити списання?',
+      message: 'Заняття буде повернуто в абонемент, а це тренування залишиться у розкладі як неоплачене.',
       buttons: [
         {
-          text: 'Скасувати',
+          text: 'Ні',
           role: 'cancel',
         },
         {
-          text: 'Відв’язати',
+          text: 'Відмінити списання',
           role: 'destructive',
           handler: () => this.unlinkFromSubscription(s.subscriptionId!, s.id),
         },
@@ -312,7 +343,7 @@ export class SessionDetailComponent implements OnInit {
     this.subscriptionsService.unlinkSession(subscriptionId, sessionId).subscribe({
       next: async () => {
         const toast = await this.toastCtrl.create({
-          message: 'Тренування успішно відв’язано від абонементу!',
+          message: 'Списання успішно скасовано! Заняття повернуто в абонемент.',
           duration: 2500,
           color: 'success',
           position: 'bottom',
@@ -322,7 +353,7 @@ export class SessionDetailComponent implements OnInit {
       },
       error: async (err) => {
         const toast = await this.toastCtrl.create({
-          message: err?.error?.message || 'Помилка при відв’язуванні від абонементу',
+          message: err?.error?.message || 'Помилка при скасуванні списання з абонементу',
           duration: 3000,
           color: 'danger',
           position: 'bottom',

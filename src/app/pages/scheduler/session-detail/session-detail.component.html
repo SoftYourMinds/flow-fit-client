@@ -86,28 +86,40 @@
     <!-- Subscription Section -->
     @if (session()!.subscriptionId) {
       <div class="subscription-section ion-padding-horizontal ion-margin-top">
-        <ion-card class="ion-no-margin" style="border-radius: 12px; box-shadow: none; border: 1px solid var(--ion-color-success-shade);">
-          <ion-card-content style="padding: 12px 16px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <ion-icon name="ticket-outline" color="success" style="font-size: 24px;"></ion-icon>
-                <div>
-                  <h4 style="margin: 0; font-weight: 600; font-size: 15px;">Списано з абонементу</h4>
-                  <p style="margin: 2px 0 0; color: var(--ion-color-medium); font-size: 13px;">
-                    Оплачено абонементом #{{ session()!.subscriptionId }}
-                  </p>
+        <ion-list lines="none" class="ion-no-padding sub-sliding-list">
+          <ion-item-sliding #subSliding class="sub-item-sliding">
+            <ion-item lines="none" class="sub-card-item" (click)="openSubscriptionActions(subSliding)">
+              <div class="sub-card-container">
+                <div class="sub-card-main">
+                  <div class="sub-icon-wrapper">
+                    <ion-icon name="ticket-outline" color="success"></ion-icon>
+                  </div>
+                  <div class="sub-text-wrapper">
+                    <h4>Списано з абонементу</h4>
+                    <p>Оплачено абонементом #{{ session()!.subscriptionId }}</p>
+                  </div>
+                </div>
+                <div class="sub-badge-wrapper">
+                  <ion-badge color="success">По абонементу</ion-badge>
+                  <ion-button fill="clear" color="medium" size="small" class="sub-action-btn" (click)="$event.stopPropagation(); confirmUnlinkSubscription(subSliding)">
+                    <ion-icon name="close-circle-outline" slot="icon-only" color="danger"></ion-icon>
+                  </ion-button>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <ion-badge color="success">По абонементу</ion-badge>
-                <ion-button size="small" fill="outline" color="medium" (click)="confirmUnlinkSubscription()">
-                  <ion-icon name="close-outline" slot="start"></ion-icon>
-                  Відв'язати
-                </ion-button>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
+            </ion-item>
+
+            <ion-item-options side="end">
+              <ion-item-option color="danger" class="sub-slide-option" (click)="confirmUnlinkSubscription(subSliding)">
+                <ion-icon slot="top" name="arrow-undo-outline"></ion-icon>
+                Відмінити
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+        <div class="sub-swipe-hint">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+          <span>Свайпніть вліво для відміни</span>
+        </div>
       </div>
     } @else if (session()!.type === 'INDIVIDUAL' && activeSubscriptions().length > 0) {
       <div class="subscription-section ion-padding-horizontal ion-margin-top">
