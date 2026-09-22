@@ -5,6 +5,7 @@ import { LocationsService, Location } from '../../../core/services/locations.ser
 import { ClientsService, Client } from '../../../core/services/clients.service';
 import { ParticipantModalComponent } from '../participant-modal/participant-modal.component';
 import { ReminderMode, REMINDER_MODE_LABELS } from '../../../core/services/notification.service';
+import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.constant';
 
 @Component({
   selector: 'app-session-modal',
@@ -28,14 +29,7 @@ export class SessionModalComponent implements OnInit {
   workoutTypes = signal<string[]>([]);
   participants = signal<any[]>([]);
 
-  readonly WORKOUT_TYPE_OPTIONS = [
-    'stretching',
-    'fly stretching',
-    'yoga',
-    'functional',
-    'pilates',
-    'power pilates'
-  ];
+  readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
 
   datetimeId = `datetime-${Math.random().toString(36).substring(2, 9)}`;
 

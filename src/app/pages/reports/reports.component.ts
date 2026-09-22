@@ -9,6 +9,7 @@ import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { ReportsService, ReportSummary } from '../../core/services/reports.service';
 import { SessionsService, WorkoutSession } from '../../core/services/sessions.service';
 import { LocationsService, Location } from '../../core/services/locations.service';
+import { WORKOUT_TYPE_OPTIONS } from '../../core/constants/workout-types.constant';
 
 function getLocalDateString(date: Date): string {
   const year = date.getFullYear();
@@ -37,14 +38,7 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
   selectedLocationId: number | null = null;
   
   selectedWorkoutTypes: string[] = [];
-  readonly WORKOUT_TYPE_OPTIONS = [
-    'stretching',
-    'fly stretching',
-    'yoga',
-    'functional',
-    'pilates',
-    'power pilates'
-  ];
+  readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
 
   // Segment for displaying metrics
   reportType: 'all' | 'individual' | 'group' = 'all';

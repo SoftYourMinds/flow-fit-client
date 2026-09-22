@@ -14,6 +14,7 @@ import {
   SubscriptionsService,
   ClientSubscription,
 } from '../../../core/services/subscriptions.service';
+import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.constant';
 
 export interface DayOfWeekOption {
   value: number;
@@ -49,14 +50,7 @@ export class RecurringModalComponent implements OnInit {
     { value: 0, label: 'Нд' },
   ];
 
-  readonly WORKOUT_TYPE_OPTIONS = [
-    'stretching',
-    'fly stretching',
-    'yoga',
-    'functional',
-    'pilates',
-    'power pilates',
-  ];
+  readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
 
   clientId = signal<number | null>(null);
   locationId = signal<number | null>(null);

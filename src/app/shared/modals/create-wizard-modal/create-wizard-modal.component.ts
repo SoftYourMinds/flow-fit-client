@@ -29,6 +29,7 @@ import {
   ReminderMode,
   REMINDER_MODE_LABELS,
 } from '../../../core/services/notification.service';
+import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.constant';
 
 export interface DayOfWeekOption {
   value: number;
@@ -68,14 +69,7 @@ export class CreateWizardModalComponent implements OnInit {
     { value: 0, label: 'Нд' },
   ];
 
-  readonly WORKOUT_TYPE_OPTIONS: string[] = [
-    'stretching',
-    'fly stretching',
-    'yoga',
-    'functional',
-    'pilates',
-    'power pilates',
-  ];
+  readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
 
   readonly SESSION_COUNT_PRESETS: number[] = [4, 8, 10, 12];
   readonly REMINDER_MODES = REMINDER_MODE_LABELS;

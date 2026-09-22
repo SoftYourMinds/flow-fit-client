@@ -13,6 +13,7 @@ import { RecurringModalComponent } from '../../shared/modals/recurring-modal/rec
 import { CreateWizardModalComponent } from '../../shared/modals/create-wizard-modal/create-wizard-modal.component';
 import { WeekViewComponent } from './week-view/week-view.component';
 import { MonthViewComponent } from './month-view/month-view.component';
+import { WORKOUT_TYPE_OPTIONS } from '../../core/constants/workout-types.constant';
 
 export interface DayTab {
   date: Date;
@@ -48,14 +49,7 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
   private readonly notificationService = inject(NotificationService);
 
   // ─── Constants ──────────────────────────────────────────────────
-  readonly WORKOUT_TYPE_OPTIONS = [
-    'stretching',
-    'fly stretching',
-    'yoga',
-    'functional',
-    'pilates',
-    'power pilates'
-  ] as const;
+  readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
 
   private readonly MONTH_SHORT = ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
 
