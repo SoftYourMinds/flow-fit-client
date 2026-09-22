@@ -9,6 +9,7 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Added new workout directions: `power stretching` and `power`. Centralized `WORKOUT_TYPE_OPTIONS` and `WorkoutType` in `workout-types.constant.ts` across reports, scheduler, and creation modals.
 - Added support for `workoutTypes` (e.g. stretching, yoga, pilates) array on `WorkoutSession`.
 - Added multi-select `workoutTypes` to `session-modal` and updated `session-detail` to display them.
 - Added `workoutTypes` badges to the session cards on the scheduler page.

@@ -117,4 +117,6 @@ Use `/git-commit` workflow. Format: `type(scope): description` (Conventional Com
 - **2026-08-22**: Implemented App Initialization & Serverless Wake-up Splash Screen (`SplashLoaderComponent` + `AppInitService`) with sequential step status progression, terracotta pulse branding, background data pre-fetching, offline/timeout retry actions, and smooth exit fade-out.
 - **2026-08-23**: Redesigned Scheduler WeekView with 2-column mobile layout, horizontal grid scrolling with sticky time labels and synchronized header, increased visual scale, and modernized session cards with workout type chips and participant counter.
 - **2026-09-10**: Fixed Scheduler week navigation date calculation across month boundaries, added week range month label and short month tags to day tabs, updated month grid padding session counts, synced month view active date via linkedSignal, modernized SchedulerComponent to inject() and OnPush, and added unit tests.
+- **2026-09-23**: Added new workout directions: `power stretching` and `power`. Centralized `WORKOUT_TYPE_OPTIONS` and `WorkoutType` in `workout-types.constant.ts` across reports, scheduler, and creation modals.
+
 
