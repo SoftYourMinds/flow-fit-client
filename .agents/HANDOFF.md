@@ -1,24 +1,22 @@
 ## Last Session Summary
 
-**Date:** 2026-09-15
-**Session focus:** Multi-Step Wizard, Schedule Chips & Subscription Calendar View
+**Date:** 2026-09-22
+**Session focus:** Customizable Max Participants & Participant Addition Modes (Variant B)
 
 ### ✅ Accomplished
 
-- **Multi-Step Wizard Modal (`CreateWizardModalComponent`):** Unified session and subscription creation into a single streamlined flow triggered by `[+ Нове]`.
-  - Step 1: Selection between `🎟️ По абонементу (Серія занять)` and `⚡ Разове тренування`.
-  - Step 2A (По абонементу): Full subscription creation matching recurring training schedule (client select, session presets, price, isPaid toggle, days of week chips, time, date range, and conflict preview). Calls `POST /subscriptions/with-recurring`.
-  - Step 2B (Разове): Format selector (`👤 Індивідуальне` / `👥 Групове`). Inline client select with automatic detection of active subscriptions and deduction toggle. Group format with optional participant names.
-- **Schedule Chips (`[🎟️ Абонемент]`):**
-  - Added green badge `[🎟️ Абонемент]` to Day View cards in `SchedulerComponent`.
-  - Added `[🎟️ Абонемент]` tag to session blocks in `WeekViewComponent`.
-  - Added `sub-dot` green markers and `[🎟️ Абонемент]` badge to Month View in `MonthViewComponent`.
-- **Subscription Detail Modal (`SubscriptionDetailModalComponent`):**
-  - Month Calendar View highlighting training days for the subscription with `<` / `>` month navigation and day workout inspections.
-  - Session list with Ukrainian days of the week (*Пн, 15 вересня*, *Ср, 17 вересня*), time range, location, and status.
-  - Financial payment status toggle.
-  - Linked to client details page on subscription card click and dedicated "Календар та графік" button.
-- **Verification:** Verified compilation with `ng build` (exit code 0).
+- **WorkoutSession Interface:** Added `anonymousParticipantsCount?: number` to `WorkoutSession` interface in `sessions.service.ts`.
+- **Create Wizard Modal:**
+  - Configured `singleMaxParticipants` to default to 1 (Individual) and 8 (Group), dynamically updating on format switch and remaining editable for both formats.
+  - Added participant mode toggle (`participantMode`) between "Вказати кількість" (`COUNT`) and "Обрати клієнта" (`CLIENT`).
+  - Added `singleAnonymousCount` input for entering participant count without client names.
+  - Updated submission logic to pass `anonymousParticipantsCount` and respect subscription deduction only when a client is selected.
+- **Scheduler & Session Details Display:**
+  - Updated total participant count across scheduler cards and session detail header: `(session.participants.length || 0) + (session.anonymousParticipantsCount || 0)`.
+  - Added chip indicator `+N без імені` on session cards and a dedicated item in session detail participant list.
+  - Added format info row display `макс. N осіб`.
+- **Session Modal:** Preserved `anonymousParticipantsCount` on edit.
+- **Verification:** Verified compilation with `npm run build` (exit code 0).
 
 ### ⚠️ Pending / Known Issues
 
