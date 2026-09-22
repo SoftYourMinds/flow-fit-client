@@ -174,7 +174,13 @@
               <!-- Participants Section -->
               <div class="participants-section">
                 <div class="participants-header">
-                  <span class="p-title"><ion-icon name="person-outline"></ion-icon> {{ session.participants.length || 0 }}</span>
+                  <span class="p-title">
+                    <ion-icon name="person-outline"></ion-icon>
+                    {{ (session.participants.length || 0) + (session.anonymousParticipantsCount || 0) }}
+                    @if (session.maxParticipants) {
+                      / {{ session.maxParticipants }}
+                    }
+                  </span>
                 </div>
 
                 <div class="participants-chips">
@@ -183,7 +189,14 @@
                       <ion-icon name="person-circle-outline" color="primary"></ion-icon>
                       <ion-label>{{ p.client?.fullName || p.customName }}</ion-label>
                     </ion-chip>
-                  } @empty {
+                  }
+                  @if (session.anonymousParticipantsCount && session.anonymousParticipantsCount > 0) {
+                    <ion-chip class="participant-chip">
+                      <ion-icon name="people-outline" color="medium"></ion-icon>
+                      <ion-label>{{ session.anonymousParticipantsCount }} без імені</ion-label>
+                    </ion-chip>
+                  }
+                  @if (session.participants.length === 0 && (!session.anonymousParticipantsCount || session.anonymousParticipantsCount === 0)) {
                     <p class="no-participants">Немає доданих учасників</p>
                   }
                   @if (session.participants.length > 3) {

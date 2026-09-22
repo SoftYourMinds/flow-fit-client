@@ -337,11 +337,12 @@
       }
 
       <!-- Format Segment -->
+      <!-- Format Segment -->
       <div class="form-group">
         <ion-label class="form-label">Формат тренування</ion-label>
         <ion-segment
           [value]="singleType()"
-          (ionChange)="singleType.set($any($event).detail.value)"
+          (ionChange)="setSingleType($any($event).detail.value)"
           mode="ios">
           <ion-segment-button value="INDIVIDUAL">
             <ion-icon name="person-outline"></ion-icon>
@@ -354,8 +355,58 @@
         </ion-segment>
       </div>
 
-      <!-- Individual Client Selection (INLINE - No extra modal required!) -->
-      @if (singleType() === 'INDIVIDUAL') {
+      <!-- Max Participants (Configurable for both, default 1 for Individual, 8 for Group) -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Максимальна кількість учасників</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
+          <ion-input
+            type="number"
+            [value]="singleMaxParticipants()"
+            (ionInput)="singleMaxParticipants.set($any($event).detail.value ? +$any($event).detail.value : null)"
+            [placeholder]="singleType() === 'GROUP' ? '8' : '1'"
+            min="1"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <!-- Participant Addition Mode: Either count or select client -->
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Учасники тренування</ion-label>
+        <ion-segment
+          [value]="participantMode()"
+          (ionChange)="participantMode.set($any($event).detail.value)"
+          mode="ios">
+          <ion-segment-button value="COUNT">
+            <ion-icon name="calculator-outline"></ion-icon>
+            <ion-label>Вказати кількість</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="CLIENT">
+            <ion-icon name="person-add-outline"></ion-icon>
+            <ion-label>Обрати клієнта</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      @if (participantMode() === 'COUNT') {
+        <div class="form-group ion-margin-top">
+          <ion-label class="form-label">Кількість учасників</ion-label>
+          <ion-item lines="none" class="custom-input-item">
+            <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
+            <ion-input
+              type="number"
+              [value]="singleAnonymousCount()"
+              (ionInput)="singleAnonymousCount.set($any($event).detail.value ? +$any($event).detail.value : 1)"
+              placeholder="1"
+              min="1"
+            ></ion-input>
+          </ion-item>
+          <p class="sub-description" style="margin-top: 6px; font-size: 13px; color: var(--ion-color-medium);">
+            Без внесення імен клієнтів у систему
+          </p>
+        </div>
+      } @else {
+        <!-- Client Selection -->
         <div class="form-group ion-margin-top">
           <ion-label class="form-label">Клієнт</ion-label>
           <ion-item lines="none" class="custom-input-item">
@@ -398,23 +449,6 @@
             </ion-item>
           </div>
         }
-      }
-
-      <!-- Group Workout Options -->
-      @if (singleType() === 'GROUP') {
-        <div class="form-group ion-margin-top">
-          <ion-label class="form-label">Максимальна кількість учасників</ion-label>
-          <ion-item lines="none" class="custom-input-item">
-            <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
-            <ion-input
-              type="number"
-              [value]="singleMaxParticipants()"
-              (ionInput)="singleMaxParticipants.set($any($event).detail.value ? +$any($event).detail.value : null)"
-              placeholder="Наприклад: 8 (або залиште порожнім)"
-              min="1"
-            ></ion-input>
-          </ion-item>
-        </div>
       }
 
       <!-- Location Selector -->
@@ -480,7 +514,7 @@
       </div>
 
       <!-- Price (If not covered by subscription) -->
-      @if (!activeSubscriptionForSingle() || !deductFromSubscription()) {
+      @if (participantMode() === 'COUNT' || !activeSubscriptionForSingle() || !deductFromSubscription()) {
         <div class="form-group ion-margin-top">
           <ion-label class="form-label">Ціна за тренування (грн)</ion-label>
           <ion-item lines="none" class="custom-input-item">

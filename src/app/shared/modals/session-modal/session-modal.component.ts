@@ -130,6 +130,7 @@ export class SessionModalComponent implements OnInit {
       isPaid: this.session ? this.session.isPaid : false,
       workoutTypes: this.workoutTypes(),
       participants: this.participants(),
+      anonymousParticipantsCount: this.session?.anonymousParticipantsCount ?? 0,
       enableNotification: this.enableNotification(),
       reminderMode: this.reminderMode()
     }, 'confirm');

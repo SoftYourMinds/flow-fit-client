@@ -103,6 +103,8 @@ export class CreateWizardModalComponent implements OnInit {
 
   // ─── Step 2B: Single Session State ─────────────────────────────
   readonly singleType = signal<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
+  readonly participantMode = signal<'COUNT' | 'CLIENT'>('COUNT');
+  readonly singleAnonymousCount = signal<number>(1);
   readonly singleClientId = signal<number | null>(null);
   readonly singleClientSubscriptions = signal<ClientSubscription[]>([]);
   readonly deductFromSubscription = signal<boolean>(true);
@@ -111,7 +113,7 @@ export class CreateWizardModalComponent implements OnInit {
   readonly singleStartTime = signal<string>(this.getLocalIsoString(new Date()));
   readonly singleDuration = signal<number>(50);
   readonly singlePrice = signal<number>(300);
-  readonly singleMaxParticipants = signal<number | null>(null);
+  readonly singleMaxParticipants = signal<number | null>(1);
   readonly singleWorkoutTypes = signal<string[]>([]);
   readonly enableNotification = signal<boolean>(true);
   readonly reminderMode = signal<ReminderMode>('auto');
@@ -165,6 +167,7 @@ export class CreateWizardModalComponent implements OnInit {
     if (this.preselectedClientId) {
       this.subClientId.set(this.preselectedClientId);
       this.singleClientId.set(this.preselectedClientId);
+      this.participantMode.set('CLIENT');
       this.loadSingleClientSubscriptions(this.preselectedClientId);
       this.checkSubClientActiveSubscriptions(this.preselectedClientId);
     }
@@ -309,6 +312,16 @@ export class CreateWizardModalComponent implements OnInit {
   }
 
   // ─── Single Session Methods ────────────────────────────────────
+  setSingleType(type: 'INDIVIDUAL' | 'GROUP'): void {
+    this.singleType.set(type);
+    const currentMax = this.singleMaxParticipants();
+    if (type === 'GROUP' && (currentMax === 1 || currentMax === null)) {
+      this.singleMaxParticipants.set(8);
+    } else if (type === 'INDIVIDUAL' && (currentMax === 8 || currentMax === null)) {
+      this.singleMaxParticipants.set(1);
+    }
+  }
+
   onSingleClientChange(event: CustomEvent): void {
     const id = Number(event.detail.value);
     this.singleClientId.set(id || null);
@@ -330,14 +343,24 @@ export class CreateWizardModalComponent implements OnInit {
     const start = new Date(this.singleStartTime());
     const end = new Date(start.getTime() + this.singleDuration() * 60000);
     const sessionType = this.singleType();
-    const clientId = this.singleClientId();
+    const isClientMode = this.participantMode() === 'CLIENT';
+    const clientId = isClientMode ? this.singleClientId() : null;
 
     const activeSub = this.activeSubscriptionForSingle();
     const willDeduct =
+      isClientMode &&
       sessionType === 'INDIVIDUAL' &&
       clientId &&
       this.deductFromSubscription() &&
       activeSub;
+
+    const defaultMax = sessionType === 'GROUP' ? 8 : 1;
+    const maxParticipants = this.singleMaxParticipants()
+      ? Number(this.singleMaxParticipants())
+      : defaultMax;
+    const anonymousParticipantsCount = isClientMode
+      ? 0
+      : (Number(this.singleAnonymousCount()) || 1);
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -353,13 +376,13 @@ export class CreateWizardModalComponent implements OnInit {
           status: 'UPCOMING',
           isPaid: willDeduct ? true : false,
           workoutTypes: this.singleWorkoutTypes(),
-          maxParticipants:
-            sessionType === 'GROUP' ? this.singleMaxParticipants() : 1,
+          maxParticipants,
+          anonymousParticipantsCount,
         }),
       );
 
       // Add individual client as participant
-      if (sessionType === 'INDIVIDUAL' && clientId) {
+      if (isClientMode && sessionType === 'INDIVIDUAL' && clientId) {
         await firstValueFrom(
           this.sessionsService.addParticipant(createdSession.id, { clientId }),
         );
@@ -390,10 +413,11 @@ export class CreateWizardModalComponent implements OnInit {
         { created: true, type: 'session', session: createdSession },
         'confirm',
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.isSubmitting.set(false);
+      const errorObj = err as { error?: { message?: string } };
       this.errorMessage.set(
-        err?.error?.message || 'Помилка при створенні тренування',
+        errorObj?.error?.message || 'Помилка при створенні тренування',
       );
     }
   }

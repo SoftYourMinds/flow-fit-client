@@ -24,6 +24,7 @@ export interface WorkoutSession {
   subscriptionId?: number | null;
   workoutTypes?: string[];
   maxParticipants?: number;
+  anonymousParticipantsCount?: number;
   participants: SessionParticipant[];
 }
 
