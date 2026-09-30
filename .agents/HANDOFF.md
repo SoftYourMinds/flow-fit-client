@@ -1,22 +1,15 @@
 ## Last Session Summary
 
-**Date:** 2026-09-22
-**Session focus:** Customizable Max Participants & Participant Addition Modes (Variant B)
+**Date:** 2026-10-01
+**Session focus:** Fix client selection & autonomous loading in CreateWizardModalComponent
 
 ### ✅ Accomplished
 
-- **WorkoutSession Interface:** Added `anonymousParticipantsCount?: number` to `WorkoutSession` interface in `sessions.service.ts`.
-- **Create Wizard Modal:**
-  - Configured `singleMaxParticipants` to default to 1 (Individual) and 8 (Group), dynamically updating on format switch and remaining editable for both formats.
-  - Added participant mode toggle (`participantMode`) between "Вказати кількість" (`COUNT`) and "Обрати клієнта" (`CLIENT`).
-  - Added `singleAnonymousCount` input for entering participant count without client names.
-  - Updated submission logic to pass `anonymousParticipantsCount` and respect subscription deduction only when a client is selected.
-- **Scheduler & Session Details Display:**
-  - Updated total participant count across scheduler cards and session detail header: `(session.participants.length || 0) + (session.anonymousParticipantsCount || 0)`.
-  - Added chip indicator `+N без імені` on session cards and a dedicated item in session detail participant list.
-  - Added format info row display `макс. N осіб`.
-- **Session Modal:** Preserved `anonymousParticipantsCount` on edit.
-- **Verification:** Verified compilation with `npm run build` (exit code 0).
+- **Autonomous Data Fetching:** Injected `ClientsService` and `LocationsService` into `CreateWizardModalComponent` with reactive `clientList` and `locationList` signals.
+- **Race Condition Resolution:** Implemented fallback loading in `ngOnInit()` (`loadClients()`, `loadLocations()`) so the modal self-heals even if opened before parent `scheduler.component.ts` finishes its async requests.
+- **Participant Mode UX:** Defaulted `participantMode` to `'CLIENT'` for individual sessions and automatically switch to `'CLIENT'` when selecting the `'INDIVIDUAL'` format.
+- **Loading & Empty State Handling:** Added an `ion-spinner` while loading clients, and an informational note with a manual refresh button if no clients exist in the system.
+- **Verification:** Verified `npm run build` succeeds (exit code 0).
 
 ### ⚠️ Pending / Known Issues
 
@@ -25,4 +18,4 @@
 ### 🚀 Immediate Next Steps
 
 1. Commit changes using Conventional Commits format.
-2. Push commits to remote repository.
+2. Push commits to remote repository and deploy to production.
