@@ -226,11 +226,13 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
     });
 
     this.locationsService.getAll().subscribe({
-      next: (locs) => this.locations.set(locs)
+      next: (locs) => this.locations.set(locs || []),
+      error: () => {},
     });
 
     this.clientsService.getAll().subscribe({
-      next: (cls) => this.clients.set(cls)
+      next: (cls) => this.clients.set(cls || []),
+      error: () => {},
     });
   }
 

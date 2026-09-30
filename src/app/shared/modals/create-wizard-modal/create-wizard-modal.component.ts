@@ -12,8 +12,8 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 
-import { Client } from '../../../core/services/clients.service';
-import { Location } from '../../../core/services/locations.service';
+import { Client, ClientsService } from '../../../core/services/clients.service';
+import { Location, LocationsService } from '../../../core/services/locations.service';
 import {
   SessionsService,
   RecurringPreviewItem,
@@ -51,6 +51,8 @@ export class CreateWizardModalComponent implements OnInit {
   private readonly sessionsService = inject(SessionsService);
   private readonly subscriptionsService = inject(SubscriptionsService);
   private readonly notificationService = inject(NotificationService);
+  private readonly clientsService = inject(ClientsService);
+  private readonly locationsService = inject(LocationsService);
 
   // ─── Inputs ────────────────────────────────────────────────────
   @Input() locations: Location[] = [];
@@ -97,7 +99,7 @@ export class CreateWizardModalComponent implements OnInit {
 
   // ─── Step 2B: Single Session State ─────────────────────────────
   readonly singleType = signal<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
-  readonly participantMode = signal<'COUNT' | 'CLIENT'>('COUNT');
+  readonly participantMode = signal<'COUNT' | 'CLIENT'>('CLIENT');
   readonly singleAnonymousCount = signal<number>(1);
   readonly singleClientId = signal<number | null>(null);
   readonly singleClientSubscriptions = signal<ClientSubscription[]>([]);
@@ -112,19 +114,25 @@ export class CreateWizardModalComponent implements OnInit {
   readonly enableNotification = signal<boolean>(true);
   readonly reminderMode = signal<ReminderMode>('auto');
 
+  // ─── Reactive Data Lists ───────────────────────────────────────
+  readonly clientList = signal<Client[]>([]);
+  readonly isClientsLoading = signal<boolean>(false);
+  readonly locationList = signal<Location[]>([]);
+  readonly isLocationsLoading = signal<boolean>(false);
+
   readonly singleDatetimeId = `single-datetime-${Math.random().toString(36).substring(2, 9)}`;
 
   // ─── Computed ──────────────────────────────────────────────────
   readonly selectedSubClient = computed(() => {
     const id = this.subClientId();
     if (!id) return null;
-    return this.clients.find((c) => c.id === id) || null;
+    return this.clientList().find((c) => c.id === id) || null;
   });
 
   readonly selectedSingleClient = computed(() => {
     const id = this.singleClientId();
     if (!id) return null;
-    return this.clients.find((c) => c.id === id) || null;
+    return this.clientList().find((c) => c.id === id) || null;
   });
 
   readonly activeSubscriptionForSingle = computed(() => {
@@ -153,9 +161,17 @@ export class CreateWizardModalComponent implements OnInit {
 
   // ─── Lifecycle ─────────────────────────────────────────────────
   ngOnInit(): void {
-    if (this.locations.length > 0) {
-      this.subLocationId.set(this.locations[0].id);
-      this.singleLocationId.set(this.locations[0].id);
+    if (this.locations && this.locations.length > 0) {
+      this.locationList.set(this.locations);
+      this.initLocationDefaults(this.locations);
+    } else {
+      this.loadLocations();
+    }
+
+    if (this.clients && this.clients.length > 0) {
+      this.clientList.set(this.clients);
+    } else {
+      this.loadClients();
     }
 
     if (this.preselectedClientId) {
@@ -311,9 +327,40 @@ export class CreateWizardModalComponent implements OnInit {
     const currentMax = this.singleMaxParticipants();
     if (type === 'GROUP' && (currentMax === 1 || currentMax === null)) {
       this.singleMaxParticipants.set(8);
-    } else if (type === 'INDIVIDUAL' && (currentMax === 8 || currentMax === null)) {
-      this.singleMaxParticipants.set(1);
+    } else if (type === 'INDIVIDUAL') {
+      if (currentMax === 8 || currentMax === null) {
+        this.singleMaxParticipants.set(1);
+      }
+      this.participantMode.set('CLIENT');
     }
+  }
+
+  loadClients(): void {
+    this.isClientsLoading.set(true);
+    this.clientsService.getAll().subscribe({
+      next: (cls) => {
+        this.clientList.set(cls || []);
+        this.isClientsLoading.set(false);
+      },
+      error: () => {
+        this.isClientsLoading.set(false);
+      },
+    });
+  }
+
+  loadLocations(): void {
+    this.isLocationsLoading.set(true);
+    this.locationsService.getAll().subscribe({
+      next: (locs) => {
+        const list = locs || [];
+        this.locationList.set(list);
+        this.initLocationDefaults(list);
+        this.isLocationsLoading.set(false);
+      },
+      error: () => {
+        this.isLocationsLoading.set(false);
+      },
+    });
   }
 
   onSingleClientChange(event: CustomEvent): void {
@@ -391,7 +438,7 @@ export class CreateWizardModalComponent implements OnInit {
 
       // Schedule notification
       if (this.enableNotification()) {
-        const loc = this.locations.find((l) => l.id === locationId);
+        const loc = this.locationList().find((l) => l.id === locationId);
         if (loc) {
           this.notificationService.scheduleForSession(
             createdSession,
@@ -511,5 +558,15 @@ export class CreateWizardModalComponent implements OnInit {
       color,
     });
     await toast.present();
+  }
+
+  private initLocationDefaults(locs: Location[]): void {
+    if (!locs || locs.length === 0) return;
+    if (!this.subLocationId()) {
+      this.subLocationId.set(locs[0].id);
+    }
+    if (!this.singleLocationId()) {
+      this.singleLocationId.set(locs[0].id);
+    }
   }
 }

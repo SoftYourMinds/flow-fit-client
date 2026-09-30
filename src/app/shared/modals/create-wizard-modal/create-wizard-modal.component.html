@@ -77,21 +77,34 @@
       }
 
       <!-- Client Selection -->
+      <!-- Client Selection -->
       <div class="form-group">
         <ion-label class="form-label">Клієнт *</ion-label>
         <ion-item lines="none" class="custom-input-item">
           <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
-          <ion-select
-            [value]="subClientId()"
-            (ionChange)="setSubClient($event)"
-            placeholder="Оберіть клієнта"
-            interface="popover"
-            style="width: 100%;">
-            @for (c of clients; track c.id) {
-              <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
-            }
-          </ion-select>
+          @if (isClientsLoading()) {
+            <ion-spinner name="crescent" color="primary" style="margin: 8px auto;"></ion-spinner>
+          } @else {
+            <ion-select
+              [value]="subClientId()"
+              (ionChange)="setSubClient($event)"
+              placeholder="Оберіть клієнта"
+              interface="popover"
+              style="width: 100%;">
+              @for (c of clientList(); track c.id) {
+                <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
+              }
+            </ion-select>
+          }
         </ion-item>
+        @if (!isClientsLoading() && clientList().length === 0) {
+          <p class="sub-description" style="margin-top: 6px; font-size: 13px; color: var(--ion-color-warning, #e0ac08);">
+            Немає доданих клієнтів.
+            <ion-button fill="clear" size="small" (click)="loadClients()" style="margin: 0; padding: 0; text-transform: none; font-size: 13px;">
+              Оновити список
+            </ion-button>
+          </p>
+        }
         @if (hasOverlappingActiveSubscription()) {
           <div class="alert-box warning ion-margin-top">
             <ion-icon name="warning-outline"></ion-icon>
@@ -162,7 +175,7 @@
             placeholder="Оберіть локацію"
             interface="popover"
             style="width: 100%;">
-            @for (loc of locations; track loc.id) {
+            @for (loc of locationList(); track loc.id) {
               <ion-select-option [value]="loc.id">{{ loc.name }}</ion-select-option>
             }
           </ion-select>
@@ -411,17 +424,29 @@
           <ion-label class="form-label">Клієнт</ion-label>
           <ion-item lines="none" class="custom-input-item">
             <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
-            <ion-select
-              [value]="singleClientId()"
-              (ionChange)="onSingleClientChange($event)"
-              placeholder="Оберіть клієнта"
-              interface="popover"
-              style="width: 100%;">
-              @for (c of clients; track c.id) {
-                <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
-              }
-            </ion-select>
+            @if (isClientsLoading()) {
+              <ion-spinner name="crescent" color="primary" style="margin: 8px auto;"></ion-spinner>
+            } @else {
+              <ion-select
+                [value]="singleClientId()"
+                (ionChange)="onSingleClientChange($event)"
+                placeholder="Оберіть клієнта"
+                interface="popover"
+                style="width: 100%;">
+                @for (c of clientList(); track c.id) {
+                  <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
+                }
+              </ion-select>
+            }
           </ion-item>
+          @if (!isClientsLoading() && clientList().length === 0) {
+            <p class="sub-description" style="margin-top: 6px; font-size: 13px; color: var(--ion-color-warning, #e0ac08);">
+              Немає доданих клієнтів.
+              <ion-button fill="clear" size="small" (click)="loadClients()" style="margin: 0; padding: 0; text-transform: none; font-size: 13px;">
+                Оновити список
+              </ion-button>
+            </p>
+          }
         </div>
 
         <!-- Active Subscription Deduction Banner -->
@@ -462,7 +487,7 @@
             placeholder="Оберіть локацію"
             interface="popover"
             style="width: 100%;">
-            @for (loc of locations; track loc.id) {
+            @for (loc of locationList(); track loc.id) {
               <ion-select-option [value]="loc.id">{{ loc.name }}</ion-select-option>
             }
           </ion-select>
