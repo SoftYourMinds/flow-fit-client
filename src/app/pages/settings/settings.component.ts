@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { IonicModule, AlertController, NavController, LoadingController } from '@ionic/angular';
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -9,16 +10,17 @@ import { TelegramService } from '../../core/services/telegram.service';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, RouterModule]
 })
 export class SettingsComponent implements OnInit {
-
+  readonly appVersion = environment.appVersion || '0.2.0';
   notificationsEnabled = true;
 
   public themeService = inject(ThemeService);
@@ -32,7 +34,6 @@ export class SettingsComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    // Read from local storage if we want persistence across app restarts
     const saved = localStorage.getItem('notificationsEnabled');
     if (saved !== null) {
       this.notificationsEnabled = saved === 'true';
@@ -55,7 +56,6 @@ export class SettingsComponent implements OnInit {
             text: 'Скасувати',
             role: 'cancel',
             handler: () => {
-              // Revert toggle
               this.notificationsEnabled = true;
             }
           },
@@ -72,7 +72,6 @@ export class SettingsComponent implements OnInit {
       await alert.present();
     } else {
       localStorage.setItem('notificationsEnabled', 'true');
-      // To properly sync, we'd need sessions, but we'll sync on next app launch or schedule navigation
     }
   }
 
@@ -110,5 +109,4 @@ export class SettingsComponent implements OnInit {
       await loading.dismiss();
     }
   }
-
 }

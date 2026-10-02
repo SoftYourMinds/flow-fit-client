@@ -4,6 +4,7 @@ import { firstValueFrom, timeout, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { SessionsService } from './sessions.service';
+import { AppUpdatesService } from './app-updates.service';
 
 export type InitStep =
   | 'connecting'
@@ -20,6 +21,7 @@ export class AppInitService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly sessionsService = inject(SessionsService);
+  private readonly appUpdatesService = inject(AppUpdatesService);
 
   private wakeUpTimer: ReturnType<typeof setTimeout> | null = null;
   private isInitializedOnce = false;
@@ -132,13 +134,21 @@ export class AppInitService {
 
   private async preloadUserData(): Promise<void> {
     try {
-      // Warm up user data and scheduler list simultaneously
+      // Warm up user data, scheduler list, and app updates simultaneously during loader
       const sessions$ = this.sessionsService.getAll().pipe(
         timeout(8000),
         catchError(() => of([]))
       );
 
-      await firstValueFrom(sessions$);
+      const updates$ = this.appUpdatesService.checkUpdatesDuringPreload().pipe(
+        timeout(4000),
+        catchError(() => of(null))
+      );
+
+      await Promise.all([
+        firstValueFrom(sessions$),
+        firstValueFrom(updates$)
+      ]);
     } catch {
       // Soft failure: we proceed anyway so user isn't blocked
     }
@@ -149,6 +159,8 @@ export class AppInitService {
     setTimeout(() => {
       this.isInitializing.set(false);
       this.isFadingOut.set(false);
+      // Trigger What's New modal if a new release update was detected
+      this.appUpdatesService.triggerPendingModalIfAvailable();
     }, 450);
   }
 

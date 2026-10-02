@@ -1,0 +1,48 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Останні оновлення</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <ion-progress-bar type="indeterminate"></ion-progress-bar>
+  }
+
+  <div class="updates-timeline">
+    @for (update of updates(); track update.version) {
+      <div class="update-card" [class.is-latest]="$first">
+        <div class="update-card__top">
+          <div class="version-badge">
+            <span class="version-number">v{{ update.version }}</span>
+            @if (update.badge) {
+              <ion-badge color="primary">{{ update.badge }}</ion-badge>
+            }
+          </div>
+          <span class="update-date">{{ update.releaseDate }}</span>
+        </div>
+
+        <h2 class="update-card__title">{{ update.title }}</h2>
+
+        <div class="update-groups">
+          @for (group of update.groups; track group.category) {
+            <div class="group-box">
+              <h4>{{ group.category }}</h4>
+              <ul>
+                @for (item of group.items; track item) {
+                  <li>
+                    <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+                    <span>{{ item }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ion-content>

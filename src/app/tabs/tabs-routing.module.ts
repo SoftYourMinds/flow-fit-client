@@ -44,6 +44,10 @@ const routes: Routes = [
         loadComponent: () => import('../pages/settings/settings.component').then(m => m.SettingsComponent)
       },
       {
+        path: 'settings/last-updates',
+        loadComponent: () => import('../pages/settings/last-updates/last-updates.component').then(m => m.LastUpdatesComponent)
+      },
+      {
         path: '',
         redirectTo: '/tabs/clients',
         pathMatch: 'full'
