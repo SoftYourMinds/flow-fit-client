@@ -6,5 +6,5 @@ export const environment = {
   production: false,
   apiUrl: 'https://flow-fit-api.vercel.app',
   clientUrl: 'http://localhost:4200',
-  appVersion: '0.2.0'
+  appVersion: '0.3.0'
 };

@@ -22,7 +22,7 @@ import { getHarmoniousColor } from '../../core/services/theme-utils';
   imports: [CommonModule, FormsModule, IonicModule, RouterModule]
 })
 export class SettingsComponent implements OnInit {
-  readonly appVersion = environment.appVersion || '0.2.0';
+  readonly appVersion = environment.appVersion || '0.3.0';
   notificationsEnabled = true;
 
   public themeService = inject(ThemeService);
