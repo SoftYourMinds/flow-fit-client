@@ -3,7 +3,7 @@ ion-tab-bar.glass-tab-bar {
   --border: none;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(200, 138, 114, 0.15);
+  border-top: 1px solid rgba(var(--ion-color-primary-rgb, 200, 138, 114), 0.15);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
   height: calc(42px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -50,12 +50,12 @@ ion-tab-button {
 :host-context(.ion-palette-dark) {
   ion-tab-bar.glass-tab-bar {
     --background: rgba(24, 21, 20, 0.92);
-    border-top: 1px solid rgba(200, 138, 114, 0.2);
+    border-top: 1px solid rgba(var(--ion-color-primary-rgb, 200, 138, 114), 0.2);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
   }
 
   ion-tab-button {
     --color: #9A8985;
-    --color-selected: #C88A72;
+    --color-selected: var(--ion-color-primary, #C88A72);
   }
 }

@@ -6,6 +6,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
+import { ThemeService } from '../../core/services/theme.service';
+import { hexToRgb, rgbToString } from '../../core/services/theme-utils';
 
 @Component({
   selector: 'app-portal',
@@ -21,7 +23,7 @@ export class PortalComponent implements OnInit {
 
   activeTab = signal<'history' | 'metrics'>('history');
   activeChartMetric = signal<'weight' | 'bodyFatPercentage' | 'chest' | 'waist'>('weight');
-  isDarkMode = signal(false);
+  isDarkMode = computed(() => this.themeService.isDark());
 
   // Computed properties
   initials = computed(() => {
@@ -79,11 +81,14 @@ export class PortalComponent implements OnInit {
         const date = new Date(session.startTime);
         const dateString = date.toISOString().split('T')[0];
         
-        let color = '#C88A72'; // default primary
+        let color = this.themeService.activePreset().primary; // default primary
         if (session.isAttended === true) color = '#7EA172'; // success
         else if (session.isAttended === false) color = '#C96B6B'; // danger
 
-        return {
+        const primary = this.themeService.activePreset().primary;
+    const primaryRgb = hexToRgb(primary);
+
+    return {
           date: dateString,
           textColor: '#ffffff',
           backgroundColor: color,
@@ -111,7 +116,10 @@ export class PortalComponent implements OnInit {
   public lineChartData = computed<ChartConfiguration['data']>(() => {
     const prof = this.profile();
     if (!prof || !prof.metrics || prof.metrics.length === 0) {
-      return { datasets: [], labels: [] };
+      const primary = this.themeService.activePreset().primary;
+    const primaryRgb = hexToRgb(primary);
+
+    return { datasets: [], labels: [] };
     }
 
     const metricKey = this.activeChartMetric();
@@ -126,6 +134,9 @@ export class PortalComponent implements OnInit {
       const d = new Date(m.date);
       return `${d.getDate()}/${d.getMonth() + 1}`;
     });
+
+    const primary = this.themeService.activePreset().primary;
+    const primaryRgb = hexToRgb(primary);
 
     return {
       datasets: [
@@ -179,21 +190,23 @@ export class PortalComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit() {
-    // Initialize theme based on current state or system preference
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const isCurrentlyDark = document.documentElement.classList.contains('ion-palette-dark') || document.body.classList.contains('dark') || prefersDark;
-    this.isDarkMode.set(isCurrentlyDark);
-    this.applyTheme(isCurrentlyDark);
+
+    this.themeService.initTheme();
+
+
+
 
     this.route.paramMap.subscribe(params => {
       const token = params.get('token');
       if (token) {
         this.loadProfile(token);
       } else {
+  
         this.error.set('Невірне посилання.');
         this.isLoading.set(false);
       }
@@ -221,19 +234,7 @@ export class PortalComponent implements OnInit {
   }
 
   toggleTheme() {
-    const newTheme = !this.isDarkMode();
-    this.isDarkMode.set(newTheme);
-    this.applyTheme(newTheme);
-  }
-
-  private applyTheme(isDark: boolean) {
-    if (isDark) {
-      document.documentElement.classList.add('ion-palette-dark');
-      document.body.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('ion-palette-dark');
-      document.body.classList.remove('dark');
-    }
+    this.themeService.toggleTheme();
   }
 
   getStatusColor(status: string): string {

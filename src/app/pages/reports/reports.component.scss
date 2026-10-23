@@ -69,7 +69,7 @@ ion-card {
 
     &:focus {
       outline: none;
-      border-color: #C88A72;
+      border-color: var(--ion-color-primary, #C88A72);
     }
   }
 }
@@ -80,12 +80,12 @@ ion-card {
   padding: 40px;
 
   ion-spinner {
-    color: #C88A72;
+    color: var(--ion-color-primary, #C88A72);
   }
 }
 
 .income-card {
-  background: linear-gradient(135deg, #C88A72, #e8c5b8);
+  background: linear-gradient(135deg, var(--ion-color-primary, #C88A72), var(--ion-color-secondary, #e8c5b8));
   color: white;
 
   h2 {
@@ -116,7 +116,7 @@ ion-card {
     .stat-value {
       font-size: 24px;
       font-weight: 700;
-      color: #C88A72;
+      color: var(--ion-color-primary, #C88A72);
       margin-bottom: 4px;
     }
 
@@ -165,11 +165,11 @@ ion-card {
         margin-right: 8px;
 
         &.individual {
-          background-color: #C88A72;
+          background-color: var(--ion-color-primary, #C88A72);
         }
 
         &.group {
-          background-color: #E8C5B8;
+          background-color: var(--ion-color-secondary, #E8C5B8);
         }
       }
     }

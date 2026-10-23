@@ -10,6 +10,7 @@ import { ReportsService, ReportSummary } from '../../core/services/reports.servi
 import { SessionsService, WorkoutSession } from '../../core/services/sessions.service';
 import { LocationsService, Location } from '../../core/services/locations.service';
 import { WORKOUT_TYPE_OPTIONS } from '../../core/constants/workout-types.constant';
+import { ThemeService } from '../../core/services/theme.service';
 
 function getLocalDateString(date: Date): string {
   const year = date.getFullYear();
@@ -70,7 +71,8 @@ export class ReportsComponent implements OnInit, ViewWillEnter {
     private reportsService: ReportsService,
     private sessionsService: SessionsService,
     private locationsService: LocationsService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit() {

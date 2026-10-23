@@ -2,6 +2,16 @@
 
 This document tracks important architectural, design, and business logic decisions made during the development of the FlowFit client application.
 
+## 2026-10-23: Dynamic Theme System with Ready Presets & Custom Palette Builder
+- **Decision:** Replaced hardcoded binary light/dark mode with dynamic, token-driven theming architecture supporting curated presets, user-defined custom color themes, and automatic harmonic color calculations.
+- **Rationale:** Fitness trainers and power users require personalization that matches their visual taste, gym branding, or mood, rather than restricting them to default black and white/terracotta.
+- **Implementation:**
+  - `theme.types.ts`: Strongly typed interfaces (`ThemePreset`, `CustomThemeConfig`, `ThemeMode`, `DarkBgTone`).
+  - `theme-utils.ts`: Pure mathematical color utilities for RGB/Hex/HSL conversion, ITU-R perceived luminance calculation, automatic contrast switching (`#ffffff` vs `#141211`), automatic tint/shade derivations, step variables generation (`--ion-color-step-50`..`950`), and runtime CSS generation.
+  - `ThemeService`: Reactive Angular signals (`themeMode`, `isDark`, `activePresetId`, `customConfig`, `activePreset`). Injects dynamic CSS rules into a runtime `<style id="flowfit-theme-runtime">` stylesheet and updates root custom properties simultaneously.
+  - Backward compatibility: Retained `isDarkMode`, `setDarkMode`, and `toggleTheme` to preserve compatibility with existing callers.
+  - `settings.component`: Modern visual preset cards with 3-dot color previews, mode segment (Light/Dark/System Auto), expandable custom color picker with native color input + hex field, quick palette recommendations, auto-harmonize button, and live preview box.
+
 ## 2026-07-16: Local Notifications vs Background Sync
 - **Decision:** Implemented workout reminders using `@capacitor/local-notifications` rather than a background service or Web Worker.
 - **Rationale:** Background processes are unreliable on iOS (they get suspended). Local notifications operate on a "schedule and forget" principle: the OS guarantees delivery at the specified time even if the app is completely closed. This perfectly fits the atomic nature of workout reminders.

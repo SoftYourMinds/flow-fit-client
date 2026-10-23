@@ -1,14 +1,22 @@
 # FlowFit Memory
 
 ## Current State
-- UI/UX modernization fully implemented with Nude & Terracotta theme (#C88A72).
-- Class-based `.dark` theme configured in `variables.scss` and `global.scss`.
+- Dynamic theming system with 8 curated presets and custom theme builder (`ThemeService`).
+- UI/UX supports Light, Dark, and System Auto display modes.
+- Default palette remains Nude & Terracotta (`#C88A72`).
 - Scheduler supports Day, Week, and Month views, with horizontal week-strip navigation.
 - Workout cards are clickable and open a detailed `session-detail` page.
 - Payment tracking (`isPaid`) has been completely removed in favor of a simpler `price` per session model.
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Implemented Multi-Palette Theme Engine and Custom Theme Setup:
+  - Added `theme.types.ts` defining 8 presets (Теракота, Смарагд, Кіберпанк, Океан, Багряний, Бурштин, Графіт, Півонія) and custom configuration.
+  - Added `theme-utils.ts` providing color math, ITU-R perceived contrast calculation, automatic shades/tints, step color interpolation, and runtime dynamic CSS generation.
+  - Upgraded `ThemeService` with Angular signals (`themeMode`, `isDark`, `activePresetId`, `customConfig`, `activePreset`) and runtime `<style id="flowfit-theme-runtime">` stylesheet management.
+  - Redesigned `/tabs/settings` page with a dedicated "Тема та стиль" section: segmented Light/Dark/Auto switch, 8 preset swatch cards, expandable custom theme builder with native color picker, hex input, quick palette recommendations, auto-harmonize secondary color generator, dark tone selector (OLED, Graphite, Tinted), and live preview box.
+  - Updated `tabs.page.scss`, `global.scss`, `reports.component`, and `portal.component` to rely on dynamic `var(--ion-color-primary)` and `var(--ion-color-secondary)` rather than hardcoded hex values.
+  - Added unit test suite `theme.service.spec.ts` covering theme utilities and reactive service actions (12 tests passing).
 - Added new workout directions: `power stretching` and `power`. Centralized `WORKOUT_TYPE_OPTIONS` and `WorkoutType` in `workout-types.constant.ts` across reports, scheduler, and creation modals.
 - Added support for `workoutTypes` (e.g. stretching, yoga, pilates) array on `WorkoutSession`.
 - Added multi-select `workoutTypes` to `session-modal` and updated `session-detail` to display them.
@@ -39,5 +47,4 @@
 - Implemented App Initialization & Serverless Wake-up Splash Screen (`SplashLoaderComponent` + `AppInitService`) with terracotta halo branding, stepped progress bar, friendly Ukrainian cold-start messaging, data pre-fetching, timeout retry handling, and smooth fade-out into the app.
 
 ## Known Issues
-- None. Build completes successfully.
-
+- None. Build completes successfully with 0 errors.

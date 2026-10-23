@@ -1,20 +1,35 @@
 ## Last Session Summary
 
-**Date:** 2026-08-22
-**Session focus:** App Initialization & Serverless Wake-up Splash Screen
+**Date:** 2026-10-23
+**Session focus:** Custom Theme Setup & Curated Ready-to-Go Presets System
 
 ### ✅ Accomplished
 
-- **`AppInitService`**: Built application startup coordinator managing serverless pinging, wake-up detection, stage signals, data pre-fetching, and timeout recovery.
-- **`SplashLoaderComponent`**: Designed standalone luxury splash screen with animated terracotta pulse branding (`#C88A72`), animated progress bar, dynamic status indicators, dark/light theme support, and retry/skip controls.
-- **Root Integration**: Seamlessly integrated into `AppComponent` template via Angular `@if` reactive overlay with smooth exit animation.
-- **Clean Code & Linting**: Refactored `AppComponent` to use `inject()` and modular private helpers; validated production build.
+- **Multi-Palette Theme Engine (`ThemeService`)**: Upgraded from binary dark/light toggle to dynamic theme system supporting 8 curated presets + user-defined custom theme + 3 display modes (Light, Dark, System Auto).
+- **8 Curated Presets**:
+  1. *Теракота* (Classic FlowFit Warm Nude - `#C88A72`)
+  2. *Смарагд* (Emerald Fitness & Vitality - `#10B981`)
+  3. *Кіберпанк* (Cyber Violet & Neon Indigo - `#8B5CF6`)
+  4. *Океан* (Deep Sapphire Blue - `#2563EB`)
+  5. *Багряний* (Crimson Blaze & Flame - `#EF4444`)
+  6. *Бурштин* (Golden Sunset & Amber - `#F59E0B`)
+  7. *Графіт* (Nordic Titanium Minimalist - `#64748B`)
+  8. *Півонія* (Luxe Rose Quartz & Magenta - `#EC4899`)
+- **Custom Theme Builder**:
+  - Native color picker + direct Hex input with real-time validation.
+  - Quick recommendations swatch row for primary colors.
+  - Secondary accent picker with automatic harmonic color calculation (`autoHarmonizeSecondary()`).
+  - Dark background tone selection: OLED Pure Black (`#000000`), Deep Graphite Charcoal (`#121214`), and Primary-Tinted Dark (`tinted`).
+  - Live interactive preview box with buttons, badges, chips, and icons.
+- **Dynamic CSS Injection (`theme-utils.ts`)**: Generates runtime `:root` and `body.dark, html.ion-palette-dark` custom properties with automatic luminance contrast, 12% shades, 15% tints, RGB comma strings, and full 19 step variables (`--ion-color-step-50` through `--ion-color-step-950`).
+- **Settings UI & App-Wide Modernization**: Replaced basic toggle on `/tabs/settings` with modern card featuring segmented mode selector, visual preset cards with swatch dots, expandable custom theme builder, and real-time live preview. Updated tab bars, action sheets, charts, and portal page.
+- **Comprehensive Verification**: Added 12 unit tests in `theme.service.spec.ts` (all passing). Verified production compilation with `npm run build` (exit code 0).
 
 ### ⚠️ Pending / Known Issues
 
-- None. Production build (`npm run build`) compiles cleanly with code 0.
+- None. Both build and test suites pass cleanly.
 
 ### 🚀 Immediate Next Steps
 
-1. Test app cold start on staging/production backend deployment (`https://flow-fit-api.vercel.app`).
-2. Proceed with next scheduled CRM feature (e.g. dedicated metrics editor or recurring sessions).
+1. Export/import custom theme presets if trainers want to share branding.
+2. Proceed with next CRM roadmap milestones (recurring sessions or client portal analytics).

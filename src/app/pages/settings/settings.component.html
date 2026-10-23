@@ -5,17 +5,213 @@
 </ion-header>
 
 <ion-content>
-  <div class="ion-padding">
+  <div class="ion-padding settings-container">
+    <!-- Секція: Тема та оформлення -->
+    <ion-card class="modern-card theme-card ion-no-margin ion-margin-bottom">
+      <ion-card-header>
+        <div class="card-header-flex">
+          <div>
+            <ion-card-title>
+              <ion-icon name="color-palette-outline" color="primary"></ion-icon>
+              Тема та стиль
+            </ion-card-title>
+            <ion-card-subtitle>Оберіть колірний пресет або створіть власний</ion-card-subtitle>
+          </div>
+          <ion-button 
+            fill="clear" 
+            size="small" 
+            class="toggle-custom-btn" 
+            (click)="toggleCustomEditor()">
+            <ion-icon slot="icon-only" [name]="showCustomEditor ? 'chevron-up-outline' : 'color-wand-outline'"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Перемикач режиму: Світла / Темна / Авто -->
+        <div class="mode-segment-wrapper">
+          <ion-segment [value]="themeService.themeMode()" (ionChange)="onThemeModeChange($event)">
+            <ion-segment-button value="light">
+              <ion-icon name="sunny-outline"></ion-icon>
+              <ion-label>Світла</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="dark">
+              <ion-icon name="moon-outline"></ion-icon>
+              <ion-label>Темна</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="system">
+              <ion-icon name="phone-portrait-outline"></ion-icon>
+              <ion-label>Авто</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <!-- Готові колірні пресети -->
+        <div class="presets-wrapper ion-margin-top">
+          <div class="presets-header">
+            <span>Кольорові палітри</span>
+            <span class="preset-active-label">Активна: {{ themeService.activePreset().name }}</span>
+          </div>
+
+          <div class="presets-grid">
+            @for (preset of themeService.presets; track preset.id) {
+              <div 
+                class="preset-card" 
+                [class.active]="themeService.activePresetId() === preset.id"
+                (click)="selectPreset(preset.id)">
+                <div class="swatch-strip">
+                  <span class="swatch-dot" [style.background-color]="preset.primary"></span>
+                  <span class="swatch-dot" [style.background-color]="preset.secondary"></span>
+                  <span class="swatch-dot" [style.background-color]="preset.tertiary"></span>
+                </div>
+                <div class="preset-name">{{ preset.name }}</div>
+                @if (themeService.activePresetId() === preset.id) {
+                  <ion-icon name="checkmark-circle" class="check-icon" color="primary"></ion-icon>
+                }
+              </div>
+            }
+
+            <!-- Картка власної теми -->
+            <div 
+              class="preset-card custom-card" 
+              [class.active]="themeService.activePresetId() === 'custom'"
+              (click)="selectCustomTheme()">
+              <div class="swatch-strip">
+                <span class="swatch-dot" [style.background-color]="themeService.customConfig().primary"></span>
+                <span class="swatch-dot" [style.background-color]="themeService.customConfig().secondary"></span>
+                <span class="swatch-dot icon-dot">
+                  <ion-icon name="color-wand"></ion-icon>
+                </span>
+              </div>
+              <div class="preset-name">Власна тема</div>
+              @if (themeService.activePresetId() === 'custom') {
+                <ion-icon name="checkmark-circle" class="check-icon" color="primary"></ion-icon>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Конструктор власної теми -->
+        @if (themeService.activePresetId() === 'custom' || showCustomEditor) {
+          <div class="custom-editor-container ion-margin-top">
+            <div class="editor-title-row">
+              <div class="editor-title">
+                <ion-icon name="construct-outline" color="primary"></ion-icon>
+                <span>Конструктор власної теми</span>
+              </div>
+              <ion-button fill="clear" size="small" color="medium" (click)="resetCustomTheme()">
+                Скинути
+              </ion-button>
+            </div>
+
+            <!-- Вибір основного кольору -->
+            <div class="color-row">
+              <div class="color-title-meta">
+                <span class="label">Основний акцент</span>
+                <span class="hex-badge" [style.background-color]="customPrimaryHex">{{ customPrimaryHex }}</span>
+              </div>
+              <div class="color-control-group">
+                <div class="native-picker-wrapper">
+                  <input 
+                    type="color" 
+                    class="native-color-input" 
+                    [value]="customPrimaryHex" 
+                    (input)="onPrimaryColorChange($event)">
+                </div>
+                <ion-input 
+                  class="custom-input-item hex-field" 
+                  [(ngModel)]="customPrimaryHex" 
+                  (ionBlur)="applyCustomPrimaryHex()"
+                  placeholder="#000000"
+                  maxlength="7">
+                </ion-input>
+              </div>
+            </div>
+
+            <!-- Швидкі рекомендації кольорів -->
+            <div class="quick-swatches-row">
+              <span class="swatches-hint">Швидкий вибір:</span>
+              <div class="swatches-pills">
+                @for (c of recommendedColors; track c) {
+                  <button 
+                    type="button"
+                    class="swatch-circle-btn" 
+                    [style.background-color]="c"
+                    [class.selected]="customPrimaryHex.toLowerCase() === c.toLowerCase()"
+                    (click)="pickQuickPrimary(c)">
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Вибір додаткового кольору -->
+            <div class="color-row ion-margin-top">
+              <div class="color-title-meta">
+                <span class="label">Додатковий акцент</span>
+                <span class="hex-badge" [style.background-color]="customSecondaryHex">{{ customSecondaryHex }}</span>
+              </div>
+              <div class="color-control-group">
+                <div class="native-picker-wrapper">
+                  <input 
+                    type="color" 
+                    class="native-color-input" 
+                    [value]="customSecondaryHex" 
+                    (input)="onSecondaryColorChange($event)">
+                </div>
+                <ion-input 
+                  class="custom-input-item hex-field" 
+                  [(ngModel)]="customSecondaryHex" 
+                  (ionBlur)="applyCustomSecondaryHex()"
+                  placeholder="#000000"
+                  maxlength="7">
+                </ion-input>
+                <ion-button 
+                  fill="outline" 
+                  size="small" 
+                  class="harmonize-btn"
+                  title="Автоматично підібрати гармонійний відтінок"
+                  (click)="autoHarmonizeSecondary()">
+                  <ion-icon slot="icon-only" name="sparkles-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+
+            <!-- Стиль темного фону -->
+            <div class="dark-tone-group ion-margin-top">
+              <div class="tone-label">Стиль темного фону</div>
+              <ion-segment 
+                [value]="themeService.customConfig().darkTone" 
+                (ionChange)="onDarkToneChange($event)">
+                <ion-segment-button value="oled">
+                  <ion-label>OLED Чорний</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="charcoal">
+                  <ion-label>Графіт</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="tinted">
+                  <ion-label>Відтінковий</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
+
+            <!-- Живий попередній перегляд -->
+            <div class="live-preview-panel ion-margin-top">
+              <div class="preview-panel-title">Живий попередній перегляд</div>
+              <div class="preview-components">
+                <ion-button size="small" color="primary">Головна</ion-button>
+                <ion-button size="small" fill="outline" color="primary">Контур</ion-button>
+                <ion-badge color="primary">Бейдж</ion-badge>
+                <ion-badge color="secondary">Додатковий</ion-badge>
+                <ion-icon name="flame" color="primary" class="preview-icon"></ion-icon>
+              </div>
+            </div>
+          </div>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Головний список інших налаштувань -->
     <ion-list lines="inset">
-      <ion-item>
-        <ion-icon slot="start" name="moon" color="primary"></ion-icon>
-        <ion-label>Темна тема</ion-label>
-        <ion-toggle slot="end"
-          [checked]="themeService.isDarkMode" 
-          (ionChange)="toggleTheme()">
-        </ion-toggle>
-      </ion-item>
-      
       <ion-item>
         <ion-icon slot="start" name="notifications" color="primary"></ion-icon>
         <ion-label>Нагадування про тренування</ion-label>
