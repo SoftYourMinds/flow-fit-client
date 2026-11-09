@@ -123,4 +123,98 @@ describe('SchedulerComponent', () => {
     const now = new Date();
     expect(component.selectedDate().toDateString()).toBe(now.toDateString());
   });
+
+  it('should filter sessions by location using criteriaFilteredSessions', () => {
+    component.sessions.set([
+      {
+        id: 1,
+        locationId: 10,
+        type: 'INDIVIDUAL',
+        startTime: '2026-09-02T10:00:00.000Z',
+        endTime: '2026-09-02T11:00:00.000Z',
+        price: 300,
+        status: 'UPCOMING',
+        isPaid: false,
+        participants: []
+      },
+      {
+        id: 2,
+        locationId: 20,
+        type: 'GROUP',
+        startTime: '2026-09-02T12:00:00.000Z',
+        endTime: '2026-09-02T13:00:00.000Z',
+        price: 400,
+        status: 'COMPLETED',
+        isPaid: true,
+        participants: []
+      }
+    ] as any);
+
+    expect(component.criteriaFilteredSessions().length).toBe(2);
+
+    // Filter by location 10
+    component.onLocationChange(10);
+    expect(component.criteriaFilteredSessions().length).toBe(1);
+    expect(component.criteriaFilteredSessions()[0].id).toBe(1);
+
+    // Filter by location via string representation (from ion-select event)
+    component.onLocationChange('20');
+    expect(component.criteriaFilteredSessions().length).toBe(1);
+    expect(component.criteriaFilteredSessions()[0].id).toBe(2);
+
+    // Reset to ALL
+    component.onLocationChange('ALL');
+    expect(component.criteriaFilteredSessions().length).toBe(2);
+  });
+
+  it('should filter sessions by status, type, and case-insensitive workout types', () => {
+    component.sessions.set([
+      {
+        id: 1,
+        locationId: 1,
+        type: 'INDIVIDUAL',
+        status: 'UPCOMING',
+        workoutTypes: ['Functional', 'Pilates'],
+        startTime: '2026-09-02T10:00:00.000Z',
+        endTime: '2026-09-02T11:00:00.000Z',
+        price: 300,
+        isPaid: false,
+        participants: []
+      },
+      {
+        id: 2,
+        locationId: 1,
+        type: 'GROUP',
+        status: 'COMPLETED',
+        workoutTypes: ['yoga'],
+        startTime: '2026-09-02T12:00:00.000Z',
+        endTime: '2026-09-02T13:00:00.000Z',
+        price: 400,
+        isPaid: true,
+        participants: []
+      }
+    ] as any);
+
+    // Status filter
+    component.filterStatus.set('COMPLETED');
+    expect(component.criteriaFilteredSessions().length).toBe(1);
+    expect(component.criteriaFilteredSessions()[0].id).toBe(2);
+
+    // Type filter
+    component.filterStatus.set('ALL');
+    component.filterType.set('INDIVIDUAL');
+    expect(component.criteriaFilteredSessions().length).toBe(1);
+    expect(component.criteriaFilteredSessions()[0].id).toBe(1);
+
+    // Workout type case-insensitive
+    component.filterType.set('ALL');
+    component.onWorkoutTypesChange(['functional']);
+    expect(component.criteriaFilteredSessions().length).toBe(1);
+    expect(component.criteriaFilteredSessions()[0].id).toBe(1);
+
+    // Reset filters
+    component.resetFilters();
+    expect(component.criteriaFilteredSessions().length).toBe(2);
+    expect(component.hasActiveFilters()).toBeFalse();
+  });
 });

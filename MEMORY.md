@@ -10,6 +10,20 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Overhauled Scheduler Filters & Cross-View Reactive Synchronization (`SchedulerComponent`, `WeekViewComponent`, `MonthViewComponent`):
+  - Fixed location filter not having any effect in Month and Week views by passing `criteriaFilteredSessions()` instead of raw `sessions()` to child components.
+  - In Month view: calendar event dots and day list sessions immediately update according to active filters.
+  - In Week view: weekly timetable immediately reflects filtered sessions.
+  - In Day view: the 7-day strip badges compute from `criteriaFilteredSessions()`, displaying accurate session counts for filtered criteria.
+  - Resolved `[value]="null"` issue in `ion-select` for Location by using `'ALL'` value and normalizing inputs in `onLocationChange`.
+  - Matched both `session.locationId` and `session.location?.id` with numeric coercion.
+  - Made workout direction matching case-insensitive.
+  - Added missing `REQUIRED_ACTION` ("Потребує дії") status option.
+  - Fixed chip squishing/truncation on mobile screens by adding `flex-shrink: 0; white-space: nowrap;` and smooth touch scrolling.
+  - Added visual active indicator (`.active-filter`) on chips with custom primary highlight.
+  - Added 1-click "Скинути" (Reset filters) button when any filter is active.
+  - Displayed location tag inside Month view session list rows.
+  - Added 2 new unit tests in `scheduler.component.spec.ts` (all 8 tests passing).
 - Implemented Multi-Palette Theme Engine and Custom Theme Setup:
   - Added `theme.types.ts` defining 8 presets (Теракота, Смарагд, Кіберпанк, Океан, Багряний, Бурштин, Графіт, Півонія) and custom configuration.
   - Added `theme-utils.ts` providing color math, ITU-R perceived contrast calculation, automatic shades/tints, step color interpolation, and runtime dynamic CSS generation.

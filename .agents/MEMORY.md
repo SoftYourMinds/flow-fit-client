@@ -1,123 +1,64 @@
-# MEMORY.md — flow-fit-client
+# FlowFit Memory
 
-> **Protocol:** Read this file at the start of every session before taking any action.
-> **Update trigger:** Run the `memory-manager` skill after any major feature, refactor, or debugging session.
+## Current State
+- Dynamic theming system with 8 curated presets and custom theme builder (`ThemeService`).
+- UI/UX supports Light, Dark, and System Auto display modes.
+- Default palette remains Nude & Terracotta (`#C88A72`).
+- Scheduler supports Day, Week, and Month views, with horizontal week-strip navigation.
+- Workout cards are clickable and open a detailed `session-detail` page.
+- Payment tracking (`isPaid`) has been completely removed in favor of a simpler `price` per session model.
+- `environment.ts` configured for local development (`http://localhost:4000`).
 
----
+## Recent Changes
+- Overhauled Scheduler Filters & Cross-View Reactive Synchronization (`SchedulerComponent`, `WeekViewComponent`, `MonthViewComponent`):
+  - Fixed location filter not having any effect in Month and Week views by passing `criteriaFilteredSessions()` instead of raw `sessions()` to child components.
+  - In Month view: calendar event dots and day list sessions immediately update according to active filters.
+  - In Week view: weekly timetable immediately reflects filtered sessions.
+  - In Day view: the 7-day strip badges compute from `criteriaFilteredSessions()`, displaying accurate session counts for filtered criteria.
+  - Resolved `[value]="null"` issue in `ion-select` for Location by using `'ALL'` value and normalizing inputs in `onLocationChange`.
+  - Matched both `session.locationId` and `session.location?.id` with numeric coercion.
+  - Made workout direction matching case-insensitive.
+  - Added missing `REQUIRED_ACTION` ("Потребує дії") status option.
+  - Fixed chip squishing/truncation on mobile screens by adding `flex-shrink: 0; white-space: nowrap;` and smooth touch scrolling.
+  - Added visual active indicator (`.active-filter`) on chips with custom primary highlight.
+  - Added 1-click "Скинути" (Reset filters) button when any filter is active.
+  - Displayed location tag inside Month view session list rows.
+  - Added 2 new unit tests in `scheduler.component.spec.ts` (all 8 tests passing).
+- Implemented Multi-Palette Theme Engine and Custom Theme Setup:
+  - Added `theme.types.ts` defining 8 presets (Теракота, Смарагд, Кіберпанк, Океан, Багряний, Бурштин, Графіт, Півонія) and custom configuration.
+  - Added `theme-utils.ts` providing color math, ITU-R perceived contrast calculation, automatic shades/tints, step color interpolation, and runtime dynamic CSS generation.
+  - Upgraded `ThemeService` with Angular signals (`themeMode`, `isDark`, `activePresetId`, `customConfig`, `activePreset`) and runtime `<style id="flowfit-theme-runtime">` stylesheet management.
+  - Redesigned `/tabs/settings` page with a dedicated "Тема та стиль" section: segmented Light/Dark/Auto switch, 8 preset swatch cards, expandable custom theme builder with native color picker, hex input, quick palette recommendations, auto-harmonize secondary color generator, dark tone selector (OLED, Graphite, Tinted), and live preview box.
+  - Updated `tabs.page.scss`, `global.scss`, `reports.component`, and `portal.component` to rely on dynamic `var(--ion-color-primary)` and `var(--ion-color-secondary)` rather than hardcoded hex values.
+  - Added unit test suite `theme.service.spec.ts` covering theme utilities and reactive service actions (12 tests passing).
+- Added new workout directions: `power stretching` and `power`. Centralized `WORKOUT_TYPE_OPTIONS` and `WorkoutType` in `workout-types.constant.ts` across reports, scheduler, and creation modals.
+- Added support for `workoutTypes` (e.g. stretching, yoga, pilates) array on `WorkoutSession`.
+- Added multi-select `workoutTypes` to `session-modal` and updated `session-detail` to display them.
+- Added `workoutTypes` badges to the session cards on the scheduler page.
+- Updated `reports.component` and `scheduler.component` to allow filtering by `workoutTypes`.
+- Updated Client Portal (`portal.component`) to dynamically compute and display the unique `workoutTypes` a client has participated in.
+- Added Telegram Bot integration to Settings page, redirecting users to Telegram with a secure deep-linking token.
+- Increased footer tab bar font and icon sizes to improve visual proportions and eliminate excessive empty whitespace.
+- Removed rounded corners between the menu content and the cancel button in the options action sheet.
+- Fixed iOS keyboard behavior to ensure inputs remain visible when the virtual keyboard appears.
+- Implemented Local Notifications for workouts via `@capacitor/local-notifications`. Users can toggle notifications and select reminder offsets per session. Settings page provides a global toggle.
+- Background session status scheduler implemented on backend (`UPCOMING` -> `ACTIVE` -> `COMPLETED`).
+- Fixed API bug in `SessionsController.findOne` where `trainerId` and `sessionId` were passed in the wrong order, causing 404 errors when attempting to view or edit sessions.
+- Fixed Angular router parameter caching issue by migrating `route.snapshot` usage to `route.paramMap.subscribe()` in `SessionDetailComponent` and `DetailsComponent`, fixing a bug where clicking the second item in the same view wouldn't update the data.
+- Implemented 4 Core Tabs + "Більше" (More) Glassmorphism Action Sheet Drawer (*Клієнти*, *Розклад*, *Звіти*, *Більше*).
+- Added *Локації*, *Налаштування*, and Theme Toggle into the "Більше" drawer menu.
+- Fixed bottom toolbar dark mode theme selector bug (`:host-context`) and safe-area inset height cutoff.
+- Removed `isPaid` tracking from `SessionParticipant`.
+- Renamed `pricePerPerson` to `price` in `WorkoutSession` (now represents the total price of the training).
+- Replaced inline quick actions in Scheduler with a dedicated "Деталі тренування" (Session Detail) page.
+- Sessions now display up to 3 participant avatars on the card.
+- Fixed JWT refresh race condition on page reload that caused simultaneous token requests and logouts.
+- Corrected checkAuthOnLoad error handling to prevent aggressive logouts on non-auth network errors.
+- Added ability to edit client notes.
+- Updated Client list UI to navigate directly to the full profile (`/tabs/clients/:id`) on click, bypassing the bottom sheet.
+- Updated Client profile session history to display session price and location name instead of `isPaid` boolean.
+- Added navigation from Client profile session history to the detailed Session edit page.
+- Implemented App Initialization & Serverless Wake-up Splash Screen (`SplashLoaderComponent` + `AppInitService`) with terracotta halo branding, stepped progress bar, friendly Ukrainian cold-start messaging, data pre-fetching, timeout retry handling, and smooth fade-out into the app.
 
-## 📊 PROJECT LEVEL
-
-- **Active Level:** **Level 1 (MVP)**
-- **Architectural Philosophy:** Speed and simplicity. Angular Signals for state, no external state management library.
-
----
-
-## 🪵 ACTIVE TECH DEBT & ACCEPTABLE HACKS
-
-_(empty — fresh project, no tech debt yet)_
-
----
-
-## WHAT — Project Context
-
-**Project:** `flow-fit-client` — Mobile-first Ionic+Angular CRM for fitness coaches.
-**Stack:** Ionic 8 · Angular 20 · Standalone Components · Signals · REST API (HttpClient)
-
-### State Management
-
-- **Angular Signals only** — no NGXS, no NgRx
-- `signal()` for local mutable state (loading flags, form values, UI toggles)
-- `computed()` for all derived state (filtered lists, conditional UI)
-- Services expose signals, components consume them
-- `toSignal()` from `@angular/core/rxjs-interop` to bridge HttpClient Observables
-
-### Data Flow Pattern
-
-1. **Services** make HTTP calls via `HttpClient`, expose reactive data as signals
-2. **Components** inject services, consume signals via `computed()` and template bindings
-3. **Route resolvers** (optional) pre-fetch data before route activates
-4. **No query params for data that lives in services** — use service signals
-5. **Global HTTP Interceptors** handle generic loading states (`UiService.showLoader`) and error toasts (`UiService.showErrorToast`) automatically.
-
-### Component Patterns
-
-- Standalone components only (no NgModules)
-- `inject()` for dependency injection (no constructor DI)
-- `ChangeDetectionStrategy.OnPush` for all components
-- `@if` / `@for` / `@switch` control flow (no *ngIf/*ngFor)
-- `input()` / `output()` signal APIs (no @Input/@Output decorators)
-
-### Design System
-
-**Theme:** Light (warm)
-
-| Token               | Value     | Usage                           |
-| ------------------- | --------- | ------------------------------- |
-| Primary (Peach)     | `#FFB3A7` | Buttons, active states, accents |
-| Secondary (Magenta) | `#B55C82` | Secondary actions, highlights   |
-| Success (Olive)     | `#829368` | Success states, completed       |
-| Dark Text           | `#4A3034` | Primary text color              |
-| Background          | `#FDFBF9` | Page background                 |
-| Font                | Outfit    | Google Fonts                    |
-
-### Status Badge Colors
-
-| Status          | Color     | Label                |
-| --------------- | --------- | -------------------- |
-| UPCOMING        | `#6B7280` | Заплановано          |
-| ACTIVE          | `#3B82F6` | Зараз йде            |
-| REQUIRED_ACTION | `#F59E0B` | Потрібна дія         |
-| COMPLETED       | `#829368` | Завершено            |
-| MISSED          | `#EF4444` | Пропущено            |
-
-### Navigation (App Routes)
-
-```
-/auth/login
-/auth/register
-/tabs/
-├── scheduler      (Calendar + List views)
-├── clients        (Client list)
-├── reports        (Analytics)
-└── settings       (Profile + Telegram)
-/clients/:id       (Client profile with tabs)
-/sessions/new      (Create session)
-/sessions/:id      (Session detail)
-/locations          (Locations management)
-```
-
----
-
-## HOW — Workflow & Commands
-
-### Dev & Build
-
-```bash
-npm start              # ionic serve (default port 8100)
-npm run build          # production build
-npm run lint           # ESLint check
-```
-
-### Git Commits
-
-Use `/git-commit` workflow. Format: `type(scope): description` (Conventional Commits).
-
-### Code Style
-
-- `strict: true` in tsconfig
-- No `any` types
-- Import order: Angular → Ionic → third-party → local
-- Enums over magic strings
-- `async/await` only
-
-- **2026-07-25**: Disabled sign-up route until admin management system is built.
-- **2026-07-25**: Enhanced Client Portal with tabs (Workout History / Body Metrics), light/dark theme switcher, recent sessions list with status badges, and body metrics switcher for progress charts.
-- **2026-08-22**: Implemented standalone WeekView (hourly timetable grid with day columns and capacity indicator) and MonthView (calendar grid with event dots and date-scoped session list) components in Scheduler. Added `maxParticipants` field support.
-- **2026-08-22**: Configured full Progressive Web App (PWA) support: generated icon suite (72px to 512px, maskable, apple-touch-icon), added Web App Manifest with standalone display mode, and configured Angular ServiceWorker for offline shell caching.
-- **2026-08-22**: Implemented App Initialization & Serverless Wake-up Splash Screen (`SplashLoaderComponent` + `AppInitService`) with sequential step status progression, terracotta pulse branding, background data pre-fetching, offline/timeout retry actions, and smooth exit fade-out.
-- **2026-08-23**: Redesigned Scheduler WeekView with 2-column mobile layout, horizontal grid scrolling with sticky time labels and synchronized header, increased visual scale, and modernized session cards with workout type chips and participant counter.
-- **2026-09-10**: Fixed Scheduler week navigation date calculation across month boundaries, added week range month label and short month tags to day tabs, updated month grid padding session counts, synced month view active date via linkedSignal, modernized SchedulerComponent to inject() and OnPush, and added unit tests.
-- **2026-09-23**: Added new workout directions: `power stretching` and `power`. Centralized `WORKOUT_TYPE_OPTIONS` and `WorkoutType` in `workout-types.constant.ts` across reports, scheduler, and creation modals.
-- **2026-10-01**: Fixed client selection race condition in CreateWizardModalComponent by adding autonomous fallback loading, reactive clientList/locationList signals, loading indicators, and defaulting participantMode to CLIENT for individual sessions.
-
-
+## Known Issues
+- None. Build completes successfully with 0 errors.

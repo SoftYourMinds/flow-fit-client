@@ -68,10 +68,61 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
   // Filters
   readonly filterStatus = signal<string>('ALL');
   readonly filterType = signal<string>('ALL');
-  readonly filterLocationId = signal<number | null>(null);
+  readonly filterLocationId = signal<number | 'ALL'>('ALL');
   readonly filterWorkoutTypes = signal<string[]>([]);
 
+  readonly hasActiveFilters = computed(() => {
+    return (
+      this.filterStatus() !== 'ALL' ||
+      this.filterType() !== 'ALL' ||
+      this.filterLocationId() !== 'ALL' ||
+      (this.filterWorkoutTypes() && this.filterWorkoutTypes().length > 0)
+    );
+  });
+
+  readonly workoutTypesSelectedText = computed(() => {
+    const list = this.filterWorkoutTypes();
+    if (!list || list.length === 0) return 'Всі напрями';
+    if (list.length === 1) return list[0];
+    return `${list.length} напрями`;
+  });
+
   // ─── Derived State (Computed) ───────────────────────────────────
+
+  // Sessions filtered by active criteria (status, type, location, workout types) across the whole dataset
+  readonly criteriaFilteredSessions = computed<WorkoutSession[]>(() => {
+    let list = this.sessions();
+    const status = this.filterStatus();
+    const type = this.filterType();
+    const locId = this.filterLocationId();
+    const wTypes = this.filterWorkoutTypes();
+
+    if (status && status !== 'ALL') {
+      list = list.filter(s => s.status === status);
+    }
+
+    if (type && type !== 'ALL') {
+      list = list.filter(s => s.type === type);
+    }
+
+    if (locId !== 'ALL' && locId !== null && locId !== undefined) {
+      const targetId = Number(locId);
+      list = list.filter(s => {
+        const sLocId = s.locationId != null ? Number(s.locationId) : (s.location?.id != null ? Number(s.location.id) : null);
+        return sLocId === targetId;
+      });
+    }
+
+    if (Array.isArray(wTypes) && wTypes.length > 0) {
+      const lowerWTypes = wTypes.map(t => t.trim().toLowerCase());
+      list = list.filter(s => {
+        if (!s.workoutTypes || !Array.isArray(s.workoutTypes) || s.workoutTypes.length === 0) return false;
+        return s.workoutTypes.some(st => lowerWTypes.includes(st.trim().toLowerCase()));
+      });
+    }
+
+    return list;
+  });
 
   // Week days computed (Monday - Sunday of the week containing selectedDate)
   readonly weekDays = computed<DayTab[]>(() => {
@@ -85,14 +136,14 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
     const days: DayTab[] = [];
     const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
     const todayStr = getLocalDateString(new Date());
-    const allSessions = this.sessions();
+    const filteredSessions = this.criteriaFilteredSessions();
 
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
       const dateStr = getLocalDateString(d);
 
-      const count = allSessions.filter(s => {
+      const count = filteredSessions.filter(s => {
         const sDateStr = getLocalDateString(new Date(s.startTime));
         return sDateStr === dateStr;
       }).length;
@@ -133,67 +184,13 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
     return getLocalDateString(this.selectedDate());
   });
 
-  // Computed filtered sessions
+  // Computed filtered sessions for Day View (matching selected date + all filter criteria)
   readonly filteredSessions = computed(() => {
-    let list = this.sessions();
-    const mode = this.viewMode();
     const targetDateStr = this.selectedDateStr();
-    const status = this.filterStatus();
-    const type = this.filterType();
-    const locId = this.filterLocationId();
-
-    if (mode === 'day') {
-      list = list.filter(s => {
-        const sDateStr = getLocalDateString(new Date(s.startTime));
-        return sDateStr === targetDateStr;
-      });
-    } else if (mode === 'week') {
-      const curr = new Date(this.selectedDate());
-      const dow = curr.getDay();
-      const diffToMonday = dow === 0 ? -6 : 1 - dow;
-      const startOfWeek = new Date(curr);
-      startOfWeek.setDate(curr.getDate() + diffToMonday);
-      startOfWeek.setHours(0, 0, 0, 0);
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
-      endOfWeek.setHours(23, 59, 59, 999);
-
-      list = list.filter(s => {
-        const sDate = new Date(s.startTime);
-        return sDate >= startOfWeek && sDate <= endOfWeek;
-      });
-    } else if (mode === 'month') {
-      const curr = new Date(this.selectedDate());
-      const startOfMonth = new Date(curr.getFullYear(), curr.getMonth(), 1);
-      const endOfMonth = new Date(curr.getFullYear(), curr.getMonth() + 1, 0, 23, 59, 59, 999);
-
-      list = list.filter(s => {
-        const sDate = new Date(s.startTime);
-        return sDate >= startOfMonth && sDate <= endOfMonth;
-      });
-    }
-
-    if (status !== 'ALL') {
-      list = list.filter(s => s.status === status);
-    }
-
-    if (type !== 'ALL') {
-      list = list.filter(s => s.type === type);
-    }
-
-    if (locId !== null) {
-      list = list.filter(s => s.locationId === locId);
-    }
-
-    const wTypes = this.filterWorkoutTypes();
-    if (wTypes && wTypes.length > 0) {
-      list = list.filter(s => {
-        if (!s.workoutTypes || s.workoutTypes.length === 0) return false;
-        return wTypes.some(t => s.workoutTypes!.includes(t));
-      });
-    }
-
-    return list;
+    return this.criteriaFilteredSessions().filter(s => {
+      const sDateStr = getLocalDateString(new Date(s.startTime));
+      return sDateStr === targetDateStr;
+    });
   });
 
   // ─── Lifecycle Hooks ────────────────────────────────────────────
@@ -262,6 +259,33 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
 
   goToToday(): void {
     this.selectedDate.set(new Date());
+  }
+
+  // ─── Filter Actions ─────────────────────────────────────────────
+  onLocationChange(value: unknown): void {
+    if (value === null || value === undefined || value === 'ALL' || value === 'null' || value === '') {
+      this.filterLocationId.set('ALL');
+    } else {
+      const num = Number(value);
+      this.filterLocationId.set(isNaN(num) ? 'ALL' : num);
+    }
+  }
+
+  onWorkoutTypesChange(val: unknown): void {
+    if (!val) {
+      this.filterWorkoutTypes.set([]);
+    } else if (Array.isArray(val)) {
+      this.filterWorkoutTypes.set(val);
+    } else {
+      this.filterWorkoutTypes.set([String(val)]);
+    }
+  }
+
+  resetFilters(): void {
+    this.filterStatus.set('ALL');
+    this.filterType.set('ALL');
+    this.filterLocationId.set('ALL');
+    this.filterWorkoutTypes.set([]);
   }
 
   // ── Week / Month child view handlers ──────────────────────────────────────

@@ -45,8 +45,10 @@
 
   .filters-scroll-row {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 4px;
     scrollbar-width: none;
 
@@ -56,6 +58,8 @@
   }
 
   .filter-chip {
+    flex-shrink: 0;
+    white-space: nowrap;
     --background: var(--ion-color-step-100, rgba(128, 128, 128, 0.08));
     --color: var(--ion-text-color);
     color: var(--ion-text-color);
@@ -66,18 +70,58 @@
     border-radius: 18px;
     padding-left: 10px;
     padding-right: 10px;
+    transition: all 0.2s ease;
     
     ion-icon {
       font-size: 16px;
       color: var(--ion-color-primary);
+      margin-right: 2px;
     }
 
     ion-select {
-      --padding-start: 4px;
+      --padding-start: 2px;
+      --padding-end: 0;
       --color: var(--ion-text-color) !important;
       --placeholder-color: var(--ion-color-medium) !important;
       color: var(--ion-text-color) !important;
       font-weight: 600;
+      max-width: 170px;
+    }
+
+    &.active-filter {
+      --background: rgba(var(--ion-color-primary-rgb), 0.12);
+      border-color: var(--ion-color-primary);
+      --color: var(--ion-color-primary);
+      color: var(--ion-color-primary);
+
+      ion-icon {
+        color: var(--ion-color-primary);
+      }
+
+      ion-select {
+        --color: var(--ion-color-primary) !important;
+        color: var(--ion-color-primary) !important;
+      }
+    }
+
+    &.reset-chip {
+      --background: rgba(var(--ion-color-danger-rgb, 235, 68, 90), 0.1);
+      border-color: rgba(var(--ion-color-danger-rgb, 235, 68, 90), 0.3);
+      --color: var(--ion-color-danger, #eb445a);
+      color: var(--ion-color-danger, #eb445a);
+      cursor: pointer;
+
+      ion-icon {
+        color: var(--ion-color-danger, #eb445a);
+      }
+
+      ion-label {
+        font-weight: 600;
+      }
+
+      &:active {
+        opacity: 0.7;
+      }
     }
   }
 }

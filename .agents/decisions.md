@@ -1,35 +1,52 @@
-# FlowFit Client — Architectural Decisions
+# Architectural and Design Decisions (Client)
 
-## ADR-001: Signals-Only State Management
-- **Date**: 2026-07-12
-- **Decision**: Use Angular Signals (`signal()`, `computed()`, `toSignal()`) as the sole state management solution. No external library (NGXS, NgRx, etc.).
-- **Rationale**: For an MVP CRM with relatively simple state (client list, session list, user profile), Angular Signals provide sufficient reactivity without the boilerplate overhead of a state management library. This keeps the codebase lean and reduces the learning curve. If the application grows significantly in complexity, a state manager can be introduced later.
+This document tracks important architectural, design, and business logic decisions made during the development of the FlowFit client application.
 
-## ADR-002: REST API Client via HttpClient + Interceptors
-- **Date**: 2026-07-12
-- **Decision**: Use Angular `HttpClient` directly with a JWT interceptor for API communication. No GraphQL, no code generation.
-- **Rationale**: The backend exposes a REST API with Swagger docs. HttpClient is the native Angular solution, and a simple interceptor pattern handles JWT token attachment and refresh. This avoids the complexity of Apollo Client / GraphQL codegen for a straightforward CRUD app.
+## 2026-11-10: Scheduler Filtering Architecture & Multi-View Reactive Synchronization
+- **Decision:** Decoupled criteria-based filtering (`criteriaFilteredSessions`: status, type, location, workout types) from date-range filtering, and synchronized criteria-filtered data across all three scheduler views (Day, Week, Month).
+- **Rationale:** Previously, filters only operated on Day view because Week and Month views directly received unfiltered `sessions()`, rendering location, type, status, and workout type filters completely non-functional in Week and Month views. In addition, `filterLocationId` suffered from `null` vs numeric mismatch in `ion-select`, workout types had case-sensitive string matching bugs, and filter chips shrank horizontally on mobile screens, severely truncating their text labels to 3-4 letters.
+- **Implementation:**
+  - `SchedulerComponent`:
+    - Defined `criteriaFilteredSessions`: applies status (`SessionStatus`), session type (`SessionType`), location (`Number(locId)` matching both `session.locationId` and `session.location.id`), and case-insensitive workout type matching.
+    - Updated `WeekViewComponent` and `MonthViewComponent` input bindings to receive `criteriaFilteredSessions()`, allowing instant reactive filtering of calendar event dots, active-day session lists, and weekly timetables.
+    - Day View week navigation strip (`weekDays` signal) counts now compute from `criteriaFilteredSessions()`, ensuring day badge counts accurately reflect active filters.
+    - Location filter initialized to `'ALL'` and properly normalizes string/number/null inputs via `onLocationChange`.
+    - Added `hasActiveFilters` computed signal, `resetFilters()` button in UI, and active filter styling (`.active-filter`) on chips.
+    - SCSS: added `flex-shrink: 0; white-space: nowrap;` to `.filter-chip` and horizontal scroll optimization so filter labels remain legible on mobile.
+  - `MonthViewComponent`: added location tag display to each session item under the calendar.
 
-## ADR-003: Mobile-First Ionic Layout
-- **Date**: 2026-07-12
-- **Decision**: Design and implement all screens mobile-first. Use Ionic's tab-based navigation as the primary layout.
-- **Rationale**: The primary user (fitness trainer) will use the app on their phone between sessions. Ionic provides native-like mobile components (tabs, modals, action sheets) out of the box. Desktop responsiveness can be added later with CSS breakpoints.
+## 2026-10-23: Dynamic Theme System with Ready Presets & Custom Palette Builder
+- **Decision:** Replaced hardcoded binary light/dark mode with dynamic, token-driven theming architecture supporting curated presets, user-defined custom color themes, and automatic harmonic color calculations.
+- **Rationale:** Fitness trainers and power users require personalization that matches their visual taste, gym branding, or mood, rather than restricting them to default black and white/terracotta.
+- **Implementation:**
+  - `theme.types.ts`: Strongly typed interfaces (`ThemePreset`, `CustomThemeConfig`, `ThemeMode`, `DarkBgTone`).
+  - `theme-utils.ts`: Pure mathematical color utilities for RGB/Hex/HSL conversion, ITU-R perceived luminance calculation, automatic contrast switching (`#ffffff` vs `#141211`), automatic tint/shade derivations, step variables generation (`--ion-color-step-50`..`950`), and runtime CSS generation.
+  - `ThemeService`: Reactive Angular signals (`themeMode`, `isDark`, `activePresetId`, `customConfig`, `activePreset`). Injects dynamic CSS rules into a runtime `<style id="flowfit-theme-runtime">` stylesheet and updates root custom properties simultaneously.
+  - Backward compatibility: Retained `isDarkMode`, `setDarkMode`, and `toggleTheme` to preserve compatibility with existing callers.
+  - `settings.component`: Modern visual preset cards with 3-dot color previews, mode segment (Light/Dark/System Auto), expandable custom color picker with native color input + hex field, quick palette recommendations, auto-harmonize button, and live preview box.
 
-## ADR-004: Light Theme with Warm Floral Palette
-- **Date**: 2026-07-12
-- **Decision**: Use a light (warm) theme with the color palette: Primary `#FFB3A7` (Peach), Secondary `#B55C82` (Magenta), Success `#829368` (Olive Green), Text `#4A3034`, Background `#FDFBF9`.
-- **Rationale**: Based on user's design reference (floral notebook). The warm, light palette creates a friendly, approachable feel appropriate for a fitness coaching app. The "Outfit" Google Font adds a modern, clean typography.
+## 2026-07-16: Local Notifications vs Background Sync
+- **Decision:** Implemented workout reminders using `@capacitor/local-notifications` rather than a background service or Web Worker.
+- **Rationale:** Background processes are unreliable on iOS (they get suspended). Local notifications operate on a "schedule and forget" principle: the OS guarantees delivery at the specified time even if the app is completely closed. This perfectly fits the atomic nature of workout reminders.
+- **Implementation:** 
+  - `NotificationService` handles calculating the reminder time based on the session's start time.
+  - Limits are respected by maintaining maximum 50 scheduled notifications at any time.
+  - State is synchronized every time the app resumes via `App.addListener('appStateChange')` to clear stale notifications.
 
-## ADR-005: Ukrainian UI Language (No i18n Framework)
-- **Date**: 2026-07-12
-- **Decision**: All UI text is hardcoded in Ukrainian. No i18n framework for MVP.
-- **Rationale**: The target audience is Ukrainian trainers. Adding `@angular/localize` or `ngx-translate` for a single language adds unnecessary complexity. i18n can be retrofitted later if the product expands to other markets.
+## 2026-07-15: Training Pricing and Payment Tracking
+- **Decision:** Removed per-client `isPaid` tracking and replaced `pricePerPerson` with a single `price` field representing the total cost of the training session.
+- **Rationale:** The business model shifted from tracking individual client payments for a session to simply tracking the total expected revenue for the session as a whole. This simplifies the UX and reduces overhead for the trainer.
+- **Implementation:** 
+  - The UI for "Оплачено" toggles on individual workout cards was removed.
+  - A new "Session Detail" page was introduced to provide a cleaner interface for editing the total `price`, managing participants, and changing the session status (Active, Completed, Missed).
+  - Unpaid session warnings were removed from the Reports page.
 
-## ADR-006: Ionic Lifecycle Hooks for Data Fetching
-- **Date**: 2026-07-12
-- **Decision**: Use `ionViewWillEnter` instead of `ngOnInit` for data fetching on pages that may be cached by Ionic's navigation stack.
-- **Rationale**: Ionic caches pages in the navigation stack — `ngOnInit` only fires once. `ionViewWillEnter` fires every time the page becomes visible (including re-entering from back navigation), ensuring data is always fresh.
+## 2026-07-15: Modern Glassmorphism UI
+- **Decision:** Adopted a class-based `.dark` theme using the Nude & Terracotta palette (`#C88A72`).
+- **Rationale:** To provide a premium, modern aesthetic that appeals to fitness professionals.
+- **Implementation:** Extensive use of CSS variables in `variables.scss` and `global.scss`, implementing translucent backgrounds and rounded corners across all major components (cards, bottom sheets).
 
-### 2026-07-25
-- **Decision**: Disable the `/auth/register` route in the backend.
-- **Reasoning**: To prevent unauthorized users from creating trainer accounts until a proper admin management system is implemented.
+## 2026-07-15: Bottom Toolbar & Safe-Area Redesign
+- **Decision:** Shifted to a 4 Core Tabs + "Більше" (More) ActionSheet Drawer layout (*Клієнти*, *Розклад*, *Звіти*, *Більше*). Refactored `tabs.page.scss` to use `:host-context(.dark)` / `:host-context(.ion-palette-dark)` and added safe area inset calculations (`env(safe-area-inset-bottom)`).
+- **Rationale:** Reduces horizontal overcrowding, increases individual touch targets, and allows lower-frequency pages (*Локації*, *Налаштування*, *Тема*) to sit inside an elegant glassmorphism action sheet. Angular encapsulation prevented standard `body.dark` selectors inside component stylesheets from matching, which was fixed via `:host-context`.
+- **Implementation:** Configured 4 main tab buttons, `openMoreMenu()` ActionSheet trigger, glassmorphism CSS in `global.scss`, height adjustments (`calc(52px + env(safe-area-inset-bottom, 0px))`), and dark theme custom properties.

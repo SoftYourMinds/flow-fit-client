@@ -34,7 +34,7 @@
   <ion-toolbar class="filters-toolbar">
     <div class="filters-scroll-row">
       <!-- Status Select -->
-      <ion-chip class="filter-chip">
+      <ion-chip class="filter-chip" [class.active-filter]="filterStatus() !== 'ALL'">
         <ion-icon name="filter-outline"></ion-icon>
         <ion-select [value]="filterStatus()" (ionChange)="filterStatus.set($event.detail.value)" interface="popover">
           <ion-select-option value="ALL">Всі статуси</ion-select-option>
@@ -42,11 +42,12 @@
           <ion-select-option value="ACTIVE">Тривають</ion-select-option>
           <ion-select-option value="COMPLETED">Завершені</ion-select-option>
           <ion-select-option value="MISSED">Пропущені</ion-select-option>
+          <ion-select-option value="REQUIRED_ACTION">Потребує дії</ion-select-option>
         </ion-select>
       </ion-chip>
 
       <!-- Type Select -->
-      <ion-chip class="filter-chip">
+      <ion-chip class="filter-chip" [class.active-filter]="filterType() !== 'ALL'">
         <ion-icon name="people-outline"></ion-icon>
         <ion-select [value]="filterType()" (ionChange)="filterType.set($event.detail.value)" interface="popover">
           <ion-select-option value="ALL">Всі типи</ion-select-option>
@@ -56,10 +57,10 @@
       </ion-chip>
 
       <!-- Location Select -->
-      <ion-chip class="filter-chip">
+      <ion-chip class="filter-chip" [class.active-filter]="filterLocationId() !== 'ALL'">
         <ion-icon name="location-outline"></ion-icon>
-        <ion-select [value]="filterLocationId()" (ionChange)="filterLocationId.set($event.detail.value)" interface="popover">
-          <ion-select-option [value]="null">Всі локації</ion-select-option>
+        <ion-select [value]="filterLocationId()" (ionChange)="onLocationChange($event.detail.value)" interface="popover">
+          <ion-select-option value="ALL">Всі локації</ion-select-option>
           @for (loc of locations(); track loc.id) {
             <ion-select-option [value]="loc.id">{{ loc.name }}</ion-select-option>
           }
@@ -67,14 +68,29 @@
       </ion-chip>
 
       <!-- Workout Type Select -->
-      <ion-chip class="filter-chip">
+      <ion-chip class="filter-chip" [class.active-filter]="filterWorkoutTypes().length > 0">
         <ion-icon name="fitness-outline"></ion-icon>
-        <ion-select [value]="filterWorkoutTypes()" (ionChange)="filterWorkoutTypes.set($event.detail.value)" [multiple]="true" placeholder="Всі напрями" interface="popover">
+        <ion-select
+          [value]="filterWorkoutTypes()"
+          (ionChange)="onWorkoutTypesChange($event.detail.value)"
+          [multiple]="true"
+          placeholder="Всі напрями"
+          [selectedText]="workoutTypesSelectedText()"
+          interface="popover"
+        >
           @for (type of WORKOUT_TYPE_OPTIONS; track type) {
             <ion-select-option [value]="type">{{ type }}</ion-select-option>
           }
         </ion-select>
       </ion-chip>
+
+      <!-- Reset Filters Button -->
+      @if (hasActiveFilters()) {
+        <ion-chip class="filter-chip reset-chip" (click)="resetFilters()">
+          <ion-icon name="close-circle-outline"></ion-icon>
+          <ion-label>Скинути</ion-label>
+        </ion-chip>
+      }
     </div>
   </ion-toolbar>
 </ion-header>
@@ -224,7 +240,7 @@
     <!-- Week View — full width -->
     @if (viewMode() === 'week') {
       <app-week-view
-        [sessions]="sessions()"
+        [sessions]="criteriaFilteredSessions()"
         [selectedDate]="selectedDate()"
         (sessionClicked)="onWeekSessionClicked($event)"
         (dateChanged)="onWeekDateChanged($event)"
@@ -234,7 +250,7 @@
     <!-- Month View — full width -->
     @if (viewMode() === 'month') {
       <app-month-view
-        [sessions]="sessions()"
+        [sessions]="criteriaFilteredSessions()"
         [selectedDate]="selectedDate()"
         (sessionClicked)="onMonthSessionClicked($event)"
         (dateSelected)="onMonthDateSelected($event)"

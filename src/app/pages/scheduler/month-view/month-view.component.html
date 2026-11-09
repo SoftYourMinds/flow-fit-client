@@ -73,6 +73,12 @@
                 <ion-badge [color]="getStatusColor(session.status)" class="status-badge">
                   {{ getStatusLabel(session.status) }}
                 </ion-badge>
+                @if (session.location?.name) {
+                  <span class="location-tag">
+                    <ion-icon name="location-outline"></ion-icon>
+                    {{ session.location?.name }}
+                  </span>
+                }
                 <span class="capacity">
                   <ion-icon name="people-outline"></ion-icon>
                   {{ getCapacity(session) }}
