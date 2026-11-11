@@ -1,15 +1,23 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { IonicModule, AlertController, NavController, LoadingController } from '@ionic/angular';
+import {
+  IonicModule,
+  AlertController,
+  NavController,
+  LoadingController,
+  ToastController,
+  ViewWillEnter,
+} from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
+import { firstValueFrom } from 'rxjs';
+
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { TelegramService } from '../../core/services/telegram.service';
-import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
-import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DarkBgTone, ThemeMode } from '../../core/services/theme.types';
 import { getHarmoniousColor } from '../../core/services/theme-utils';
@@ -21,17 +29,21 @@ import { getHarmoniousColor } from '../../core/services/theme-utils';
   standalone: true,
   imports: [CommonModule, FormsModule, IonicModule, RouterModule]
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, ViewWillEnter {
   readonly appVersion = environment.appVersion || '0.3.0';
-  notificationsEnabled = true;
+  readonly notificationsEnabled = signal<boolean>(false);
+  readonly isSendingTestPush = signal<boolean>(false);
 
-  public themeService = inject(ThemeService);
-  private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
-  private telegramService = inject(TelegramService);
-  private alertCtrl = inject(AlertController);
-  private navCtrl = inject(NavController);
-  private loadingCtrl = inject(LoadingController);
+  public readonly themeService = inject(ThemeService);
+  public readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
+  private readonly telegramService = inject(TelegramService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly navCtrl = inject(NavController);
+  private readonly loadingCtrl = inject(LoadingController);
+
+  private lastToggleChecked = false;
 
   // Custom theme controls state
   customPrimaryHex = '#8B5CF6';
@@ -51,11 +63,8 @@ export class SettingsComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-    const saved = localStorage.getItem('notificationsEnabled');
-    if (saved !== null) {
-      this.notificationsEnabled = saved === 'true';
-    }
+  ngOnInit(): void {
+    void this.syncNotificationToggleState();
 
     // Sync initial custom colors from themeService
     const custom = this.themeService.customConfig();
@@ -64,6 +73,10 @@ export class SettingsComponent implements OnInit {
     if (this.themeService.activePresetId() === 'custom') {
       this.showCustomEditor = true;
     }
+  }
+
+  ionViewWillEnter(): void {
+    void this.syncNotificationToggleState();
   }
 
   onThemeModeChange(event: any) {
@@ -151,12 +164,12 @@ export class SettingsComponent implements OnInit {
     this.customSecondaryHex = custom.secondary;
   }
 
-  private isValidHex(hex: string): boolean {
-    return /^#([0-9a-fA-F]{3}){1,2}$/.test(hex);
-  }
+  async onNotificationsToggle(event: CustomEvent<{ checked: boolean }>): Promise<void> {
+    const isChecked = Boolean(event.detail?.checked);
+    if (isChecked === this.lastToggleChecked) return;
 
-  async onNotificationsToggle(event: any) {
-    const isChecked = event.detail.checked;
+    this.lastToggleChecked = isChecked;
+    this.notificationsEnabled.set(isChecked);
 
     if (!isChecked) {
       const alert = await this.alertCtrl.create({
@@ -167,8 +180,9 @@ export class SettingsComponent implements OnInit {
             text: 'Скасувати',
             role: 'cancel',
             handler: () => {
-              this.notificationsEnabled = true;
-            }
+              this.lastToggleChecked = true;
+              this.notificationsEnabled.set(true);
+            },
           },
           {
             text: 'Вимкнути',
@@ -177,14 +191,67 @@ export class SettingsComponent implements OnInit {
               await this.notificationService.cancelAll();
               await this.notificationService.unsubscribeFromPush();
               localStorage.setItem('notificationsEnabled', 'false');
-            }
-          }
-        ]
+            },
+          },
+        ],
       });
       await alert.present();
-    } else {
-      await this.notificationService.requestPermission();
-      localStorage.setItem('notificationsEnabled', 'true');
+      return;
+    }
+
+    const granted = await this.notificationService.requestPermission();
+    if (!granted) {
+      this.lastToggleChecked = false;
+      this.notificationsEnabled.set(false);
+      return;
+    }
+
+    localStorage.setItem('notificationsEnabled', 'true');
+  }
+
+  // Temporary test action for verifying Web Push delivery on device
+  async sendTestPush(): Promise<void> {
+    if (this.isSendingTestPush()) return;
+    this.isSendingTestPush.set(true);
+
+    try {
+      const result = await this.notificationService.sendTestPush();
+      await this.syncNotificationToggleState();
+
+      if (result.sentCount > 0) {
+        const toast = await this.toastCtrl.create({
+          message: `Тестове сповіщення надіслано (${result.sentCount} з ${result.totalSubscriptions})!`,
+          duration: 3500,
+          color: 'success',
+          position: 'bottom',
+        });
+        await toast.present();
+        return;
+      }
+
+      const reason =
+        result.errors.length > 0
+          ? result.errors.join('\n')
+          : result.totalSubscriptions === 0
+            ? 'У базі даних немає жодної push-підписки для цього пристрою.'
+            : 'Сервіс push не зміг доставити сповіщення.';
+
+      const alert = await this.alertCtrl.create({
+        header: 'Тестовий пуш не доставлено',
+        message: `Статус: ${this.notificationService.pushStatusText()}\n\nДеталі: ${reason}`,
+        buttons: ['Зрозуміло'],
+      });
+      await alert.present();
+    } catch (err: unknown) {
+      const errorObj = err as { error?: { message?: string }; message?: string };
+      const alert = await this.alertCtrl.create({
+        header: 'Помилка тесту Web Push',
+        message: errorObj?.error?.message || errorObj?.message || 'Не вдалося надіслати тестове сповіщення.',
+        buttons: ['ОК'],
+      });
+      await alert.present();
+    } finally {
+      this.isSendingTestPush.set(false);
     }
   }
 
@@ -211,7 +278,7 @@ export class SettingsComponent implements OnInit {
       } else {
         window.open(botUrl, '_blank');
       }
-    } catch (err) {
+    } catch {
       const alert = await this.alertCtrl.create({
         header: 'Помилка',
         message: 'Не вдалося згенерувати токен для підключення.',
@@ -221,5 +288,25 @@ export class SettingsComponent implements OnInit {
     } finally {
       await loading.dismiss();
     }
+  }
+
+  // ─── Private Helpers ────────────────────────────────────────────
+
+  private isValidHex(hex: string): boolean {
+    return /^#([0-9a-fA-F]{3}){1,2}$/.test(hex);
+  }
+
+  private async syncNotificationToggleState(): Promise<void> {
+    await this.notificationService.refreshPushState();
+    const savedDisabled = localStorage.getItem('notificationsEnabled') === 'false';
+
+    const enabled = this.notificationService.isNative()
+      ? !savedDisabled && this.notificationService.permissionState() === 'granted'
+      : !savedDisabled &&
+        this.notificationService.permissionState() === 'granted' &&
+        this.notificationService.isPushSubscribed();
+
+    this.lastToggleChecked = enabled;
+    this.notificationsEnabled.set(enabled);
   }
 }

@@ -214,11 +214,31 @@
     <ion-list lines="inset">
       <ion-item>
         <ion-icon slot="start" name="notifications" color="primary"></ion-icon>
-        <ion-label>Нагадування про тренування</ion-label>
+        <ion-label>
+          <h2>Нагадування про тренування</h2>
+          <p>{{ notificationService.pushStatusText() }}</p>
+        </ion-label>
         <ion-toggle slot="end"
-          [(ngModel)]="notificationsEnabled" 
-          (ionChange)="onNotificationsToggle($event)">
+          [checked]="notificationsEnabled()"
+          (ionChange)="onNotificationsToggle($any($event))">
         </ion-toggle>
+      </ion-item>
+
+      <!-- Тимчасова кнопка для тестування Web Push на мобільному пристрої -->
+      <ion-item button detail="false" (click)="sendTestPush()" [disabled]="isSendingTestPush()">
+        <ion-icon slot="start" name="notifications-circle-outline" color="warning"></ion-icon>
+        <ion-label>
+          <h2>
+            Надіслати тестовий пуш
+            <ion-badge color="warning" style="vertical-align: middle; margin-left: 6px; font-size: 10px;">TEST</ion-badge>
+          </h2>
+          <p>Тимчасова перевірка Web Push на цьому пристрої</p>
+        </ion-label>
+        @if (isSendingTestPush()) {
+          <ion-spinner slot="end" name="crescent"></ion-spinner>
+        } @else {
+          <ion-icon slot="end" name="send-outline"></ion-icon>
+        }
       </ion-item>
 
       <ion-item button detail="false" (click)="connectTelegram()">
