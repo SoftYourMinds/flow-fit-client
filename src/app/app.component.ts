@@ -1,11 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, effect, inject } from '@angular/core';
+import { App } from '@capacitor/app';
+import { Keyboard } from '@capacitor/keyboard';
+
 import { ThemeService } from './core/services/theme.service';
 import { NotificationService } from './core/services/notification.service';
 import { SessionsService } from './core/services/sessions.service';
 import { AuthService } from './core/auth/auth.service';
 import { AppInitService } from './core/services/app-init.service';
-import { App } from '@capacitor/app';
-import { Keyboard } from '@capacitor/keyboard';
 
 @Component({
   selector: 'app-root',
@@ -20,17 +21,37 @@ export class AppComponent implements OnInit {
   private readonly sessionsService = inject(SessionsService);
   private readonly authService = inject(AuthService);
 
+  private hasCompletedInitialBoot = false;
+  private wasAuthenticated = this.authService.isAuthenticated();
+
   constructor() {
     this.themeService.initTheme();
+
+    // Check push access right after user logs in during an active session
+    effect(() => {
+      const isAuthenticated = this.authService.isAuthenticated();
+      const justLoggedIn = this.hasCompletedInitialBoot && !this.wasAuthenticated && isAuthenticated;
+      this.wasAuthenticated = isAuthenticated;
+
+      if (justLoggedIn) {
+        void this.notificationService.checkAccessAfterAppLoad();
+      }
+    });
   }
 
   // ─── Lifecycle Hooks ─────────────────────────────────────────────
 
   async ngOnInit(): Promise<void> {
-    this.appInitService.startAppInitialization();
-    await this.notificationService.requestPermission();
+    void this.notificationService.prefetchVapidKey();
     this.setupAppStateListener();
     this.setupKeyboardListeners();
+
+    await this.appInitService.startAppInitialization();
+    this.hasCompletedInitialBoot = true;
+
+    if (this.authService.isAuthenticated()) {
+      await this.notificationService.checkAccessAfterAppLoad();
+    }
   }
 
   // ─── Private Helpers ────────────────────────────────────────────
@@ -40,8 +61,9 @@ export class AppComponent implements OnInit {
       const shouldSync = isActive && this.authService.isAuthenticated();
       if (!shouldSync) return;
 
+      void this.notificationService.refreshPushState();
       this.sessionsService.getAll().subscribe((data) => {
-        this.notificationService.syncNotifications(data);
+        void this.notificationService.syncNotifications(data);
       });
     });
   }
@@ -63,5 +85,3 @@ export class AppComponent implements OnInit {
     });
   }
 }
-
-

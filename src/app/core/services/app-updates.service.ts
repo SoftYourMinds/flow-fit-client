@@ -190,6 +190,7 @@ export class AppUpdatesService {
 
     await modal.present();
     this.markAsSeen(update.version);
+    await modal.onDidDismiss();
   }
 
   markAsSeen(version: string): void {

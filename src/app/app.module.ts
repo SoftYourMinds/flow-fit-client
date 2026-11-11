@@ -30,7 +30,7 @@ import { SplashLoaderComponent } from './shared/components/splash-loader/splash-
     provideCharts(withDefaultRegisterables()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
-      registrationStrategy: 'registerWhenStable:30000',
+      registrationStrategy: 'registerImmediately',
     }),
   ],
   bootstrap: [AppComponent],

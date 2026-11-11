@@ -25,6 +25,7 @@ export class AppInitService {
 
   private wakeUpTimer: ReturnType<typeof setTimeout> | null = null;
   private isInitializedOnce = false;
+  private initPromise: Promise<void> | null = null;
 
   // ─── State Signals ─────────────────────────────────────────────
 
@@ -48,7 +49,14 @@ export class AppInitService {
       return;
     }
 
-    return this.runInitializationSequence();
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
+    this.initPromise = this.runInitializationSequence().finally(() => {
+      this.initPromise = null;
+    });
+    return this.initPromise;
   }
 
   /**
@@ -91,7 +99,7 @@ export class AppInitService {
       await this.delay(350);
 
       this.isInitializedOnce = true;
-      this.finishAndExit();
+      await this.finishAndExit();
     } catch (err) {
       this.clearWakeTimer();
       this.handleInitError(err);
@@ -154,14 +162,16 @@ export class AppInitService {
     }
   }
 
-  private finishAndExit(): void {
+  private finishAndExit(): Promise<void> {
     this.isFadingOut.set(true);
-    setTimeout(() => {
-      this.isInitializing.set(false);
-      this.isFadingOut.set(false);
-      // Trigger What's New modal if a new release update was detected
-      this.appUpdatesService.triggerPendingModalIfAvailable();
-    }, 450);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        this.isInitializing.set(false);
+        this.isFadingOut.set(false);
+        // Trigger What's New modal if a new release update was detected
+        void this.appUpdatesService.triggerPendingModalIfAvailable().finally(resolve);
+      }, 450);
+    });
   }
 
   // ─── Private Helpers ────────────────────────────────────────────
