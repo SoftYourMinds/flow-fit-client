@@ -1,8 +1,8 @@
 # FlowFit Memory
 
 ## Current State
-- Client version bumped to `0.4.0`.
-- PWA Web Push & Dual-Channel Notifications (Web Push + Telegram for critical workouts) fully integrated into client and forms.
+- Client version bumped to `0.4.1`.
+- PWA Web Push & Dual-Channel Notifications (Web Push + Telegram for critical workouts) fully integrated into client and forms, with string-aligned `ReminderMode` values (`'auto' | '15' | '30' | '60' | '120' | '180'`).
 - Dynamic theming system with 8 curated presets and custom theme builder (`ThemeService`).
 - UI/UX supports Light, Dark, and System Auto display modes.
 - Default palette remains Nude & Terracotta (`#C88A72`).
@@ -12,6 +12,10 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Fixed 500 Internal Server Error during session creation/update caused by numeric `ReminderMode` values (`15`..`180`):
+  - Changed `ReminderMode` and `REMINDER_MODE_LABELS` values in `NotificationService` to string presets (`'auto'`, `'15'`, `'30'`, `'60'`, `'120'`, `'180'`) matching Prisma `String` schema and fixing `ion-select` option matching on edit.
+  - Explicitly serialized `reminderMode` as string in `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.
+  - Updated client version to `0.4.1` in `package.json`, `environment.ts`, and `environment.prod.ts`.
 - Implemented PWA Web Push & Critical Notifications Support:
   - Updated `NotificationService` to integrate `SwPush` from `@angular/service-worker` and register Web Push subscriptions with backend.
   - Added "🔥 Критичне сповіщення" toggle (Telegram + Web Push) in `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.

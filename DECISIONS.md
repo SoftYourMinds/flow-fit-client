@@ -2,6 +2,13 @@
 
 This document tracks important architectural, design, and business logic decisions made during the development of the FlowFit client application.
 
+## 2026-11-11: String-Aligned `ReminderMode` Presets Across Client & API
+- **Decision:** Standardized `ReminderMode` and `REMINDER_MODE_LABELS` values in `NotificationService` as string literals (`'auto' | '15' | '30' | '60' | '120' | '180'`) instead of numeric minutes (`15 | 30 | ...`).
+- **Rationale:** Backend `WorkoutSession.reminderMode` is stored as `String` in Prisma (`"auto"`, `"60"`, `"120"`). Sending numeric values (`60`, `120`) from Ionic `<ion-select>` caused Prisma to throw `500 Internal Server Error` on `POST /sessions` and `PUT /sessions/:id` in Vercel's serverless runtime, and prevented `<ion-select>` from matching saved string values when editing an existing session.
+- **Implementation:**
+  - `NotificationService`: Updated `ReminderMode` & `REMINDER_MODE_LABELS` to string values and used `Number(mode)` in `calcNotificationTime()`.
+  - `CreateWizardModalComponent`, `SessionModalComponent`, `SessionDetailComponent`: Normalized `reminderMode` via `String(...)` on load and submission.
+
 ## 2026-11-11: PWA Web Push & Critical Dual-Channel Notifications
 - **Decision:** Upgraded `NotificationService` to support Progressive Web Applications (PWA) via `@angular/service-worker` (`SwPush`), while preserving native `@capacitor/local-notifications` when running in native shells. Added backend persistence for workout notification settings (`enableNotification`, `reminderMode`, and `isCritical`).
 - **Rationale:** When running as a PWA, `Capacitor.isNativePlatform()` returns `false`, causing all local scheduling calls to exit early. Furthermore, form modal handlers previously deleted `enableNotification` and `reminderMode` before sending payload to the API. Now, notification preferences are persisted in the backend database, allowing the server scheduler to trigger Web Push and Telegram notifications even when the client is closed.

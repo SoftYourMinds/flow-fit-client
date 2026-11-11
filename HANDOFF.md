@@ -3,26 +3,19 @@
 ## Last Session Summary
 
 **Date:** 2026-11-11
-**Session focus:** PWA Web Push & Critical Notification Support (Web Push + Telegram)
+**Session focus:** Fix 500 Internal Server Error on Workout Creation/Update (`reminderMode` type mismatch)
 
 ### ✅ Accomplished
-- **PWA Push Integration:**
-  - Updated `NotificationService` to integrate `@angular/service-worker` `SwPush` and Web Notifications API.
-  - Added `subscribeToPush()` to fetch public VAPID key and register device subscription with the backend.
-  - Added graceful unsubscribe and permission requesting.
-- **Backend Persistence for Session Reminders:**
-  - Removed frontend deletions (`delete data.enableNotification`, `delete data.reminderMode`) so settings persist in the database.
-  - Added `isCritical` signal to `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.
-  - Added UI toggles for "🔥 Критичне сповіщення (Telegram + Web Push)" across all creation/edit modals and session detail page.
-  - Refactored legacy `*ngIf` to modern Angular control flow `@if`.
+- **Client `ReminderMode` String Alignment (`v0.4.1`):**
+  - Updated `ReminderMode` and `REMINDER_MODE_LABELS` in `NotificationService` from numeric presets (`15`, `30`, `60`, `120`, `180`) to string presets (`'15'`, `'30'`, `'60'`, `'120'`, `'180'`) matching the backend Prisma `String` column and fixing `<ion-select>` value matching when editing saved sessions.
+  - Updated `calcNotificationTime()` to parse numeric offsets cleanly via `Number(mode)` while preserving backward compatibility with `number` inputs.
+  - Normalized `reminderMode` as string across `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.
 - **Verification & Versioning:**
-  - Bumped version to `0.4.0` in `package.json`, `environment.ts`, and `environment.prod.ts`.
-  - Verified compilation via `npm run build` (exit code 0).
-  - Executed scheduler unit tests via `ng test` (all 8 passed).
+  - Bumped version to `0.4.1` in `package.json`, `environment.ts`, and `environment.prod.ts`.
+  - Verified production build via `npm run build` (exit code 0) and scheduler unit tests via `ng test` (8/8 passed).
 
 ### ⚠️ Pending / Known Issues
-- None.
+- Pre-existing Angular ESLint `prefer-inject` errors exist in older untouched services/components when running repo-wide `ng lint` (modified files introduced zero new lint errors).
 
 ### 🚀 Immediate Next Steps
-1. Deploy PWA build to production / Vercel.
-2. Test end-to-end Web Push delivery on mobile PWA device.
+1. Verify live workout creation and editing on PWA with custom reminder times and critical notifications enabled after Vercel deployment.
