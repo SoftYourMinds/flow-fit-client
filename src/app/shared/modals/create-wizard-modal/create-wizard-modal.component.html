@@ -599,6 +599,19 @@
               }
             </ion-select>
           </ion-item>
+
+          <ion-item lines="none" class="custom-input-item ion-margin-top">
+            <ion-icon name="warning-outline" slot="start" color="warning"></ion-icon>
+            <ion-label>
+              <h3>Критичне сповіщення</h3>
+              <p style="font-size: 12px; color: var(--ion-color-step-600); margin: 0;">Telegram + Web Push</p>
+            </ion-label>
+            <ion-toggle
+              slot="end"
+              [checked]="isCritical()"
+              (ionChange)="isCritical.set($any($event).detail.checked)"
+            ></ion-toggle>
+          </ion-item>
         }
       </div>
 

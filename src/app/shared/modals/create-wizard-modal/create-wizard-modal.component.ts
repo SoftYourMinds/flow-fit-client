@@ -113,6 +113,7 @@ export class CreateWizardModalComponent implements OnInit {
   readonly singleWorkoutTypes = signal<string[]>([]);
   readonly enableNotification = signal<boolean>(true);
   readonly reminderMode = signal<ReminderMode>('auto');
+  readonly isCritical = signal<boolean>(false);
 
   // ─── Reactive Data Lists ───────────────────────────────────────
   readonly clientList = signal<Client[]>([]);
@@ -419,6 +420,9 @@ export class CreateWizardModalComponent implements OnInit {
           workoutTypes: this.singleWorkoutTypes(),
           maxParticipants,
           anonymousParticipantsCount,
+          enableNotification: this.enableNotification(),
+          reminderMode: this.reminderMode(),
+          isCritical: this.isCritical(),
         }),
       );
 

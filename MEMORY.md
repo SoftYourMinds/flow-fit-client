@@ -1,6 +1,7 @@
 # FlowFit Memory
 
 ## Current State
+- PWA Web Push & Dual-Channel Notifications (Web Push + Telegram for critical workouts) fully integrated into client and forms.
 - Dynamic theming system with 8 curated presets and custom theme builder (`ThemeService`).
 - UI/UX supports Light, Dark, and System Auto display modes.
 - Default palette remains Nude & Terracotta (`#C88A72`).
@@ -10,6 +11,11 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Implemented PWA Web Push & Critical Notifications Support:
+  - Updated `NotificationService` to integrate `SwPush` from `@angular/service-worker` and register Web Push subscriptions with backend.
+  - Added "🔥 Критичне сповіщення" toggle (Telegram + Web Push) in `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.
+  - Stopped deleting `enableNotification` and `reminderMode` in session modal forms so that backend database retains notification settings.
+  - Refactored legacy `*ngIf` to modern Angular `@if` syntax in session modals and detail pages.
 - Overhauled Scheduler Filters & Cross-View Reactive Synchronization (`SchedulerComponent`, `WeekViewComponent`, `MonthViewComponent`):
   - Fixed location filter not having any effect in Month and Week views by passing `criteriaFilteredSessions()` instead of raw `sessions()` to child components.
   - In Month view: calendar event dots and day list sessions immediately update according to active filters.

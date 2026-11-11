@@ -1,11 +1,15 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { AlertController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
+import { SwPush } from '@angular/service-worker';
+import { firstValueFrom } from 'rxjs';
 import {
   LocalNotifications,
   ScheduleOptions,
   LocalNotificationSchema,
 } from '@capacitor/local-notifications';
+import { environment } from '../../../environments/environment';
 
 /** Offset presets (in minutes) a user can choose from */
 export type ReminderMode = 'auto' | 15 | 30 | 60 | 120 | 180;
@@ -28,16 +32,79 @@ const PENDING_SOFT_LIMIT = 50;
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly alertCtrl = inject(AlertController);
+  private readonly http = inject(HttpClient, { optional: true });
+  private readonly swPush = inject(SwPush, { optional: true });
 
-  // ─── Permission ──────────────────────────────────────────────────────────
+  // ─── Permission & Registration ──────────────────────────────────────────
 
   async requestPermission(): Promise<boolean> {
-    if (!this.isNative()) return false;
-    try {
-      const status = await LocalNotifications.requestPermissions();
-      return status.display === 'granted';
-    } catch {
+    if (this.isNative()) {
+      try {
+        const status = await LocalNotifications.requestPermissions();
+        return status.display === 'granted';
+      } catch {
+        return false;
+      }
+    }
+
+    // Web / PWA push permission
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          await this.subscribeToPush();
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  async subscribeToPush(): Promise<boolean> {
+    if (this.isNative() || !this.swPush?.isEnabled || !this.http) {
       return false;
+    }
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get<{ publicKey: string }>(`${environment.apiUrl}/notifications/vapid-key`),
+      );
+
+      if (!res?.publicKey) {
+        return false;
+      }
+
+      const subscription = await this.swPush.requestSubscription({
+        serverPublicKey: res.publicKey,
+      });
+
+      await firstValueFrom(
+        this.http.post(`${environment.apiUrl}/notifications/subscribe`, subscription.toJSON()),
+      );
+      return true;
+    } catch (err) {
+      console.warn('Web push subscription failed or dismissed:', err);
+      return false;
+    }
+  }
+
+  async unsubscribeFromPush(): Promise<void> {
+    if (this.isNative() || !this.swPush?.isEnabled || !this.http) return;
+    try {
+      const sub = await firstValueFrom(this.swPush.subscription);
+      if (sub) {
+        await firstValueFrom(
+          this.http.post(`${environment.apiUrl}/notifications/unsubscribe`, {
+            endpoint: sub.endpoint,
+          }),
+        );
+        await this.swPush.unsubscribe();
+      }
+    } catch {
+      // Ignore
     }
   }
 
@@ -46,11 +113,6 @@ export class NotificationService {
   /**
    * Schedule a reminder for a single session.
    * If a notification already exists for this session, it is cancelled first.
-   *
-   * @param session  WorkoutSession object (must have id, startTime, locationId)
-   * @param locationName  Human-readable location name
-   * @param reminderMode  'auto' or a fixed number of minutes before the session
-   * @param isLastSubscriptionSession whether this is the final session in client's subscription
    */
   async scheduleForSession(
     session: { id: number; startTime: string; locationId: number },
@@ -58,7 +120,14 @@ export class NotificationService {
     reminderMode: ReminderMode = 'auto',
     isLastSubscriptionSession = false,
   ): Promise<void> {
-    if (!this.isNative()) return;
+    if (!this.isNative()) {
+      // In PWA, push notifications are dispatched by backend cron/scheduler.
+      // Ensure push subscription exists if permission is granted.
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        this.subscribeToPush().catch(() => {});
+      }
+      return;
+    }
 
     // Always clean up the old notification first
     await this.cancelForSession(session.id);
@@ -154,9 +223,11 @@ export class NotificationService {
     try {
       const pending = await LocalNotifications.getPending();
       if (pending.notifications.length > 0) {
-        await LocalNotifications.cancel({ notifications: pending.notifications.map(n => ({ id: n.id })) });
+        await LocalNotifications.cancel({ notifications: pending.notifications.map((n) => ({ id: n.id })) });
       }
-    } catch { /* ignore */ }
+    } catch {
+      // Ignore
+    }
   }
 
   // ─── Sync ────────────────────────────────────────────────────────────────
@@ -173,22 +244,22 @@ export class NotificationService {
       const pending = await LocalNotifications.getPending();
       const now = new Date();
 
-      // Build a set of upcoming session IDs
       const upcomingIds = new Set(
         sessions
-          .filter(s => s.status === 'UPCOMING' && new Date(s.startTime) > now)
-          .map(s => s.id)
+          .filter((s) => s.status === 'UPCOMING' && new Date(s.startTime) > now)
+          .map((s) => s.id),
       );
 
-      // Cancel notifications for sessions that no longer exist or are past
       const toCancel = pending.notifications
-        .filter(n => !upcomingIds.has(n.id))
-        .map(n => ({ id: n.id }));
+        .filter((n) => !upcomingIds.has(n.id))
+        .map((n) => ({ id: n.id }));
 
       if (toCancel.length > 0) {
         await LocalNotifications.cancel({ notifications: toCancel });
       }
-    } catch { /* ignore */ }
+    } catch {
+      // Ignore
+    }
   }
 
   // ─── Limit helper ────────────────────────────────────────────────────────
@@ -217,10 +288,6 @@ export class NotificationService {
 
   // ─── Time calculation ────────────────────────────────────────────────────
 
-  /**
-   * Returns the Date when the notification should fire.
-   * Returns null if the computed time is already in the past.
-   */
   calcNotificationTime(startTimeIso: string, mode: ReminderMode): Date | null {
     const sessionStart = new Date(startTimeIso);
     const now = new Date();
@@ -228,7 +295,6 @@ export class NotificationService {
     let notifyAt: Date;
 
     if (mode !== 'auto') {
-      // Fixed offset: N minutes before session
       notifyAt = new Date(sessionStart.getTime() - mode * 60 * 1000);
     } else {
       notifyAt = this.calcAutoTime(sessionStart, now);
@@ -241,23 +307,18 @@ export class NotificationService {
     const hour = sessionStart.getHours();
 
     if (hour >= 7 && hour < 10) {
-      // Morning session (7–10)
       const hoursUntil = (sessionStart.getTime() - now.getTime()) / 3600000;
       if (hoursUntil >= 12) {
-        // Created day before → notify previous evening at 20:00
         const evening = new Date(sessionStart);
         evening.setDate(evening.getDate() - 1);
         evening.setHours(20, 0, 0, 0);
         return evening;
       } else {
-        // Created same evening → notify 1 hour before
         return new Date(sessionStart.getTime() - 60 * 60 * 1000);
       }
-    } else if ((hour >= 10 && hour < 22)) {
-      // Day or Evening session → 2 hours before
+    } else if (hour >= 10 && hour < 22) {
       return new Date(sessionStart.getTime() - 2 * 60 * 60 * 1000);
     } else {
-      // Outside working hours → 1 hour before
       return new Date(sessionStart.getTime() - 60 * 60 * 1000);
     }
   }
@@ -267,7 +328,7 @@ export class NotificationService {
   private buildBody(
     startTimeIso: string,
     locationName: string,
-    mode: ReminderMode
+    mode: ReminderMode,
   ): string {
     const sessionStart = new Date(startTimeIso);
     const timeStr = sessionStart.toLocaleTimeString('uk-UA', {

@@ -175,6 +175,7 @@ export class SettingsComponent implements OnInit {
             role: 'destructive',
             handler: async () => {
               await this.notificationService.cancelAll();
+              await this.notificationService.unsubscribeFromPush();
               localStorage.setItem('notificationsEnabled', 'false');
             }
           }
@@ -182,6 +183,7 @@ export class SettingsComponent implements OnInit {
       });
       await alert.present();
     } else {
+      await this.notificationService.requestPermission();
       localStorage.setItem('notificationsEnabled', 'true');
     }
   }

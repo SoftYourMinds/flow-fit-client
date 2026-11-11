@@ -37,6 +37,7 @@ export class SessionModalComponent implements OnInit {
   enableNotification = signal<boolean>(true);
   reminderMode = signal<ReminderMode>('auto');
   reminderModes = REMINDER_MODE_LABELS;
+  isCritical = signal<boolean>(false);
 
   minuteValues = computed(() => {
     return this.duration() === 30 ? '0,30' : '0';
@@ -77,6 +78,16 @@ export class SessionModalComponent implements OnInit {
       }
       
       this.participants.set(this.session.participants ? [...this.session.participants] : []);
+
+      if (this.session.enableNotification !== undefined) {
+        this.enableNotification.set(this.session.enableNotification);
+      }
+      if (this.session.reminderMode) {
+        this.reminderMode.set(this.session.reminderMode as ReminderMode);
+      }
+      if (this.session.isCritical !== undefined) {
+        this.isCritical.set(this.session.isCritical);
+      }
     }
   }
 
@@ -126,7 +137,8 @@ export class SessionModalComponent implements OnInit {
       participants: this.participants(),
       anonymousParticipantsCount: this.session?.anonymousParticipantsCount ?? 0,
       enableNotification: this.enableNotification(),
-      reminderMode: this.reminderMode()
+      reminderMode: this.reminderMode(),
+      isCritical: this.isCritical(),
     }, 'confirm');
   }
 

@@ -125,51 +125,70 @@
         <ion-toggle slot="end" [checked]="enableNotification()" (ionChange)="enableNotification.set($any($event).detail.checked)"></ion-toggle>
       </ion-item>
 
-      <ion-item *ngIf="enableNotification()" lines="none" class="custom-input-item ion-margin-top">
-        <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
-        <ion-label color="medium">Час нагадування</ion-label>
-        <ion-select [value]="reminderMode()" (ionChange)="reminderMode.set($any($event).detail.value)" interface="popover" style="width: 100%;">
-          @for (mode of reminderModes; track mode.value) {
-            <ion-select-option [value]="mode.value">{{ mode.label }}</ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
+      @if (enableNotification()) {
+        <ion-item lines="none" class="custom-input-item ion-margin-top">
+          <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+          <ion-label color="medium">Час нагадування</ion-label>
+          <ion-select [value]="reminderMode()" (ionChange)="reminderMode.set($any($event).detail.value)" interface="popover" style="width: 100%;">
+            @for (mode of reminderModes; track mode.value) {
+              <ion-select-option [value]="mode.value">{{ mode.label }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+
+        <ion-item lines="none" class="custom-input-item ion-margin-top">
+          <ion-icon name="warning-outline" slot="start" color="warning"></ion-icon>
+          <ion-label>
+            <h3>Критичне сповіщення</h3>
+            <p style="font-size: 12px; color: var(--ion-color-step-600); margin: 0;">Telegram + Web Push</p>
+          </ion-label>
+          <ion-toggle
+            slot="end"
+            [checked]="isCritical()"
+            (ionChange)="isCritical.set($any($event).detail.checked)"
+          ></ion-toggle>
+        </ion-item>
+      }
     </div>
 
     <!-- Participants Section (Only on Creation) -->
-    <div *ngIf="!session" class="participants-section ion-margin-top ion-padding-top" style="border-top: 1px solid var(--ion-color-step-150, #eee);">
-      <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Учасники ({{ participants().length }})</h3>
-        <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
-          <ion-icon name="person-add-outline" slot="start"></ion-icon>
-          Додати
-        </ion-button>
-      </div>
+    @if (!session) {
+      <div class="participants-section ion-margin-top ion-padding-top" style="border-top: 1px solid var(--ion-color-step-150, #eee);">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Учасники ({{ participants().length }})</h3>
+          <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Додати
+          </ion-button>
+        </div>
 
-      <ion-list lines="none" class="participants-list">
-        @for (p of participants(); track p.clientId || p.customName; let i = $index) {
-          <ion-item class="participant-item">
-            <ion-avatar slot="start">
-              <div class="avatar-placeholder" style="background: var(--ion-color-light); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium);">
-                <ion-icon name="person"></ion-icon>
-              </div>
-            </ion-avatar>
-            <ion-label>
-              <h2>{{ p.client?.fullName || p.customName }}</h2>
-              <p *ngIf="p.client">{{ p.client.phone || 'Немає номеру' }}</p>
-            </ion-label>
-            <ion-button fill="clear" color="danger" slot="end" (click)="removeParticipant(i)">
-              <ion-icon name="trash-outline"></ion-icon>
-            </ion-button>
-          </ion-item>
-        } @empty {
-          <div class="empty-state" style="text-align: center; color: var(--ion-color-medium); padding: 16px 0;">
-            <ion-icon name="people-outline" style="font-size: 24px; opacity: 0.5;"></ion-icon>
-            <p style="margin: 8px 0 0; font-size: 14px;">Немає доданих учасників</p>
-          </div>
-        }
-      </ion-list>
-    </div>
+        <ion-list lines="none" class="participants-list">
+          @for (p of participants(); track p.clientId || p.customName; let i = $index) {
+            <ion-item class="participant-item">
+              <ion-avatar slot="start">
+                <div class="avatar-placeholder" style="background: var(--ion-color-light); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium);">
+                  <ion-icon name="person"></ion-icon>
+                </div>
+              </ion-avatar>
+              <ion-label>
+                <h2>{{ p.client?.fullName || p.customName }}</h2>
+                @if (p.client) {
+                  <p>{{ p.client.phone || 'Немає номеру' }}</p>
+                }
+              </ion-label>
+              <ion-button fill="clear" color="danger" slot="end" (click)="removeParticipant(i)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          } @empty {
+            <div class="empty-state" style="text-align: center; color: var(--ion-color-medium); padding: 16px 0;">
+              <ion-icon name="people-outline" style="font-size: 24px; opacity: 0.5;"></ion-icon>
+              <p style="margin: 8px 0 0; font-size: 14px;">Немає доданих учасників</p>
+            </div>
+          }
+        </ion-list>
+      </div>
+    }
 
     <div class="ion-margin-top ion-padding-top">
       <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!locationId()">

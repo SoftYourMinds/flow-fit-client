@@ -171,15 +171,26 @@
           <ion-toggle slot="end" [(ngModel)]="notificationEnabled" (ionChange)="updateNotification()"></ion-toggle>
         </ion-item>
 
-        <ion-item *ngIf="notificationEnabled" lines="none" class="custom-input-item ion-margin-top" style="border: 1px solid var(--ion-color-step-150); border-radius: 8px;">
-          <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
-          <ion-label color="medium">Час нагадування</ion-label>
-          <ion-select [(ngModel)]="reminderMode" (ionChange)="updateNotification()" interface="popover" style="width: 100%;">
-            @for (mode of reminderModes; track mode.value) {
-              <ion-select-option [value]="mode.value">{{ mode.label }}</ion-select-option>
-            }
-          </ion-select>
-        </ion-item>
+        @if (notificationEnabled) {
+          <ion-item lines="none" class="custom-input-item ion-margin-top" style="border: 1px solid var(--ion-color-step-150); border-radius: 8px;">
+            <ion-icon name="time-outline" slot="start" color="medium"></ion-icon>
+            <ion-label color="medium">Час нагадування</ion-label>
+            <ion-select [(ngModel)]="reminderMode" (ionChange)="updateNotification()" interface="popover" style="width: 100%;">
+              @for (mode of reminderModes; track mode.value) {
+                <ion-select-option [value]="mode.value">{{ mode.label }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none" class="custom-input-item ion-margin-top" style="border: 1px solid var(--ion-color-step-150); border-radius: 8px;">
+            <ion-icon name="warning-outline" slot="start" color="warning"></ion-icon>
+            <ion-label>
+              <h3>Критичне сповіщення</h3>
+              <p style="font-size: 12px; color: var(--ion-color-step-600); margin: 0;">Дублювати в Telegram + Web Push</p>
+            </ion-label>
+            <ion-toggle slot="end" [(ngModel)]="isCritical" (ionChange)="updateNotification()"></ion-toggle>
+          </ion-item>
+        }
       </div>
     </div>
 

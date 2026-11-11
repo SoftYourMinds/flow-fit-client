@@ -26,6 +26,10 @@ export interface WorkoutSession {
   maxParticipants?: number;
   anonymousParticipantsCount?: number;
   participants: SessionParticipant[];
+  enableNotification?: boolean;
+  reminderMode?: string;
+  isCritical?: boolean;
+  reminderSentAt?: string;
 }
 
 export interface RecurringSessionsPayload {

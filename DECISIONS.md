@@ -2,6 +2,17 @@
 
 This document tracks important architectural, design, and business logic decisions made during the development of the FlowFit client application.
 
+## 2026-11-11: PWA Web Push & Critical Dual-Channel Notifications
+- **Decision:** Upgraded `NotificationService` to support Progressive Web Applications (PWA) via `@angular/service-worker` (`SwPush`), while preserving native `@capacitor/local-notifications` when running in native shells. Added backend persistence for workout notification settings (`enableNotification`, `reminderMode`, and `isCritical`).
+- **Rationale:** When running as a PWA, `Capacitor.isNativePlatform()` returns `false`, causing all local scheduling calls to exit early. Furthermore, form modal handlers previously deleted `enableNotification` and `reminderMode` before sending payload to the API. Now, notification preferences are persisted in the backend database, allowing the server scheduler to trigger Web Push and Telegram notifications even when the client is closed.
+- **Implementation:**
+  - `NotificationService`: Injected optional `SwPush` and `HttpClient`, added `subscribeToPush()` fetching backend VAPID key and registering endpoint.
+  - Form modals (`CreateWizardModalComponent`, `SessionModalComponent`, `SessionDetailComponent`):
+    - Added "🔥 Критичне сповіщення" toggle (Telegram + Web Push).
+    - Preserved `enableNotification`, `reminderMode`, `isCritical` in API payloads.
+    - Updated UI using modern Angular control flow (`@if`).
+  - `SettingsComponent`: Added push unsubscribe handling when notifications are toggled off.
+
 ## 2026-11-10: Scheduler Filtering Architecture & Multi-View Reactive Synchronization
 - **Decision:** Decoupled criteria-based filtering (`criteriaFilteredSessions`: status, type, location, workout types) from date-range filtering, and synchronized criteria-filtered data across all three scheduler views (Day, Week, Month).
 - **Rationale:** Previously, filters only operated on Day view because Week and Month views directly received unfiltered `sessions()`, rendering location, type, status, and workout type filters completely non-functional in Week and Month views. In addition, `filterLocationId` suffered from `null` vs numeric mismatch in `ion-select`, workout types had case-sensitive string matching bugs, and filter chips shrank horizontally on mobile screens, severely truncating their text labels to 3-4 letters.

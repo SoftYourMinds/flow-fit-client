@@ -43,6 +43,7 @@ export class SessionDetailComponent implements OnInit {
   notificationEnabled = false;
   reminderMode: ReminderMode = 'auto';
   reminderModes = REMINDER_MODE_LABELS;
+  isCritical = false;
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -66,6 +67,9 @@ export class SessionDetailComponent implements OnInit {
     this.sessionsService.getById(id).subscribe({
       next: (data) => {
         this.session.set(data);
+        this.notificationEnabled = !!data.enableNotification;
+        this.reminderMode = (data.reminderMode as ReminderMode) || 'auto';
+        this.isCritical = !!data.isCritical;
         this.checkNotificationState(data.id);
         this.loadActiveSubscriptions(data);
         this.isLoading.set(false);
@@ -101,8 +105,6 @@ export class SessionDetailComponent implements OnInit {
       const reminderMode = data.reminderMode;
 
       delete data.participants; // Edit of participants is done via detail page directly
-      delete data.enableNotification;
-      delete data.reminderMode;
       
       this.sessionsService.update(s.id, data).subscribe(() => {
         if (enableNotification) {
@@ -231,13 +233,14 @@ export class SessionDetailComponent implements OnInit {
   }
 
   async checkNotificationState(sessionId: number) {
-    if (!this.notificationService.isNative()) return;
-    try {
-      const pending = await LocalNotifications.getPending();
-      const exists = pending.notifications.some(n => n.id === sessionId);
-      this.notificationEnabled = exists;
-    } catch {
-      this.notificationEnabled = false;
+    if (this.notificationService.isNative()) {
+      try {
+        const pending = await LocalNotifications.getPending();
+        const exists = pending.notifications.some(n => n.id === sessionId);
+        this.notificationEnabled = exists;
+      } catch {
+        // Keep backend state
+      }
     }
   }
 
@@ -245,17 +248,24 @@ export class SessionDetailComponent implements OnInit {
     const s = this.session();
     if (!s) return;
 
-    if (this.notificationEnabled) {
-      const loc = this.locations().find(l => l.id === s.locationId);
-      const locName = loc ? loc.name : `Локація #${s.locationId}`;
-      await this.notificationService.scheduleForSession(
-        { id: s.id, startTime: s.startTime, locationId: s.locationId },
-        locName,
-        this.reminderMode
-      );
-    } else {
-      await this.notificationService.cancelForSession(s.id);
-    }
+    this.sessionsService.update(s.id, {
+      enableNotification: this.notificationEnabled,
+      reminderMode: this.reminderMode,
+      isCritical: this.isCritical,
+    }).subscribe(async (updated) => {
+      this.session.set(updated);
+      if (this.notificationEnabled) {
+        const loc = this.locations().find(l => l.id === s.locationId);
+        const locName = loc ? loc.name : `Локація #${s.locationId}`;
+        await this.notificationService.scheduleForSession(
+          { id: s.id, startTime: s.startTime, locationId: s.locationId },
+          locName,
+          this.reminderMode
+        );
+      } else {
+        await this.notificationService.cancelForSession(s.id);
+      }
+    });
   }
 
   deductFromSubscription(subscriptionId: number): void {
