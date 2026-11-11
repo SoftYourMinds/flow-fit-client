@@ -1,6 +1,7 @@
 # FlowFit Memory
 
 ## Current State
+- Client version bumped to `0.4.0`.
 - PWA Web Push & Dual-Channel Notifications (Web Push + Telegram for critical workouts) fully integrated into client and forms.
 - Dynamic theming system with 8 curated presets and custom theme builder (`ThemeService`).
 - UI/UX supports Light, Dark, and System Auto display modes.

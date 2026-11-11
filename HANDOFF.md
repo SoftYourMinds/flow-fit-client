@@ -15,7 +15,8 @@
   - Added `isCritical` signal to `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.
   - Added UI toggles for "🔥 Критичне сповіщення (Telegram + Web Push)" across all creation/edit modals and session detail page.
   - Refactored legacy `*ngIf` to modern Angular control flow `@if`.
-- **Verification:**
+- **Verification & Versioning:**
+  - Bumped version to `0.4.0` in `package.json`, `environment.ts`, and `environment.prod.ts`.
   - Verified compilation via `npm run build` (exit code 0).
   - Executed scheduler unit tests via `ng test` (all 8 passed).
 
