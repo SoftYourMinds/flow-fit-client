@@ -68,7 +68,7 @@ export class SessionDetailComponent implements OnInit {
       next: (data) => {
         this.session.set(data);
         this.notificationEnabled = !!data.enableNotification;
-        this.reminderMode = (data.reminderMode as ReminderMode) || 'auto';
+        this.reminderMode = (data.reminderMode ? String(data.reminderMode) : 'auto') as ReminderMode;
         this.isCritical = !!data.isCritical;
         this.checkNotificationState(data.id);
         this.loadActiveSubscriptions(data);
@@ -250,7 +250,7 @@ export class SessionDetailComponent implements OnInit {
 
     this.sessionsService.update(s.id, {
       enableNotification: this.notificationEnabled,
-      reminderMode: this.reminderMode,
+      reminderMode: String(this.reminderMode),
       isCritical: this.isCritical,
     }).subscribe(async (updated) => {
       this.session.set(updated);

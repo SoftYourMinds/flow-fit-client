@@ -83,7 +83,7 @@ export class SessionModalComponent implements OnInit {
         this.enableNotification.set(this.session.enableNotification);
       }
       if (this.session.reminderMode) {
-        this.reminderMode.set(this.session.reminderMode as ReminderMode);
+        this.reminderMode.set(String(this.session.reminderMode) as ReminderMode);
       }
       if (this.session.isCritical !== undefined) {
         this.isCritical.set(this.session.isCritical);
@@ -137,7 +137,7 @@ export class SessionModalComponent implements OnInit {
       participants: this.participants(),
       anonymousParticipantsCount: this.session?.anonymousParticipantsCount ?? 0,
       enableNotification: this.enableNotification(),
-      reminderMode: this.reminderMode(),
+      reminderMode: String(this.reminderMode()),
       isCritical: this.isCritical(),
     }, 'confirm');
   }

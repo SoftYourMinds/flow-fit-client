@@ -421,7 +421,7 @@ export class CreateWizardModalComponent implements OnInit {
           maxParticipants,
           anonymousParticipantsCount,
           enableNotification: this.enableNotification(),
-          reminderMode: this.reminderMode(),
+          reminderMode: String(this.reminderMode()),
           isCritical: this.isCritical(),
         }),
       );

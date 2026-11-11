@@ -11,16 +11,16 @@ import {
 } from '@capacitor/local-notifications';
 import { environment } from '../../../environments/environment';
 
-/** Offset presets (in minutes) a user can choose from */
-export type ReminderMode = 'auto' | 15 | 30 | 60 | 120 | 180;
+/** Offset presets (in minutes as strings to match backend persistence) a user can choose from */
+export type ReminderMode = 'auto' | '15' | '30' | '60' | '120' | '180';
 
 export const REMINDER_MODE_LABELS: { value: ReminderMode; label: string }[] = [
   { value: 'auto', label: 'Автоматично' },
-  { value: 15,     label: 'За 15 хвилин' },
-  { value: 30,     label: 'За 30 хвилин' },
-  { value: 60,     label: 'За 1 годину' },
-  { value: 120,    label: 'За 2 години' },
-  { value: 180,    label: 'За 3 години' },
+  { value: '15',   label: 'За 15 хвилин' },
+  { value: '30',   label: 'За 30 хвилин' },
+  { value: '60',   label: 'За 1 годину' },
+  { value: '120',  label: 'За 2 години' },
+  { value: '180',  label: 'За 3 години' },
 ];
 
 /**
@@ -117,7 +117,7 @@ export class NotificationService {
   async scheduleForSession(
     session: { id: number; startTime: string; locationId: number },
     locationName: string,
-    reminderMode: ReminderMode = 'auto',
+    reminderMode: ReminderMode | number = 'auto',
     isLastSubscriptionSession = false,
   ): Promise<void> {
     if (!this.isNative()) {
@@ -288,14 +288,15 @@ export class NotificationService {
 
   // ─── Time calculation ────────────────────────────────────────────────────
 
-  calcNotificationTime(startTimeIso: string, mode: ReminderMode): Date | null {
+  calcNotificationTime(startTimeIso: string, mode: ReminderMode | number): Date | null {
     const sessionStart = new Date(startTimeIso);
     const now = new Date();
 
     let notifyAt: Date;
+    const minutes = mode === 'auto' ? NaN : Number(mode);
 
-    if (mode !== 'auto') {
-      notifyAt = new Date(sessionStart.getTime() - mode * 60 * 1000);
+    if (!Number.isNaN(minutes)) {
+      notifyAt = new Date(sessionStart.getTime() - minutes * 60 * 1000);
     } else {
       notifyAt = this.calcAutoTime(sessionStart, now);
     }
@@ -328,7 +329,7 @@ export class NotificationService {
   private buildBody(
     startTimeIso: string,
     locationName: string,
-    mode: ReminderMode,
+    mode: ReminderMode | number,
   ): string {
     const sessionStart = new Date(startTimeIso);
     const timeStr = sessionStart.toLocaleTimeString('uk-UA', {
