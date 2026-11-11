@@ -581,7 +581,7 @@
           <ion-toggle
             slot="end"
             [checked]="enableNotification()"
-            (ionChange)="enableNotification.set($any($event).detail.checked)"
+            (ionChange)="onNotificationToggleChange($any($event).detail.checked)"
           ></ion-toggle>
         </ion-item>
 

@@ -1,10 +1,14 @@
-import { Component, OnInit, Input, signal, computed } from '@angular/core';
+import { Component, OnInit, Input, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { LocationsService, Location } from '../../../core/services/locations.service';
 import { ClientsService, Client } from '../../../core/services/clients.service';
 import { ParticipantModalComponent } from '../participant-modal/participant-modal.component';
-import { ReminderMode, REMINDER_MODE_LABELS } from '../../../core/services/notification.service';
+import {
+  NotificationService,
+  ReminderMode,
+  REMINDER_MODE_LABELS,
+} from '../../../core/services/notification.service';
 import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.constant';
 
 @Component({
@@ -15,6 +19,9 @@ import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.cons
   styleUrls: ['./session-modal.component.scss']
 })
 export class SessionModalComponent implements OnInit {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly locationsService = inject(LocationsService);
+  private readonly notificationService = inject(NotificationService);
   @Input() locations: Location[] = [];
   @Input() clients: Client[] = [];
 
@@ -43,12 +50,7 @@ export class SessionModalComponent implements OnInit {
     return this.duration() === 30 ? '0,30' : '0';
   });
 
-  constructor(
-    private modalCtrl: ModalController,
-    private locationsService: LocationsService
-  ) {}
-
-  ngOnInit() {
+  ngOnInit(): void {
     if (!this.locations || this.locations.length === 0) {
       this.locationsService.getAll().subscribe({
         next: (locs) => {
@@ -117,8 +119,19 @@ export class SessionModalComponent implements OnInit {
     this.participants.update(p => p.filter((_, i) => i !== index));
   }
 
-  confirm() {
-    if (!this.locationId()) return;
+  onNotificationToggleChange(enabled: boolean): void {
+    this.enableNotification.set(enabled);
+    if (enabled) {
+      void this.notificationService.ensureAccessForSessionCreation();
+    }
+  }
+
+  async confirm(): Promise<boolean | undefined> {
+    if (!this.locationId()) return undefined;
+
+    if (this.enableNotification()) {
+      await this.notificationService.ensureAccessForSessionCreation();
+    }
     
     // Розрахунок часу завершення
     const start = new Date(this.startTime());

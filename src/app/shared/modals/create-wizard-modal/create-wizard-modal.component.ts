@@ -375,11 +375,22 @@ export class CreateWizardModalComponent implements OnInit {
     }
   }
 
+  onNotificationToggleChange(enabled: boolean): void {
+    this.enableNotification.set(enabled);
+    if (enabled) {
+      void this.notificationService.ensureAccessForSessionCreation();
+    }
+  }
+
   async submitSingleSession(): Promise<void> {
     const locationId = this.singleLocationId();
     if (!locationId) {
       this.errorMessage.set('Оберіть локацію');
       return;
+    }
+
+    if (this.enableNotification()) {
+      await this.notificationService.ensureAccessForSessionCreation();
     }
 
     const start = new Date(this.singleStartTime());

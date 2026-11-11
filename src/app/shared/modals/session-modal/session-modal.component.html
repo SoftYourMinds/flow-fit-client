@@ -122,7 +122,7 @@
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="notifications-outline" slot="start" color="primary"></ion-icon>
         <ion-label>Увімкнути нагадування</ion-label>
-        <ion-toggle slot="end" [checked]="enableNotification()" (ionChange)="enableNotification.set($any($event).detail.checked)"></ion-toggle>
+        <ion-toggle slot="end" [checked]="enableNotification()" (ionChange)="onNotificationToggleChange($any($event).detail.checked)"></ion-toggle>
       </ion-item>
 
       @if (enableNotification()) {

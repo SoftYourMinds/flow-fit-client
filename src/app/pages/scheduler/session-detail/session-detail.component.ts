@@ -244,9 +244,13 @@ export class SessionDetailComponent implements OnInit {
     }
   }
 
-  async updateNotification() {
+  async updateNotification(): Promise<void> {
     const s = this.session();
     if (!s) return;
+
+    if (this.notificationEnabled) {
+      await this.notificationService.ensureAccessForSessionCreation();
+    }
 
     this.sessionsService.update(s.id, {
       enableNotification: this.notificationEnabled,
