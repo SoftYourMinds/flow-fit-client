@@ -191,7 +191,7 @@
     }
 
     <div class="ion-margin-top ion-padding-top">
-      <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="!locationId()">
+      <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="isSubmitting() || !locationId()">
         {{ session ? 'Зберегти зміни' : 'Створити тренування' }}
       </ion-button>
     </div>

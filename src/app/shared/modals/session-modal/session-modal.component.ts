@@ -45,6 +45,7 @@ export class SessionModalComponent implements OnInit {
   reminderMode = signal<ReminderMode>('auto');
   reminderModes = REMINDER_MODE_LABELS;
   isCritical = signal<boolean>(false);
+  isSubmitting = signal<boolean>(false);
 
   minuteValues = computed(() => {
     return this.duration() === 30 ? '0,30' : '0';
@@ -127,12 +128,18 @@ export class SessionModalComponent implements OnInit {
   }
 
   async confirm(): Promise<boolean | undefined> {
-    if (!this.locationId()) return undefined;
+    if (this.isSubmitting() || !this.locationId()) return undefined;
+    this.isSubmitting.set(true);
 
-    if (this.enableNotification()) {
-      await this.notificationService.ensureAccessForSessionCreation();
+    try {
+      if (this.enableNotification()) {
+        await this.notificationService.ensureAccessForSessionCreation();
+      }
+    } catch {
+      this.isSubmitting.set(false);
+      return undefined;
     }
-    
+
     // Розрахунок часу завершення
     const start = new Date(this.startTime());
     const end = new Date(start.getTime() + this.duration() * 60000);

@@ -2,6 +2,13 @@
 
 This document tracks important architectural, design, and business logic decisions made during the development of the FlowFit client application.
 
+## 2026-11-14: Submission Guards & Session Deduplication in Scheduler
+- **Decision:** Added synchronous early `isSubmitting()` guards to all workout creation modals, kept `isSubmitting` active through toast presentation and modal dismissal, guarded modal opening in `SchedulerComponent`, and deduplicated loaded sessions by `id`.
+- **Rationale:** Previously, `this.isSubmitting.set(false)` was called *before* `await this.showToast(...)` and `this.modalCtrl.dismiss(...)` in `CreateWizardModalComponent` and `RecurringModalComponent`, re-enabling the submit button for ~300–400ms while the modal remained visible. Combined with rapid mobile touch taps before `OnPush` change detection updated `<ion-button [disabled]>`, duplicate creation requests could be dispatched.
+- **Implementation:**
+  - `CreateWizardModalComponent`, `RecurringModalComponent`, `SessionModalComponent`: Early guard on `isSubmitting()` and only reset `isSubmitting` to `false` on error.
+  - `SchedulerComponent`: Added `isModalOpen` guard and `deduplicateSessions()` in `loadData()`.
+
 ## 2026-11-11: String-Aligned `ReminderMode` Presets Across Client & API
 - **Decision:** Standardized `ReminderMode` and `REMINDER_MODE_LABELS` values in `NotificationService` as string literals (`'auto' | '15' | '30' | '60' | '120' | '180'`) instead of numeric minutes (`15 | 30 | ...`).
 - **Rationale:** Backend `WorkoutSession.reminderMode` is stored as `String` in Prisma (`"auto"`, `"60"`, `"120"`). Sending numeric values (`60`, `120`) from Ionic `<ion-select>` caused Prisma to throw `500 Internal Server Error` on `POST /sessions` and `PUT /sessions/:id` in Vercel's serverless runtime, and prevented `<ion-select>` from matching saved string values when editing an existing session.

@@ -269,6 +269,8 @@ export class CreateWizardModalComponent implements OnInit {
   }
 
   async submitSubscription(): Promise<void> {
+    if (this.isSubmitting()) return;
+
     const clientId = this.subClientId();
     const locationId = this.subLocationId();
 
@@ -306,12 +308,11 @@ export class CreateWizardModalComponent implements OnInit {
 
     this.subscriptionsService.createWithRecurring(payload).subscribe({
       next: async (res) => {
-        this.isSubmitting.set(false);
         await this.showToast(
           `Абонемент та ${res.sessionsCount} занять успішно створено!`,
           'success',
         );
-        this.modalCtrl.dismiss({ created: true, type: 'subscription', ...res }, 'confirm');
+        await this.modalCtrl.dismiss({ created: true, type: 'subscription', ...res }, 'confirm');
       },
       error: (err) => {
         this.isSubmitting.set(false);
@@ -383,14 +384,12 @@ export class CreateWizardModalComponent implements OnInit {
   }
 
   async submitSingleSession(): Promise<void> {
+    if (this.isSubmitting()) return;
+
     const locationId = this.singleLocationId();
     if (!locationId) {
       this.errorMessage.set('Оберіть локацію');
       return;
-    }
-
-    if (this.enableNotification()) {
-      await this.notificationService.ensureAccessForSessionCreation();
     }
 
     const start = new Date(this.singleStartTime());
@@ -419,6 +418,10 @@ export class CreateWizardModalComponent implements OnInit {
     this.errorMessage.set(null);
 
     try {
+      if (this.enableNotification()) {
+        await this.notificationService.ensureAccessForSessionCreation();
+      }
+
       const createdSession = await firstValueFrom(
         this.sessionsService.create({
           locationId: Number(locationId),
@@ -463,9 +466,8 @@ export class CreateWizardModalComponent implements OnInit {
         }
       }
 
-      this.isSubmitting.set(false);
       await this.showToast('Тренування успішно створено!', 'success');
-      this.modalCtrl.dismiss(
+      await this.modalCtrl.dismiss(
         { created: true, type: 'session', session: createdSession },
         'confirm',
       );

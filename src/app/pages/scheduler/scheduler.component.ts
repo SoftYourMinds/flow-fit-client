@@ -52,6 +52,7 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
   readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
 
   private readonly MONTH_SHORT = ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
+  private isModalOpen = false;
 
   // ─── Signals / State ────────────────────────────────────────────
   readonly sessions = signal<WorkoutSession[]>([]);
@@ -211,8 +212,9 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
 
     this.sessionsService.getAll().subscribe({
       next: (data) => {
-        this.sessions.set(data);
-        this.notificationService.syncNotifications(data);
+        const uniqueSessions = this.deduplicateSessions(data || []);
+        this.sessions.set(uniqueSessions);
+        this.notificationService.syncNotifications(uniqueSessions);
         if (!isRefresh) this.isLoading.set(false);
         if (event) (event as { target: { complete: () => void } }).target.complete();
       },
@@ -310,35 +312,49 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
   }
 
   async openCreateSessionModal(): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: CreateWizardModalComponent,
-      componentProps: {
-        locations: this.locations(),
-        clients: this.clients(),
-        preselectedDate: this.selectedDateStr(),
-      },
-    });
-    await modal.present();
+    if (this.isModalOpen) return;
+    this.isModalOpen = true;
 
-    const { data, role } = await modal.onWillDismiss();
-    if (role === 'confirm' && data?.created) {
-      this.loadData();
+    try {
+      const modal = await this.modalCtrl.create({
+        component: CreateWizardModalComponent,
+        componentProps: {
+          locations: this.locations(),
+          clients: this.clients(),
+          preselectedDate: this.selectedDateStr(),
+        },
+      });
+      await modal.present();
+
+      const { data, role } = await modal.onWillDismiss();
+      if (role === 'confirm' && data?.created) {
+        this.loadData();
+      }
+    } finally {
+      this.isModalOpen = false;
     }
   }
 
   async openRecurringModal(): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: RecurringModalComponent,
-      componentProps: {
-        locations: this.locations(),
-        clients: this.clients(),
-      },
-    });
-    await modal.present();
+    if (this.isModalOpen) return;
+    this.isModalOpen = true;
 
-    const { data, role } = await modal.onWillDismiss();
-    if (role === 'confirm' && data?.created) {
-      this.loadData();
+    try {
+      const modal = await this.modalCtrl.create({
+        component: RecurringModalComponent,
+        componentProps: {
+          locations: this.locations(),
+          clients: this.clients(),
+        },
+      });
+      await modal.present();
+
+      const { data, role } = await modal.onWillDismiss();
+      if (role === 'confirm' && data?.created) {
+        this.loadData();
+      }
+    } finally {
+      this.isModalOpen = false;
     }
   }
 
@@ -373,5 +389,16 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
       case 'REQUIRED_ACTION': return 'Потребує дії';
       default: return status;
     }
+  }
+
+  // ─── Private Helpers ────────────────────────────────────────────
+
+  private deduplicateSessions(list: WorkoutSession[]): WorkoutSession[] {
+    const seenIds = new Set<number>();
+    return list.filter((session) => {
+      if (seenIds.has(session.id)) return false;
+      seenIds.add(session.id);
+      return true;
+    });
   }
 }

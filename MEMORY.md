@@ -12,6 +12,10 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Prevented duplicate workout creation and duplicate rendering in Scheduler Day view:
+  - Added early `if (this.isSubmitting()) return;` guards in `CreateWizardModalComponent` (`submitSingleSession`, `submitSubscription`), `RecurringModalComponent` (`confirmCreate`), and `SessionModalComponent` (`confirm`).
+  - Kept `isSubmitting` set to `true` while toast notifications and `modalCtrl.dismiss()` run on success so the submit button does not re-enable before the modal closes.
+  - Added `isModalOpen` guard in `SchedulerComponent` (`openCreateSessionModal`, `openRecurringModal`) and ID-based deduplication (`deduplicateSessions`) in `loadData()`.
 - Fixed 500 Internal Server Error during session creation/update caused by numeric `ReminderMode` values (`15`..`180`):
   - Changed `ReminderMode` and `REMINDER_MODE_LABELS` values in `NotificationService` to string presets (`'auto'`, `'15'`, `'30'`, `'60'`, `'120'`, `'180'`) matching Prisma `String` schema and fixing `ion-select` option matching on edit.
   - Explicitly serialized `reminderMode` as string in `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.

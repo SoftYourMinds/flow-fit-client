@@ -154,6 +154,8 @@ export class RecurringModalComponent implements OnInit {
   }
 
   confirmCreate(): void {
+    if (this.isSubmitting()) return;
+
     const payload = this.buildPayload();
     if (!payload) return;
 
@@ -162,7 +164,6 @@ export class RecurringModalComponent implements OnInit {
 
     this.sessionsService.createRecurring(payload).subscribe({
       next: async (created) => {
-        this.isSubmitting.set(false);
         const toast = await this.toastCtrl.create({
           message: `Успішно створено ${created.length} тренувань!`,
           duration: 3000,
@@ -170,7 +171,7 @@ export class RecurringModalComponent implements OnInit {
           position: 'bottom',
         });
         await toast.present();
-        this.modalCtrl.dismiss({ created: true, count: created.length }, 'confirm');
+        await this.modalCtrl.dismiss({ created: true, count: created.length }, 'confirm');
       },
       error: (err) => {
         this.errorMessage.set(err?.error?.message || 'Помилка при створенні тренувань');

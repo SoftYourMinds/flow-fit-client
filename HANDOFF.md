@@ -2,20 +2,20 @@
 
 ## Last Session Summary
 
-**Date:** 2026-11-11
-**Session focus:** Fix 500 Internal Server Error on Workout Creation/Update (`reminderMode` type mismatch)
+**Date:** 2026-11-14
+**Session focus:** Prevent duplicate workout creation and duplicate rendering in Scheduler
 
 ### ✅ Accomplished
-- **Client `ReminderMode` String Alignment (`v0.4.1`):**
-  - Updated `ReminderMode` and `REMINDER_MODE_LABELS` in `NotificationService` from numeric presets (`15`, `30`, `60`, `120`, `180`) to string presets (`'15'`, `'30'`, `'60'`, `'120'`, `'180'`) matching the backend Prisma `String` column and fixing `<ion-select>` value matching when editing saved sessions.
-  - Updated `calcNotificationTime()` to parse numeric offsets cleanly via `Number(mode)` while preserving backward compatibility with `number` inputs.
-  - Normalized `reminderMode` as string across `CreateWizardModalComponent`, `SessionModalComponent`, and `SessionDetailComponent`.
-- **Verification & Versioning:**
-  - Bumped version to `0.4.1` in `package.json`, `environment.ts`, and `environment.prod.ts`.
-  - Verified production build via `npm run build` (exit code 0) and scheduler unit tests via `ng test` (8/8 passed).
+- **Modal Submission Guards (`CreateWizardModalComponent`, `RecurringModalComponent`, `SessionModalComponent`):**
+  - Added early `if (this.isSubmitting()) return;` guards in `submitSingleSession()`, `submitSubscription()`, `confirmCreate()`, and `confirm()`.
+  - Removed premature `this.isSubmitting.set(false)` calls before `await this.showToast(...)` and `this.modalCtrl.dismiss(...)` so the submit button stays disabled until the modal closes.
+- **Scheduler Safeguards (`SchedulerComponent`):**
+  - Added `isModalOpen` guard on `openCreateSessionModal()` and `openRecurringModal()` to prevent stacked creation modals on rapid double-tap.
+  - Added `deduplicateSessions()` in `loadData()` and a unit test in `scheduler.component.spec.ts`.
+  - Verified production build (`npm run build`) with 0 errors.
 
 ### ⚠️ Pending / Known Issues
-- Pre-existing Angular ESLint `prefer-inject` errors exist in older untouched services/components when running repo-wide `ng lint` (modified files introduced zero new lint errors).
+- None. Build completes with 0 errors.
 
 ### 🚀 Immediate Next Steps
-1. Verify live workout creation and editing on PWA with custom reminder times and critical notifications enabled after Vercel deployment.
+1. Verify workout creation flow on mobile PWA.

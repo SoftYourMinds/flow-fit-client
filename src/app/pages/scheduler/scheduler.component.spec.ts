@@ -217,4 +217,38 @@ describe('SchedulerComponent', () => {
     expect(component.criteriaFilteredSessions().length).toBe(2);
     expect(component.hasActiveFilters()).toBeFalse();
   });
+
+  it('should deduplicate sessions by id when loading data', () => {
+    const sessionsService = TestBed.inject(SessionsService);
+    spyOn(sessionsService, 'getAll').and.returnValue(
+      of([
+        {
+          id: 77,
+          locationId: 1,
+          type: 'INDIVIDUAL',
+          status: 'UPCOMING',
+          startTime: '2026-09-02T10:00:00.000Z',
+          endTime: '2026-09-02T11:00:00.000Z',
+          price: 300,
+          isPaid: false,
+          participants: []
+        },
+        {
+          id: 77,
+          locationId: 1,
+          type: 'INDIVIDUAL',
+          status: 'UPCOMING',
+          startTime: '2026-09-02T10:00:00.000Z',
+          endTime: '2026-09-02T11:00:00.000Z',
+          price: 300,
+          isPaid: false,
+          participants: []
+        }
+      ] as any)
+    );
+
+    component.loadData();
+    expect(component.sessions().length).toBe(1);
+    expect(component.sessions()[0].id).toBe(77);
+  });
 });
