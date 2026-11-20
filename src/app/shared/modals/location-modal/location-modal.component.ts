@@ -1,43 +1,67 @@
-import { Component, Input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
+
 import { Location } from '../../../core/services/locations.service';
 
 @Component({
   selector: 'app-location-modal',
-  standalone: true,
   imports: [CommonModule, IonicModule],
   templateUrl: './location-modal.component.html',
-  styleUrls: ['./location-modal.component.scss']
+  styleUrls: ['./location-modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LocationModalComponent {
+export class LocationModalComponent implements OnInit {
+  private readonly modalCtrl = inject(ModalController);
+
   @Input() location?: Location;
 
-  name = signal<string>('');
-  address = signal<string>('');
-  type = signal<'STUDIO' | 'GYM' | 'OUTDOOR'>('STUDIO');
+  readonly name = signal<string>('');
+  readonly address = signal<string>('');
+  readonly type = signal<'STUDIO' | 'GYM' | 'OUTDOOR'>('STUDIO');
+  readonly maxParticipants = signal<number>(8);
 
-  constructor(private modalCtrl: ModalController) {}
+  // ─── Lifecycle ─────────────────────────────────────────────────
 
-  ngOnInit() {
-    if (this.location) {
-      this.name.set(this.location.name || '');
-      this.address.set(this.location.address || '');
-      this.type.set(this.location.type || 'STUDIO');
+  ngOnInit(): void {
+    if (!this.location) {
+      return;
     }
+
+    this.name.set(this.location.name || '');
+    this.address.set(this.location.address || '');
+    this.type.set(this.location.type || 'STUDIO');
+    this.maxParticipants.set(this.location.maxParticipants ?? 8);
   }
 
-  cancel() {
+  // ─── Public Methods ────────────────────────────────────────────
+
+  onMaxParticipantsInput(rawValue: unknown): void {
+    const parsed = Number(rawValue);
+    const isValid = Number.isFinite(parsed) && parsed >= 1;
+    this.maxParticipants.set(isValid ? Math.floor(parsed) : 1);
+  }
+
+  cancel(): Promise<boolean> {
     return this.modalCtrl.dismiss(null, 'cancel');
   }
 
-  confirm() {
-    if (!this.name()) return;
-    
-    return this.modalCtrl.dismiss({
-      name: this.name(),
-      address: this.address(),
-      type: this.type()
-    }, 'confirm');
+  confirm(): Promise<boolean> | undefined {
+    const trimmedName = this.name().trim();
+    if (!trimmedName) {
+      return undefined;
+    }
+
+    const capacity = Math.max(1, Math.floor(Number(this.maxParticipants()) || 8));
+
+    return this.modalCtrl.dismiss(
+      {
+        name: trimmedName,
+        address: this.address().trim(),
+        type: this.type(),
+        maxParticipants: capacity,
+      },
+      'confirm',
+    );
   }
 }

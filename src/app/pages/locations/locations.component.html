@@ -19,16 +19,32 @@
   } @else {
     <ion-list>
       @for (loc of locations(); track loc.id) {
-        <ion-item-sliding>
-          <ion-item>
+        <ion-item-sliding #slidingItem>
+          <ion-item button="true" detail="false" (click)="editLocation(loc, slidingItem)">
             <ion-icon slot="start" [name]="loc.type === 'OUTDOOR' ? 'leaf' : 'barbell'" style="color: #829368"></ion-icon>
             <ion-label>
               <h2>{{ loc.name }}</h2>
-              <p>{{ loc.type }} @if (loc.address) { <span>- {{ loc.address }}</span> }</p>
+              <p>
+                {{ loc.type }}
+                @if (loc.address) { <span>• {{ loc.address }}</span> }
+                <span>• до {{ loc.maxParticipants || 8 }} осіб</span>
+              </p>
             </ion-label>
+            <ion-button
+              fill="clear"
+              color="medium"
+              slot="end"
+              (click)="$event.stopPropagation(); editLocation(loc, slidingItem)"
+              aria-label="Редагувати локацію"
+            >
+              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+            </ion-button>
           </ion-item>
 
           <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="editLocation(loc, slidingItem)">
+              Редагувати
+            </ion-item-option>
             <ion-item-option color="danger" (click)="deleteLocation(loc.id)">
               Видалити
             </ion-item-option>

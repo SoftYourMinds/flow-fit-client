@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 
 import { Client } from '../../../core/services/clients.service';
-import { Location } from '../../../core/services/locations.service';
+import { Location, LocationsService } from '../../../core/services/locations.service';
 import {
   SessionsService,
   RecurringSessionsPayload,
@@ -34,6 +34,7 @@ export class RecurringModalComponent implements OnInit {
   private readonly toastCtrl = inject(ToastController);
   private readonly sessionsService = inject(SessionsService);
   private readonly subscriptionsService = inject(SubscriptionsService);
+  private readonly locationsService = inject(LocationsService);
 
   @Input() clients: Client[] = [];
   @Input() locations: Location[] = [];
@@ -72,8 +73,9 @@ export class RecurringModalComponent implements OnInit {
   // ─── Lifecycle ────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    if (this.locations.length > 0) {
-      this.locationId.set(this.locations[0].id);
+    const defaultLocationId = this.locationsService.resolveDefaultLocationId(this.locations);
+    if (defaultLocationId) {
+      this.locationId.set(defaultLocationId);
     }
 
     if (this.preselectedClientId) {
@@ -164,6 +166,7 @@ export class RecurringModalComponent implements OnInit {
 
     this.sessionsService.createRecurring(payload).subscribe({
       next: async (created) => {
+        this.locationsService.saveLastSelectedLocationId(payload.locationId);
         const toast = await this.toastCtrl.create({
           message: `Успішно створено ${created.length} тренувань!`,
           duration: 3000,
