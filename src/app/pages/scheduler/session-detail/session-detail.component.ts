@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, computed, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController, ModalController, ActionSheetController, ToastController, AlertController, IonItemSliding } from '@ionic/angular';
@@ -38,6 +38,21 @@ export class SessionDetailComponent implements OnInit {
   clients = signal<Client[]>([]);
   locations = signal<Location[]>([]);
   activeSubscriptions = signal<ClientSubscription[]>([]);
+
+  totalParticipantsCount = computed<number>(() => {
+    const s = this.session();
+    if (!s) return 0;
+    return (s.participants?.length || 0) + Math.max(0, s.anonymousParticipantsCount || 0);
+  });
+
+  canAddParticipant = computed<boolean>(() => {
+    const s = this.session();
+    if (!s) return false;
+    if (s.type === 'INDIVIDUAL') {
+      return this.totalParticipantsCount() < 1;
+    }
+    return true;
+  });
 
   // Notification state
   notificationEnabled = false;
@@ -104,31 +119,34 @@ export class SessionDetailComponent implements OnInit {
       const enableNotification = data.enableNotification;
       const reminderMode = data.reminderMode;
 
-      delete data.participants; // Edit of participants is done via detail page directly
-      
-      this.sessionsService.update(s.id, data).subscribe(() => {
-        if (enableNotification) {
-          const loc = this.locations().find(l => l.id === data.locationId);
-          if (loc) {
-            // Re-schedule (the service automatically cancels the old one first)
-            this.notificationService.scheduleForSession(
-              { id: s.id, startTime: data.startTime, locationId: data.locationId }, 
-              loc.name, 
-              reminderMode
-            );
+      this.sessionsService.update(s.id, data).subscribe({
+        next: () => {
+          if (enableNotification) {
+            const loc = this.locations().find(l => l.id === data.locationId);
+            if (loc) {
+              // Re-schedule (the service automatically cancels the old one first)
+              this.notificationService.scheduleForSession(
+                { id: s.id, startTime: data.startTime, locationId: data.locationId },
+                loc.name,
+                reminderMode
+              );
+            }
+          } else {
+            this.notificationService.cancelForSession(s.id);
           }
-        } else {
-          this.notificationService.cancelForSession(s.id);
-        }
-        
-        this.loadSession(s.id);
+
+          this.loadSession(s.id);
+        },
+        error: async (err) => {
+          await this.showErrorToast(err?.error?.message || 'Не вдалося оновити тренування');
+        },
       });
     }
   }
 
   async openAddParticipantModal() {
     const s = this.session();
-    if (!s) return;
+    if (!s || !this.canAddParticipant()) return;
 
     const modal = await this.modalCtrl.create({
       component: ParticipantModalComponent,
@@ -140,7 +158,12 @@ export class SessionDetailComponent implements OnInit {
 
     const { data, role } = await modal.onWillDismiss();
     if (role === 'confirm' && data) {
-      this.sessionsService.addParticipant(s.id, data).subscribe(() => this.loadSession(s.id));
+      this.sessionsService.addParticipant(s.id, data).subscribe({
+        next: () => this.loadSession(s.id),
+        error: async (err) => {
+          await this.showErrorToast(err?.error?.message || 'Не вдалося додати учасника');
+        },
+      });
     }
   }
 
@@ -148,6 +171,14 @@ export class SessionDetailComponent implements OnInit {
     const s = this.session();
     if (!s) return;
     this.sessionsService.removeParticipant(s.id, participantId).subscribe(() => this.loadSession(s.id));
+  }
+
+  clearAnonymousParticipants(): void {
+    const s = this.session();
+    if (!s) return;
+    this.sessionsService.update(s.id, { anonymousParticipantsCount: 0 }).subscribe(() => {
+      this.loadSession(s.id);
+    });
   }
 
   async openSessionActions() {
@@ -401,5 +432,15 @@ export class SessionDetailComponent implements OnInit {
       next: (subs) => this.activeSubscriptions.set(subs),
       error: () => this.activeSubscriptions.set([]),
     });
+  }
+
+  private async showErrorToast(message: string): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      color: 'danger',
+      position: 'bottom',
+    });
+    await toast.present();
   }
 }

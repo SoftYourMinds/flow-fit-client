@@ -125,15 +125,8 @@ export class WeekViewComponent {
     return session.type === 'GROUP' ? 'Групове' : 'Індивідуальне';
   }
 
-  getCapacity(session: WorkoutSession): string {
-    const current = session.participants.length;
-    const max = session.maxParticipants;
-    return max != null ? `${current}/${max}` : `${current}`;
-  }
-
-  isFull(session: WorkoutSession): boolean {
-    if (session.maxParticipants == null) return false;
-    return session.participants.length >= session.maxParticipants;
+  getTotalParticipants(session: WorkoutSession): number {
+    return (session.participants?.length || 0) + Math.max(0, session.anonymousParticipantsCount || 0);
   }
 
   onSessionClick(sessionId: number): void {

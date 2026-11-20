@@ -193,9 +193,6 @@
                   <span class="p-title">
                     <ion-icon name="person-outline"></ion-icon>
                     {{ (session.participants.length || 0) + (session.anonymousParticipantsCount || 0) }}
-                    @if (session.maxParticipants) {
-                      / {{ session.maxParticipants }}
-                    }
                   </span>
                 </div>
 

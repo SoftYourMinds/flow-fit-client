@@ -1,0 +1,142 @@
+.participants-editor {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.mode-segment {
+  margin-bottom: 4px;
+}
+
+.sub-field {
+  margin-top: 10px;
+}
+
+.custom-input-item {
+  --background: var(--ion-card-background, #fff);
+  --border-radius: 12px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --inner-padding-end: 0;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-step-150, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+
+  ion-icon[slot='start'] {
+    margin-inline-end: 10px;
+    font-size: 20px;
+  }
+}
+
+.full-width-select {
+  width: 100%;
+}
+
+.inline-spinner {
+  margin: 8px auto;
+}
+
+.stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  min-height: 52px;
+  background: var(--ion-card-background, #fff);
+}
+
+.stepper-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ion-text-color);
+
+  ion-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+}
+
+.stepper-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepper-btn {
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+
+.stepper-input {
+  width: 48px;
+  text-align: center;
+  font-weight: 600;
+  --padding-start: 4px;
+  --padding-end: 4px;
+}
+
+.custom-name-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.custom-name-input-item {
+  flex: 1;
+}
+
+.add-name-btn {
+  margin: 0;
+  height: auto;
+  min-width: 48px;
+  --border-radius: 12px;
+}
+
+.chips-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.summary-chip {
+  margin: 0;
+  height: 32px;
+  font-size: 13px;
+}
+
+.field-hint {
+  margin: 6px 2px 0;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  line-height: 1.35;
+
+  &.warning {
+    color: var(--ion-color-warning-shade, #c49506);
+  }
+}
+
+.refresh-btn {
+  margin: 0;
+  padding: 0;
+  text-transform: none;
+  font-size: 12px;
+  height: auto;
+}

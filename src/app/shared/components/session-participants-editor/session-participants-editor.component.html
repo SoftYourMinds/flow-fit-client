@@ -1,0 +1,213 @@
+<div class="participants-editor">
+  @if (sessionType() === 'INDIVIDUAL') {
+    <!-- ═══ INDIVIDUAL MODE (max 1 participant) ═══ -->
+    <div class="editor-header">
+      <ion-label class="form-label">Учасник тренування</ion-label>
+      <ion-badge color="medium" mode="ios">макс. 1</ion-badge>
+    </div>
+
+    <ion-segment
+      [value]="individualMode()"
+      (ionChange)="onIndividualModeChange($event.detail.value)"
+      mode="ios"
+      class="mode-segment"
+    >
+      <ion-segment-button value="ANONYMOUS">
+        <ion-label>Без імені (1)</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="CLIENT">
+        <ion-label>Клієнт</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="CUSTOM">
+        <ion-label>Ім'я</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (individualMode() === 'ANONYMOUS') {
+      <p class="field-hint">
+        Буде записано 1 учасника без прив'язки до картки клієнта
+      </p>
+    } @else if (individualMode() === 'CLIENT') {
+      <div class="sub-field">
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+          @if (isClientsLoading()) {
+            <ion-spinner name="crescent" color="primary" class="inline-spinner"></ion-spinner>
+          } @else {
+            <ion-select
+              [value]="selectedIndividualClientId()"
+              (ionChange)="onIndividualClientChange($event.detail.value)"
+              placeholder="Оберіть клієнта"
+              interface="popover"
+              class="full-width-select"
+            >
+              @for (c of clients(); track c.id) {
+                <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
+              }
+            </ion-select>
+          }
+        </ion-item>
+
+        @if (!isClientsLoading() && clients().length === 0) {
+          <p class="field-hint warning">
+            Немає доданих клієнтів.
+            <ion-button fill="clear" size="small" class="refresh-btn" (click)="onRefreshClients()">
+              Оновити список
+            </ion-button>
+          </p>
+        }
+      </div>
+    } @else {
+      <div class="sub-field">
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+          <ion-input
+            type="text"
+            [value]="individualCustomName()"
+            (ionInput)="onIndividualCustomNameInput($event.detail.value)"
+            placeholder="Напр. Аня"
+          ></ion-input>
+        </ion-item>
+      </div>
+    }
+  } @else {
+    <!-- ═══ GROUP MODE (combined anonymous + clients + custom names) ═══ -->
+    <div class="editor-header">
+      <ion-label class="form-label">Учасники тренування</ion-label>
+      <ion-badge [color]="totalCount() > 0 ? 'primary' : 'medium'" mode="ios">
+        Всього: {{ totalCount() }}
+      </ion-badge>
+    </div>
+
+    <!-- Unnamed participants stepper -->
+    <div class="stepper-row custom-input-item">
+      <div class="stepper-label">
+        <ion-icon name="people-outline" color="primary"></ion-icon>
+        <span>Кількість без імені</span>
+      </div>
+
+      <div class="stepper-controls">
+        <ion-button
+          fill="outline"
+          size="small"
+          shape="round"
+          class="stepper-btn"
+          [disabled]="anonymousCount() <= 0"
+          (click)="decrementAnonymous()"
+          aria-label="Зменшити кількість без імені"
+        >
+          <ion-icon name="remove-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+
+        <ion-input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          class="stepper-input"
+          [value]="anonymousCount()"
+          (ionInput)="onAnonymousCountInput($event.detail.value)"
+        ></ion-input>
+
+        <ion-button
+          fill="outline"
+          size="small"
+          shape="round"
+          class="stepper-btn"
+          (click)="incrementAnonymous()"
+          aria-label="Збільшити кількість без імені"
+        >
+          <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Registered clients multi-select -->
+    <div class="sub-field">
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="person-add-outline" slot="start" color="primary"></ion-icon>
+        @if (isClientsLoading()) {
+          <ion-spinner name="crescent" color="primary" class="inline-spinner"></ion-spinner>
+        } @else {
+          <ion-select
+            [value]="selectedClientIds()"
+            (ionChange)="onGroupClientsChange($event.detail.value)"
+            [multiple]="true"
+            placeholder="Додати клієнтів з бази"
+            interface="popover"
+            class="full-width-select"
+          >
+            @for (c of clients(); track c.id) {
+              <ion-select-option [value]="c.id">{{ c.fullName }}</ion-select-option>
+            }
+          </ion-select>
+        }
+      </ion-item>
+
+      @if (!isClientsLoading() && clients().length === 0) {
+        <p class="field-hint warning">
+          Немає доданих клієнтів.
+          <ion-button fill="clear" size="small" class="refresh-btn" (click)="onRefreshClients()">
+            Оновити список
+          </ion-button>
+        </p>
+      }
+    </div>
+
+    <!-- Quick custom name input -->
+    <div class="sub-field custom-name-row">
+      <ion-item lines="none" class="custom-input-item custom-name-input-item">
+        <ion-icon name="create-outline" slot="start" color="primary"></ion-icon>
+        <ion-input
+          type="text"
+          [value]="newCustomName()"
+          (ionInput)="onNewCustomNameInput($event.detail.value)"
+          (keyup.enter)="addCustomParticipant()"
+          placeholder="Вписати ім'я (напр. Аня)"
+        ></ion-input>
+      </ion-item>
+
+      <ion-button
+        fill="solid"
+        color="primary"
+        class="add-name-btn"
+        [disabled]="!newCustomName().trim()"
+        (click)="addCustomParticipant()"
+        aria-label="Додати ім'я учасника"
+      >
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Selected participants summary chips -->
+    @if (totalCount() > 0) {
+      <div class="chips-summary">
+        @if (anonymousCount() > 0) {
+          <ion-chip color="medium" outline="true" class="summary-chip">
+            <ion-icon name="people-outline"></ion-icon>
+            <ion-label>+{{ anonymousCount() }} без імені</ion-label>
+          </ion-chip>
+        }
+
+        @for (p of selectedClientParticipants(); track p.clientId) {
+          <ion-chip color="primary" class="summary-chip">
+            <ion-icon name="person-circle-outline"></ion-icon>
+            <ion-label>{{ getClientDisplayName(p) }}</ion-label>
+            <ion-icon name="close-circle" (click)="removeClientParticipant(p.clientId)"></ion-icon>
+          </ion-chip>
+        }
+
+        @for (p of customParticipants(); track $index) {
+          <ion-chip color="tertiary" class="summary-chip">
+            <ion-icon name="person-outline"></ion-icon>
+            <ion-label>{{ p.customName }}</ion-label>
+            <ion-icon name="close-circle" (click)="removeCustomParticipant($index)"></ion-icon>
+          </ion-chip>
+        }
+      </div>
+    } @else {
+      <p class="field-hint">
+        Вкажіть кількість без імені, оберіть клієнтів з бази або впишіть імена — усе підсумується автоматично
+      </p>
+    }
+  }
+</div>

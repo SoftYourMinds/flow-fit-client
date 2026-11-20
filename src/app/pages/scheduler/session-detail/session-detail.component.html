@@ -43,12 +43,7 @@
         <div class="info-icon"><ion-icon name="people-outline"></ion-icon></div>
         <div class="info-content">
           <h4>Формат</h4>
-          <p>
-            {{ session()!.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}
-            @if (session()!.maxParticipants) {
-              • макс. {{ session()!.maxParticipants }} осіб
-            }
-          </p>
+          <p>{{ session()!.type === 'GROUP' ? 'Групове' : 'Індивідуальне' }}</p>
         </div>
       </div>
 
@@ -196,11 +191,13 @@
 
     <div class="participants-section ion-padding">
       <div class="section-header">
-        <h3>Учасники ({{ (session()!.participants.length || 0) + (session()!.anonymousParticipantsCount || 0) }})</h3>
-        <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
-          <ion-icon name="person-add-outline" slot="start"></ion-icon>
-          Додати
-        </ion-button>
+        <h3>Учасники ({{ totalParticipantsCount() }})</h3>
+        @if (canAddParticipant()) {
+          <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Додати
+          </ion-button>
+        }
       </div>
 
       <ion-list lines="none" class="participants-list">
@@ -231,9 +228,12 @@
               <h2>Учасники без імені</h2>
               <p>{{ session()!.anonymousParticipantsCount }} осіб</p>
             </ion-label>
+            <ion-button fill="clear" color="danger" slot="end" (click)="clearAnonymousParticipants()">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
           </ion-item>
         }
-        @if (session()!.participants.length === 0 && (!session()!.anonymousParticipantsCount || session()!.anonymousParticipantsCount === 0)) {
+        @if (totalParticipantsCount() === 0) {
           <div class="empty-state">
             <ion-icon name="people-outline"></ion-icon>
             <p>Немає доданих учасників</p>

@@ -11,10 +11,20 @@
 
 <ion-content class="ion-padding">
   <div class="form-container">
+    @if (errorMessage()) {
+      <div
+        class="ion-margin-bottom"
+        style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: rgba(var(--ion-color-danger-rgb), 0.12); color: var(--ion-color-danger); font-size: 13px;"
+      >
+        <ion-icon name="alert-circle-outline" style="font-size: 18px; flex-shrink: 0;"></ion-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
     <!-- Type Selector -->
     <div class="form-group">
       <ion-label class="form-label">Формат тренування</ion-label>
-      <ion-segment [value]="type()" (ionChange)="type.set($any($event).detail.value)" mode="ios">
+      <ion-segment [value]="type()" (ionChange)="setType($any($event).detail.value)" mode="ios">
         <ion-segment-button value="INDIVIDUAL">
           <ion-icon name="person-outline"></ion-icon>
           <ion-label>Індивідуальне</ion-label>
@@ -24,6 +34,22 @@
           <ion-label>Групове</ion-label>
         </ion-segment-button>
       </ion-segment>
+    </div>
+
+    <!-- Participants Section (Available on both Creation & Editing) -->
+    <div class="form-group ion-margin-top">
+      <app-session-participants-editor
+        [sessionType]="type()"
+        [clients]="clientList()"
+        [isClientsLoading]="isClientsLoading()"
+        [participants]="participants()"
+        [anonymousCount]="anonymousParticipantsCount()"
+        [individualMode]="individualMode()"
+        (participantsChange)="onParticipantsChange($event)"
+        (anonymousCountChange)="onAnonymousCountChange($event)"
+        (individualModeChange)="onIndividualModeChange($event)"
+        (refreshClients)="loadClients()"
+      ></app-session-participants-editor>
     </div>
 
     <!-- Workout Types Selector -->
@@ -45,7 +71,7 @@
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
         <ion-select [value]="locationId()" (ionChange)="locationId.set($any($event).detail.value)" placeholder="Оберіть локацію" interface="popover" style="width: 100%;">
-          @for (loc of locations; track loc.id) {
+          @for (loc of locationList(); track loc.id) {
             <ion-select-option [value]="loc.id">{{ loc.name }} ({{ loc.type }})</ion-select-option>
           }
         </ion-select>
@@ -99,22 +125,6 @@
       </ion-item>
     </div>
 
-    <!-- Max Participants Input -->
-    <div class="form-group ion-margin-top">
-      <ion-label class="form-label">Макс. кількість учасників</ion-label>
-      <ion-item lines="none" class="custom-input-item">
-        <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
-        <ion-input
-          type="number"
-          [value]="maxParticipants()"
-          (ionInput)="maxParticipants.set($any($event).detail.value ? +$any($event).detail.value : null)"
-          placeholder="Без обмежень"
-          min="1"
-        ></ion-input>
-      </ion-item>
-      <p class="field-hint">Залиште порожнім, якщо обмежень немає</p>
-    </div>
-
     <!-- Notifications Section -->
     <div class="form-group ion-margin-top ion-padding-top" style="border-top: 1px solid var(--ion-color-step-150, #eee);">
       <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600;">Сповіщення</h3>
@@ -150,45 +160,6 @@
         </ion-item>
       }
     </div>
-
-    <!-- Participants Section (Only on Creation) -->
-    @if (!session) {
-      <div class="participants-section ion-margin-top ion-padding-top" style="border-top: 1px solid var(--ion-color-step-150, #eee);">
-        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Учасники ({{ participants().length }})</h3>
-          <ion-button size="small" fill="clear" (click)="openAddParticipantModal()">
-            <ion-icon name="person-add-outline" slot="start"></ion-icon>
-            Додати
-          </ion-button>
-        </div>
-
-        <ion-list lines="none" class="participants-list">
-          @for (p of participants(); track p.clientId || p.customName; let i = $index) {
-            <ion-item class="participant-item">
-              <ion-avatar slot="start">
-                <div class="avatar-placeholder" style="background: var(--ion-color-light); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium);">
-                  <ion-icon name="person"></ion-icon>
-                </div>
-              </ion-avatar>
-              <ion-label>
-                <h2>{{ p.client?.fullName || p.customName }}</h2>
-                @if (p.client) {
-                  <p>{{ p.client.phone || 'Немає номеру' }}</p>
-                }
-              </ion-label>
-              <ion-button fill="clear" color="danger" slot="end" (click)="removeParticipant(i)">
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-          } @empty {
-            <div class="empty-state" style="text-align: center; color: var(--ion-color-medium); padding: 16px 0;">
-              <ion-icon name="people-outline" style="font-size: 24px; opacity: 0.5;"></ion-icon>
-              <p style="margin: 8px 0 0; font-size: 14px;">Немає доданих учасників</p>
-            </div>
-          }
-        </ion-list>
-      </div>
-    }
 
     <div class="ion-margin-top ion-padding-top">
       <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="isSubmitting() || !locationId()">

@@ -37,8 +37,7 @@
               @for (session of getSessionsAt(col.dateStr, hour); track session.id) {
                 <div
                   class="session-card"
-                  [class.has-participants]="session.participants.length > 0"
-                  [class.is-full]="isFull(session)"
+                  [class.has-participants]="getTotalParticipants(session) > 0"
                   (click)="onSessionClick(session.id)"
                 >
                   <div class="session-time">
@@ -61,7 +60,7 @@
 
                   <div class="session-meta">
                     <ion-icon name="people-outline"></ion-icon>
-                    <span>{{ session.participants.length }}</span>
+                    <span>{{ getTotalParticipants(session) }}</span>
                   </div>
                 </div>
               }

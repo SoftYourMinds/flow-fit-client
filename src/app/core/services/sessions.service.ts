@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
@@ -11,10 +11,18 @@ export interface SessionParticipant {
   customName?: string;
 }
 
+export interface SessionParticipantDraft {
+  clientId?: number;
+  customName?: string;
+  client?: { id: number; fullName: string; phone?: string };
+}
+
+export type IndividualParticipantMode = 'ANONYMOUS' | 'CLIENT' | 'CUSTOM';
+
 export interface WorkoutSession {
   id: number;
   locationId: number;
-  location?: { id: number; name: string };
+  location?: { id: number; name: string; maxParticipants?: number };
   type: 'INDIVIDUAL' | 'GROUP';
   startTime: string;
   endTime: string;
@@ -23,7 +31,6 @@ export interface WorkoutSession {
   isPaid: boolean;
   subscriptionId?: number | null;
   workoutTypes?: string[];
-  maxParticipants?: number;
   anonymousParticipantsCount?: number;
   participants: SessionParticipant[];
   enableNotification?: boolean;
@@ -60,8 +67,7 @@ export interface RecurringPreviewItem {
 })
 export class SessionsService {
   private readonly apiUrl = `${environment.apiUrl}/sessions`;
-
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAll(filters?: Record<string, unknown>): Observable<WorkoutSession[]> {
     let params = new HttpParams();

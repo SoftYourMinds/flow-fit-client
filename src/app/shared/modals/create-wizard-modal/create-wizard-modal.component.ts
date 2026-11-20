@@ -18,6 +18,8 @@ import {
   SessionsService,
   RecurringPreviewItem,
   RecurringSessionsPayload,
+  IndividualParticipantMode,
+  SessionParticipantDraft,
 } from '../../../core/services/sessions.service';
 import {
   SubscriptionsService,
@@ -30,6 +32,12 @@ import {
   REMINDER_MODE_LABELS,
 } from '../../../core/services/notification.service';
 import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.constant';
+import { SessionParticipantsEditorComponent } from '../../components/session-participants-editor/session-participants-editor.component';
+import {
+  normalizeParticipantsForIndividual,
+  sanitizeParticipantsForApi,
+  validateSessionParticipants,
+} from '../../utils/session-participants.util';
 
 export interface DayOfWeekOption {
   value: number;
@@ -38,8 +46,7 @@ export interface DayOfWeekOption {
 
 @Component({
   selector: 'app-create-wizard-modal',
-  standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, SessionParticipantsEditorComponent],
   templateUrl: './create-wizard-modal.component.html',
   styleUrls: ['./create-wizard-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -99,9 +106,9 @@ export class CreateWizardModalComponent implements OnInit {
 
   // ─── Step 2B: Single Session State ─────────────────────────────
   readonly singleType = signal<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
-  readonly participantMode = signal<'COUNT' | 'CLIENT'>('CLIENT');
+  readonly singleIndividualMode = signal<IndividualParticipantMode>('ANONYMOUS');
   readonly singleAnonymousCount = signal<number>(1);
-  readonly singleClientId = signal<number | null>(null);
+  readonly singleParticipants = signal<SessionParticipantDraft[]>([]);
   readonly singleClientSubscriptions = signal<ClientSubscription[]>([]);
   readonly deductFromSubscription = signal<boolean>(true);
   readonly selectedSubscriptionId = signal<number | null>(null);
@@ -109,7 +116,6 @@ export class CreateWizardModalComponent implements OnInit {
   readonly singleStartTime = signal<string>(this.getLocalIsoString(new Date()));
   readonly singleDuration = signal<number>(50);
   readonly singlePrice = signal<number>(300);
-  readonly singleMaxParticipants = signal<number | null>(1);
   readonly singleWorkoutTypes = signal<string[]>([]);
   readonly enableNotification = signal<boolean>(true);
   readonly reminderMode = signal<ReminderMode>('auto');
@@ -130,8 +136,15 @@ export class CreateWizardModalComponent implements OnInit {
     return this.clientList().find((c) => c.id === id) || null;
   });
 
+  readonly selectedSingleClientId = computed<number | null>(() => {
+    if (this.singleType() !== 'INDIVIDUAL' || this.singleIndividualMode() !== 'CLIENT') {
+      return null;
+    }
+    return this.singleParticipants().find((p) => typeof p.clientId === 'number')?.clientId ?? null;
+  });
+
   readonly selectedSingleClient = computed(() => {
-    const id = this.singleClientId();
+    const id = this.selectedSingleClientId();
     if (!id) return null;
     return this.clientList().find((c) => c.id === id) || null;
   });
@@ -176,9 +189,22 @@ export class CreateWizardModalComponent implements OnInit {
     }
 
     if (this.preselectedClientId) {
+      const preselectedClient = this.clientList().find((c) => c.id === this.preselectedClientId);
       this.subClientId.set(this.preselectedClientId);
-      this.singleClientId.set(this.preselectedClientId);
-      this.participantMode.set('CLIENT');
+      this.singleIndividualMode.set('CLIENT');
+      this.singleAnonymousCount.set(0);
+      this.singleParticipants.set([
+        {
+          clientId: this.preselectedClientId,
+          client: preselectedClient
+            ? {
+                id: preselectedClient.id,
+                fullName: preselectedClient.fullName,
+                phone: preselectedClient.phone,
+              }
+            : undefined,
+        },
+      ]);
       this.loadSingleClientSubscriptions(this.preselectedClientId);
       this.checkSubClientActiveSubscriptions(this.preselectedClientId);
     }
@@ -308,6 +334,7 @@ export class CreateWizardModalComponent implements OnInit {
 
     this.subscriptionsService.createWithRecurring(payload).subscribe({
       next: async (res) => {
+        this.locationsService.saveLastSelectedLocationId(Number(locationId));
         await this.showToast(
           `Абонемент та ${res.sessionsCount} занять успішно створено!`,
           'success',
@@ -326,14 +353,38 @@ export class CreateWizardModalComponent implements OnInit {
   // ─── Single Session Methods ────────────────────────────────────
   setSingleType(type: 'INDIVIDUAL' | 'GROUP'): void {
     this.singleType.set(type);
-    const currentMax = this.singleMaxParticipants();
-    if (type === 'GROUP' && (currentMax === 1 || currentMax === null)) {
-      this.singleMaxParticipants.set(8);
-    } else if (type === 'INDIVIDUAL') {
-      if (currentMax === 8 || currentMax === null) {
-        this.singleMaxParticipants.set(1);
-      }
-      this.participantMode.set('CLIENT');
+    this.errorMessage.set(null);
+
+    if (type === 'INDIVIDUAL') {
+      const normalized = normalizeParticipantsForIndividual(this.singleParticipants());
+      this.singleParticipants.set(normalized.participants);
+      this.singleAnonymousCount.set(normalized.anonymousCount);
+      this.singleIndividualMode.set(normalized.mode);
+      this.syncSingleClientSubscriptions(normalized.participants);
+      return;
+    }
+
+    this.clearSingleClientSubscriptions();
+  }
+
+  onSingleParticipantsChange(participants: SessionParticipantDraft[]): void {
+    this.singleParticipants.set(participants);
+    this.errorMessage.set(null);
+    if (this.singleType() === 'INDIVIDUAL') {
+      this.syncSingleClientSubscriptions(participants);
+    }
+  }
+
+  onSingleAnonymousCountChange(count: number): void {
+    this.singleAnonymousCount.set(Math.max(0, count));
+    this.errorMessage.set(null);
+  }
+
+  onSingleIndividualModeChange(mode: IndividualParticipantMode): void {
+    this.singleIndividualMode.set(mode);
+    this.errorMessage.set(null);
+    if (mode !== 'CLIENT') {
+      this.clearSingleClientSubscriptions();
     }
   }
 
@@ -365,17 +416,6 @@ export class CreateWizardModalComponent implements OnInit {
     });
   }
 
-  onSingleClientChange(event: CustomEvent): void {
-    const id = Number(event.detail.value);
-    this.singleClientId.set(id || null);
-    if (id) {
-      this.loadSingleClientSubscriptions(id);
-    } else {
-      this.singleClientSubscriptions.set([]);
-      this.selectedSubscriptionId.set(null);
-    }
-  }
-
   onNotificationToggleChange(enabled: boolean): void {
     this.enableNotification.set(enabled);
     if (enabled) {
@@ -392,27 +432,30 @@ export class CreateWizardModalComponent implements OnInit {
       return;
     }
 
+    const sessionType = this.singleType();
+    const anonymousParticipantsCount = Math.max(0, Number(this.singleAnonymousCount()) || 0);
+    const participantsValidationError = validateSessionParticipants(
+      sessionType,
+      this.singleIndividualMode(),
+      this.singleParticipants(),
+      anonymousParticipantsCount,
+    );
+    if (participantsValidationError) {
+      this.errorMessage.set(participantsValidationError);
+      return;
+    }
+
+    const participants = sanitizeParticipantsForApi(this.singleParticipants());
     const start = new Date(this.singleStartTime());
     const end = new Date(start.getTime() + this.singleDuration() * 60000);
-    const sessionType = this.singleType();
-    const isClientMode = this.participantMode() === 'CLIENT';
-    const clientId = isClientMode ? this.singleClientId() : null;
+    const clientId = this.selectedSingleClientId();
 
     const activeSub = this.activeSubscriptionForSingle();
     const willDeduct =
-      isClientMode &&
       sessionType === 'INDIVIDUAL' &&
-      clientId &&
+      Boolean(clientId) &&
       this.deductFromSubscription() &&
-      activeSub;
-
-    const defaultMax = sessionType === 'GROUP' ? 8 : 1;
-    const maxParticipants = this.singleMaxParticipants()
-      ? Number(this.singleMaxParticipants())
-      : defaultMax;
-    const anonymousParticipantsCount = isClientMode
-      ? 0
-      : (Number(this.singleAnonymousCount()) || 1);
+      Boolean(activeSub);
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -432,20 +475,13 @@ export class CreateWizardModalComponent implements OnInit {
           status: 'UPCOMING',
           isPaid: willDeduct ? true : false,
           workoutTypes: this.singleWorkoutTypes(),
-          maxParticipants,
           anonymousParticipantsCount,
+          participants,
           enableNotification: this.enableNotification(),
           reminderMode: String(this.reminderMode()),
           isCritical: this.isCritical(),
         }),
       );
-
-      // Add individual client as participant
-      if (isClientMode && sessionType === 'INDIVIDUAL' && clientId) {
-        await firstValueFrom(
-          this.sessionsService.addParticipant(createdSession.id, { clientId }),
-        );
-      }
 
       // Deduct from subscription if requested
       if (willDeduct && activeSub) {
@@ -466,6 +502,8 @@ export class CreateWizardModalComponent implements OnInit {
         }
       }
 
+      this.locationsService.saveLastSelectedLocationId(Number(locationId));
+
       await this.showToast('Тренування успішно створено!', 'success');
       await this.modalCtrl.dismiss(
         { created: true, type: 'session', session: createdSession },
@@ -481,6 +519,20 @@ export class CreateWizardModalComponent implements OnInit {
   }
 
   // ─── Private Helpers ───────────────────────────────────────────
+  private syncSingleClientSubscriptions(participants: SessionParticipantDraft[]): void {
+    const clientId = participants.find((p) => typeof p.clientId === 'number')?.clientId ?? null;
+    if (clientId) {
+      this.loadSingleClientSubscriptions(clientId);
+      return;
+    }
+    this.clearSingleClientSubscriptions();
+  }
+
+  private clearSingleClientSubscriptions(): void {
+    this.singleClientSubscriptions.set([]);
+    this.selectedSubscriptionId.set(null);
+    this.deductFromSubscription.set(false);
+  }
   private checkSubClientActiveSubscriptions(clientId: number | null): void {
     if (!clientId) {
       this.subClientActiveSubscriptions.set([]);
@@ -578,12 +630,14 @@ export class CreateWizardModalComponent implements OnInit {
   }
 
   private initLocationDefaults(locs: Location[]): void {
-    if (!locs || locs.length === 0) return;
+    const defaultLocationId = this.locationsService.resolveDefaultLocationId(locs);
+    if (!defaultLocationId) return;
+
     if (!this.subLocationId()) {
-      this.subLocationId.set(locs[0].id);
+      this.subLocationId.set(defaultLocationId);
     }
     if (!this.singleLocationId()) {
-      this.singleLocationId.set(locs[0].id);
+      this.singleLocationId.set(defaultLocationId);
     }
   }
 }

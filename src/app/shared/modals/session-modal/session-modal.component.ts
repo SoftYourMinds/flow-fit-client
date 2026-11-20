@@ -1,123 +1,138 @@
-import { Component, OnInit, Input, signal, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
+
 import { LocationsService, Location } from '../../../core/services/locations.service';
 import { ClientsService, Client } from '../../../core/services/clients.service';
-import { ParticipantModalComponent } from '../participant-modal/participant-modal.component';
+import {
+  IndividualParticipantMode,
+  SessionParticipantDraft,
+  WorkoutSession,
+} from '../../../core/services/sessions.service';
 import {
   NotificationService,
   ReminderMode,
   REMINDER_MODE_LABELS,
 } from '../../../core/services/notification.service';
 import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.constant';
+import { SessionParticipantsEditorComponent } from '../../components/session-participants-editor/session-participants-editor.component';
+import {
+  normalizeParticipantsForIndividual,
+  resolveIndividualMode,
+  sanitizeParticipantsForApi,
+  validateSessionParticipants,
+} from '../../utils/session-participants.util';
 
 @Component({
   selector: 'app-session-modal',
-  standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, SessionParticipantsEditorComponent],
   templateUrl: './session-modal.component.html',
-  styleUrls: ['./session-modal.component.scss']
+  styleUrls: ['./session-modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SessionModalComponent implements OnInit {
+  // ─── Dependencies ──────────────────────────────────────────────
   private readonly modalCtrl = inject(ModalController);
   private readonly locationsService = inject(LocationsService);
+  private readonly clientsService = inject(ClientsService);
   private readonly notificationService = inject(NotificationService);
+
+  // ─── Inputs ────────────────────────────────────────────────────
   @Input() locations: Location[] = [];
   @Input() clients: Client[] = [];
+  @Input() session?: WorkoutSession;
 
-  @Input() session?: any; // To edit an existing session
-
-  locationId = signal<number | null>(null);
-  type = signal<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
-  startTime = signal<string>(this.getLocalIsoString(new Date()));
-  duration = signal<number>(50);
-  price = signal<number>(300);
-  maxParticipants = signal<number | null>(null);
-  workoutTypes = signal<string[]>([]);
-  participants = signal<any[]>([]);
-
+  // ─── Constants ─────────────────────────────────────────────────
   readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
+  readonly reminderModes = REMINDER_MODE_LABELS;
+  readonly datetimeId = `datetime-${Math.random().toString(36).substring(2, 9)}`;
 
-  datetimeId = `datetime-${Math.random().toString(36).substring(2, 9)}`;
+  // ─── State Signals ─────────────────────────────────────────────
+  readonly locationList = signal<Location[]>([]);
+  readonly clientList = signal<Client[]>([]);
+  readonly isClientsLoading = signal<boolean>(false);
 
-  // Notifications
-  enableNotification = signal<boolean>(true);
-  reminderMode = signal<ReminderMode>('auto');
-  reminderModes = REMINDER_MODE_LABELS;
-  isCritical = signal<boolean>(false);
-  isSubmitting = signal<boolean>(false);
+  readonly locationId = signal<number | null>(null);
+  readonly type = signal<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
+  readonly startTime = signal<string>(this.getLocalIsoString(new Date()));
+  readonly duration = signal<number>(50);
+  readonly price = signal<number>(300);
+  readonly workoutTypes = signal<string[]>([]);
+  readonly participants = signal<SessionParticipantDraft[]>([]);
+  readonly anonymousParticipantsCount = signal<number>(1);
+  readonly individualMode = signal<IndividualParticipantMode>('ANONYMOUS');
 
-  minuteValues = computed(() => {
-    return this.duration() === 30 ? '0,30' : '0';
-  });
+  readonly enableNotification = signal<boolean>(true);
+  readonly reminderMode = signal<ReminderMode>('auto');
+  readonly isCritical = signal<boolean>(false);
+  readonly isSubmitting = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
+
+  readonly minuteValues = computed<string>(() => (this.duration() === 30 ? '0,30' : '0'));
+
+  // ─── Lifecycle ─────────────────────────────────────────────────
 
   ngOnInit(): void {
-    if (!this.locations || this.locations.length === 0) {
-      this.locationsService.getAll().subscribe({
-        next: (locs) => {
-          this.locations = locs;
-          if (locs.length > 0 && !this.session) {
-            this.locationId.set(locs[0].id);
-          }
-        }
-      });
-    } else if (this.locations.length > 0 && !this.session) {
-      this.locationId.set(this.locations[0].id);
-    }
+    this.initLocations();
+    this.initClients();
 
     if (this.session) {
-      this.locationId.set(this.session.locationId);
-      this.type.set(this.session.type);
-      this.startTime.set(this.getLocalIsoString(new Date(this.session.startTime)));
-      this.price.set(this.session.price);
-      this.maxParticipants.set(this.session.maxParticipants ?? null);
-      
-      const start = new Date(this.session.startTime);
-      const end = new Date(this.session.endTime);
-      this.duration.set(Math.round((end.getTime() - start.getTime()) / 60000));
-      
-      if (this.session.workoutTypes) {
-        this.workoutTypes.set([...this.session.workoutTypes]);
-      }
-      
-      this.participants.set(this.session.participants ? [...this.session.participants] : []);
-
-      if (this.session.enableNotification !== undefined) {
-        this.enableNotification.set(this.session.enableNotification);
-      }
-      if (this.session.reminderMode) {
-        this.reminderMode.set(String(this.session.reminderMode) as ReminderMode);
-      }
-      if (this.session.isCritical !== undefined) {
-        this.isCritical.set(this.session.isCritical);
-      }
+      this.hydrateFromSession(this.session);
     }
   }
 
-  cancel() {
+  // ─── Public Methods ────────────────────────────────────────────
+
+  cancel(): Promise<boolean> {
     return this.modalCtrl.dismiss(null, 'cancel');
   }
 
-  async openAddParticipantModal() {
-    const modal = await this.modalCtrl.create({
-      component: ParticipantModalComponent,
-      componentProps: {
-        clients: this.clients
-      }
-    });
-    await modal.present();
+  setType(nextType: 'INDIVIDUAL' | 'GROUP'): void {
+    this.type.set(nextType);
+    this.errorMessage.set(null);
 
-    const { data, role } = await modal.onWillDismiss();
-    if (role === 'confirm' && data) {
-      if (data.clientId) {
-        data.client = this.clients.find(c => c.id === data.clientId);
-      }
-      this.participants.update(p => [...p, data]);
+    if (nextType === 'INDIVIDUAL') {
+      const normalized = normalizeParticipantsForIndividual(this.participants());
+      this.participants.set(normalized.participants);
+      this.anonymousParticipantsCount.set(normalized.anonymousCount);
+      this.individualMode.set(normalized.mode);
     }
   }
 
-  removeParticipant(index: number) {
-    this.participants.update(p => p.filter((_, i) => i !== index));
+  onParticipantsChange(participants: SessionParticipantDraft[]): void {
+    this.participants.set(participants);
+    this.errorMessage.set(null);
+  }
+
+  onAnonymousCountChange(count: number): void {
+    this.anonymousParticipantsCount.set(Math.max(0, count));
+    this.errorMessage.set(null);
+  }
+
+  onIndividualModeChange(mode: IndividualParticipantMode): void {
+    this.individualMode.set(mode);
+    this.errorMessage.set(null);
+  }
+
+  loadClients(): void {
+    this.isClientsLoading.set(true);
+    this.clientsService.getAll().subscribe({
+      next: (cls) => {
+        this.clientList.set(cls || []);
+        this.isClientsLoading.set(false);
+      },
+      error: () => {
+        this.isClientsLoading.set(false);
+      },
+    });
   }
 
   onNotificationToggleChange(enabled: boolean): void {
@@ -128,8 +143,25 @@ export class SessionModalComponent implements OnInit {
   }
 
   async confirm(): Promise<boolean | undefined> {
-    if (this.isSubmitting() || !this.locationId()) return undefined;
+    if (this.isSubmitting() || !this.locationId()) {
+      return undefined;
+    }
+
+    const sessionType = this.type();
+    const anonymousCount = Math.max(0, Number(this.anonymousParticipantsCount()) || 0);
+    const validationError = validateSessionParticipants(
+      sessionType,
+      this.individualMode(),
+      this.participants(),
+      anonymousCount,
+    );
+    if (validationError) {
+      this.errorMessage.set(validationError);
+      return undefined;
+    }
+
     this.isSubmitting.set(true);
+    this.errorMessage.set(null);
 
     try {
       if (this.enableNotification()) {
@@ -140,26 +172,104 @@ export class SessionModalComponent implements OnInit {
       return undefined;
     }
 
-    // Розрахунок часу завершення
     const start = new Date(this.startTime());
     const end = new Date(start.getTime() + this.duration() * 60000);
+    const resolvedLocationId = Number(this.locationId());
 
-    return this.modalCtrl.dismiss({
-      locationId: Number(this.locationId()),
-      type: this.type(),
-      startTime: start.toISOString(),
-      endTime: end.toISOString(),
-      price: +this.price(),
-      maxParticipants: this.maxParticipants() ? Number(this.maxParticipants()) : null,
-      status: this.session ? this.session.status : 'UPCOMING',
-      isPaid: this.session ? this.session.isPaid : false,
-      workoutTypes: this.workoutTypes(),
-      participants: this.participants(),
-      anonymousParticipantsCount: this.session?.anonymousParticipantsCount ?? 0,
-      enableNotification: this.enableNotification(),
-      reminderMode: String(this.reminderMode()),
-      isCritical: this.isCritical(),
-    }, 'confirm');
+    if (!this.session) {
+      this.locationsService.saveLastSelectedLocationId(resolvedLocationId);
+    }
+
+    return this.modalCtrl.dismiss(
+      {
+        locationId: resolvedLocationId,
+        type: sessionType,
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+        price: +this.price(),
+        status: this.session ? this.session.status : 'UPCOMING',
+        isPaid: this.session ? this.session.isPaid : false,
+        workoutTypes: this.workoutTypes(),
+        participants: sanitizeParticipantsForApi(this.participants()),
+        anonymousParticipantsCount: anonymousCount,
+        enableNotification: this.enableNotification(),
+        reminderMode: String(this.reminderMode()),
+        isCritical: this.isCritical(),
+      },
+      'confirm',
+    );
+  }
+
+  // ─── Private Helpers ───────────────────────────────────────────
+
+  private initLocations(): void {
+    if (this.locations && this.locations.length > 0) {
+      this.locationList.set(this.locations);
+      if (!this.session) {
+        this.locationId.set(this.locationsService.resolveDefaultLocationId(this.locations));
+      }
+      return;
+    }
+
+    this.locationsService.getAll().subscribe({
+      next: (locs) => {
+        this.locationList.set(locs || []);
+        if (!this.session) {
+          this.locationId.set(this.locationsService.resolveDefaultLocationId(locs || []));
+        }
+      },
+    });
+  }
+
+  private initClients(): void {
+    if (this.clients && this.clients.length > 0) {
+      this.clientList.set(this.clients);
+      return;
+    }
+    this.loadClients();
+  }
+
+  private hydrateFromSession(session: WorkoutSession): void {
+    this.locationId.set(session.locationId);
+    this.type.set(session.type);
+    this.startTime.set(this.getLocalIsoString(new Date(session.startTime)));
+    this.price.set(session.price);
+
+    const start = new Date(session.startTime);
+    const end = new Date(session.endTime);
+    this.duration.set(Math.round((end.getTime() - start.getTime()) / 60000));
+
+    if (session.workoutTypes) {
+      this.workoutTypes.set([...session.workoutTypes]);
+    }
+
+    const existingParticipants: SessionParticipantDraft[] = (session.participants || []).map((p) => ({
+      clientId: p.clientId,
+      customName: p.customName,
+      client: p.client,
+    }));
+    const existingAnonymous = Math.max(0, session.anonymousParticipantsCount ?? 0);
+
+    this.participants.set(existingParticipants);
+    this.anonymousParticipantsCount.set(existingAnonymous);
+
+    if (session.type === 'INDIVIDUAL') {
+      const mode = resolveIndividualMode(existingParticipants);
+      this.individualMode.set(mode);
+      if (mode === 'ANONYMOUS' && existingAnonymous === 0) {
+        this.anonymousParticipantsCount.set(1);
+      }
+    }
+
+    if (session.enableNotification !== undefined) {
+      this.enableNotification.set(session.enableNotification);
+    }
+    if (session.reminderMode) {
+      this.reminderMode.set(String(session.reminderMode) as ReminderMode);
+    }
+    if (session.isCritical !== undefined) {
+      this.isCritical.set(session.isCritical);
+    }
   }
 
   private getLocalIsoString(date: Date): string {

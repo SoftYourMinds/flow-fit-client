@@ -183,10 +183,8 @@ export class MonthViewComponent {
     return session.type === 'GROUP' ? 'Групове' : 'Індивідуальне';
   }
 
-  getCapacity(session: WorkoutSession): string {
-    const current = session.participants.length;
-    const max = session.maxParticipants;
-    return max != null ? `${current}/${max}` : `${current}`;
+  getTotalParticipants(session: WorkoutSession): number {
+    return (session.participants?.length || 0) + Math.max(0, session.anonymousParticipantsCount || 0);
   }
 
   getStatusColor(status: string): string {
