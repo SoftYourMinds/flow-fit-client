@@ -21,6 +21,40 @@
       </div>
     }
 
+    <!-- Status Selector (Edit mode only) -->
+    @if (session) {
+      <div class="form-group ion-margin-bottom">
+        <ion-label class="form-label">Статус тренування</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="flag-outline" slot="start" color="primary"></ion-icon>
+          <ion-select
+            [value]="status()"
+            (ionChange)="status.set($any($event).detail.value)"
+            interface="popover"
+            style="width: 100%;"
+          >
+            <ion-select-option value="UPCOMING">Заплановано</ion-select-option>
+            <ion-select-option value="ACTIVE">Триває</ion-select-option>
+            <ion-select-option value="COMPLETED">Завершено</ion-select-option>
+            <ion-select-option value="MISSED">Пропущено</ion-select-option>
+            <ion-select-option value="REQUIRED_ACTION">Потребує дії</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        @if (status() === 'MISSED') {
+          <ion-item lines="none" class="custom-input-item ion-margin-top">
+            <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
+            <ion-label>Оплачено</ion-label>
+            <ion-toggle
+              slot="end"
+              [checked]="isPaid()"
+              (ionChange)="isPaid.set($any($event).detail.checked)"
+            ></ion-toggle>
+          </ion-item>
+        }
+      </div>
+    }
+
     <!-- Type Selector -->
     <div class="form-group">
       <ion-label class="form-label">Формат тренування</ion-label>
@@ -52,6 +86,99 @@
       ></app-session-participants-editor>
     </div>
 
+    <!-- Subscription Management Block (Edit mode or preselected subscription) -->
+    @if (subscriptionId()) {
+      <div
+        class="ion-margin-top"
+        style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 12px; background: rgba(var(--ion-color-success-rgb), 0.1); border: 1px solid rgba(var(--ion-color-success-rgb), 0.3);"
+      >
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <ion-icon name="ticket-outline" color="success" style="font-size: 22px; flex-shrink: 0;"></ion-icon>
+          <div>
+            <div style="font-weight: 700; font-size: 14px;">По абонементу #{{ subscriptionId() }}</div>
+            <div style="font-size: 12px; color: var(--ion-color-medium);">Списано з активного абонементу</div>
+          </div>
+        </div>
+        @if (session) {
+          <ion-button
+            size="small"
+            fill="outline"
+            color="danger"
+            [disabled]="isSubActionLoading()"
+            (click)="confirmUnlinkSubscription()"
+          >
+            Відмінити
+          </ion-button>
+        }
+      </div>
+    } @else if (session && type() === 'INDIVIDUAL' && selectedIndividualClientId()) {
+      @if (activeSubscriptions().length > 0) {
+        <div
+          class="ion-margin-top"
+          style="padding: 12px 14px; border-radius: 12px; border: 1.5px dashed var(--ion-color-primary);"
+        >
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 600; font-size: 14px;">
+            <ion-icon name="ticket-outline" color="primary"></ion-icon>
+            <span>Списати з абонементу</span>
+          </div>
+          @for (sub of activeSubscriptions(); track sub.id) {
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0;">
+              <div style="font-size: 13px;">
+                <strong>{{ sub.type === 'SESSIONS_BASED' ? 'По кількості' : 'По датах' }}</strong>
+                <div style="font-size: 12px; color: var(--ion-color-medium);">
+                  @if (sub.type === 'SESSIONS_BASED') {
+                    Залишилось: {{ (sub.totalSessions || 0) - sub.usedSessions }} з {{ sub.totalSessions }}
+                  } @else {
+                    Діє до {{ sub.endDate | date:'dd.MM.yyyy' }}
+                  }
+                </div>
+              </div>
+              <ion-button
+                size="small"
+                fill="solid"
+                color="primary"
+                [disabled]="isSubActionLoading()"
+                (click)="deductFromSubscription(sub.id)"
+              >
+                Списати
+              </ion-button>
+            </div>
+          }
+        </div>
+      } @else {
+        <div
+          class="ion-margin-top"
+          style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 12px; background: rgba(var(--ion-color-primary-rgb), 0.06); border: 1px dashed rgba(var(--ion-color-primary-rgb), 0.35);"
+        >
+          <span style="font-size: 13px; color: var(--ion-color-medium);">Немає активного абонементу</span>
+          <ion-button
+            size="small"
+            fill="outline"
+            shape="round"
+            color="primary"
+            [disabled]="isSubActionLoading()"
+            (click)="quickCreateSubscription()"
+          >
+            <ion-icon name="ticket-outline" slot="start"></ion-icon>
+            Оформити
+          </ion-button>
+        </div>
+      }
+    }
+
+    <!-- Location Selector -->
+    <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Локація</ion-label>
+      <ion-item lines="none" class="custom-input-item">
+        <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+        <ion-select [value]="locationId()" (ionChange)="onLocationChange($event.detail.value)" placeholder="Оберіть локацію" interface="popover" style="width: 100%;">
+          @for (loc of locationList(); track loc.id) {
+            <ion-select-option [value]="loc.id">{{ loc.name }} ({{ loc.type }})</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </div>
+
     <!-- Workout Types Selector -->
     <div class="form-group ion-margin-top">
       <ion-label class="form-label">Напрями тренування</ion-label>
@@ -60,19 +187,6 @@
         <ion-select [value]="workoutTypes()" (ionChange)="workoutTypes.set($any($event).detail.value)" [multiple]="true" placeholder="Оберіть напрями" interface="popover" style="width: 100%;">
           @for (option of WORKOUT_TYPE_OPTIONS; track option) {
             <ion-select-option [value]="option">{{ option }}</ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
-    </div>
-
-    <!-- Location Selector -->
-    <div class="form-group ion-margin-top">
-      <ion-label class="form-label">Локація</ion-label>
-      <ion-item lines="none" class="custom-input-item">
-        <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
-        <ion-select [value]="locationId()" (ionChange)="locationId.set($any($event).detail.value)" placeholder="Оберіть локацію" interface="popover" style="width: 100%;">
-          @for (loc of locationList(); track loc.id) {
-            <ion-select-option [value]="loc.id">{{ loc.name }} ({{ loc.type }})</ion-select-option>
           }
         </ion-select>
       </ion-item>
@@ -117,18 +231,20 @@
     </div>
 
     <!-- Price Input -->
-    <div class="form-group ion-margin-top">
-      <ion-label class="form-label">Ціна за тренування (грн)</ion-label>
-      <ion-item lines="none" class="custom-input-item">
-        <ion-icon name="cash-outline" slot="start" color="primary"></ion-icon>
-        <ion-input type="number" [value]="price()" (ionInput)="price.set(+$any($event).detail.value)" placeholder="800"></ion-input>
-      </ion-item>
-    </div>
+    @if (!subscriptionId()) {
+      <div class="form-group ion-margin-top">
+        <ion-label class="form-label">Ціна за тренування (грн)</ion-label>
+        <ion-item lines="none" class="custom-input-item">
+          <ion-icon name="cash-outline" slot="start" color="primary"></ion-icon>
+          <ion-input type="number" [value]="price()" (ionInput)="price.set(+$any($event).detail.value)" placeholder="300"></ion-input>
+        </ion-item>
+      </div>
+    }
 
     <!-- Notifications Section -->
     <div class="form-group ion-margin-top ion-padding-top" style="border-top: 1px solid var(--ion-color-step-150, #eee);">
       <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 600;">Сповіщення</h3>
-      
+
       <ion-item lines="none" class="custom-input-item">
         <ion-icon name="notifications-outline" slot="start" color="primary"></ion-icon>
         <ion-label>Увімкнути нагадування</ion-label>
@@ -161,10 +277,21 @@
       }
     </div>
 
-    <div class="ion-margin-top ion-padding-top">
+    <div class="ion-margin-top ion-padding-top" style="display: flex; flex-direction: column; gap: 10px;">
       <ion-button expand="block" shape="round" color="primary" class="submit-btn" (click)="confirm()" [disabled]="isSubmitting() || !locationId()">
-        {{ session ? 'Зберегти зміни' : 'Створити тренування' }}
+        @if (isSubmitting()) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          {{ session ? 'Зберегти зміни' : 'Створити тренування' }}
+        }
       </ion-button>
+
+      @if (session) {
+        <ion-button expand="block" shape="round" fill="outline" color="danger" [disabled]="isSubmitting()" (click)="confirmDeleteSession()">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Видалити тренування
+        </ion-button>
+      }
     </div>
   </div>
 </ion-content>

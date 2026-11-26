@@ -29,6 +29,13 @@
                 @if (loc.address) { <span>• {{ loc.address }}</span> }
                 <span>• до {{ loc.maxParticipants || 8 }} осіб</span>
               </p>
+              @if (loc.defaultGroupPrice != null || loc.defaultIndividualPrice != null) {
+                <p style="font-size: 12px; color: var(--ion-color-primary); margin-top: 2px;">
+                  @if (loc.defaultGroupPrice != null) { <span>Груп: {{ loc.defaultGroupPrice }} ₴</span> }
+                  @if (loc.defaultGroupPrice != null && loc.defaultIndividualPrice != null) { <span> • </span> }
+                  @if (loc.defaultIndividualPrice != null) { <span>Індив: {{ loc.defaultIndividualPrice }} ₴</span> }
+                </p>
+              }
             </ion-label>
             <ion-button
               fill="clear"

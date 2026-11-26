@@ -76,7 +76,7 @@
         <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
         <ion-select
           [value]="locationId()"
-          (ionChange)="locationId.set($event.detail.value); previewItems.set([]);"
+          (ionChange)="onLocationSelect($event.detail.value)"
           placeholder="Оберіть локацію"
           interface="popover"
           style="width: 100%;"

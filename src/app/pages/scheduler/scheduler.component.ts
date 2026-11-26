@@ -240,7 +240,37 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
   }
 
   goToSessionDetail(sessionId: number): void {
-    this.router.navigate(['/tabs/sessions', sessionId]);
+    void this.openEditSessionModal(sessionId);
+  }
+
+  async openEditSessionModal(sessionId: number): Promise<void> {
+    if (this.isModalOpen) return;
+    const session = this.sessions().find((s) => s.id === sessionId);
+    if (!session) {
+      this.router.navigate(['/tabs/sessions', sessionId]);
+      return;
+    }
+
+    this.isModalOpen = true;
+    try {
+      const modal = await this.modalCtrl.create({
+        component: SessionModalComponent,
+        componentProps: {
+          locations: this.locations(),
+          clients: this.clients(),
+          session,
+          persistOnSubmit: true,
+        },
+      });
+      await modal.present();
+
+      const { data, role } = await modal.onWillDismiss();
+      if (role === 'confirm' || role === 'delete' || data?.mutated) {
+        this.loadData();
+      }
+    } finally {
+      this.isModalOpen = false;
+    }
   }
 
   selectDay(day: DayTab): void {
@@ -292,7 +322,7 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
 
   // ── Week / Month child view handlers ──────────────────────────────────────
   onWeekSessionClicked(sessionId: number): void {
-    this.router.navigate(['/tabs/sessions', sessionId]);
+    void this.openEditSessionModal(sessionId);
   }
 
   onWeekDateChanged(date: Date): void {
@@ -300,7 +330,7 @@ export class SchedulerComponent implements OnInit, ViewWillEnter {
   }
 
   onMonthSessionClicked(sessionId: number): void {
-    this.router.navigate(['/tabs/sessions', sessionId]);
+    void this.openEditSessionModal(sessionId);
   }
 
   onMonthDateSelected(date: Date): void {

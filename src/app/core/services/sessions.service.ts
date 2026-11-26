@@ -40,7 +40,8 @@ export interface WorkoutSession {
 }
 
 export interface RecurringSessionsPayload {
-  clientId: number;
+  clientId?: number;
+  type?: 'INDIVIDUAL' | 'GROUP';
   locationId: number;
   daysOfWeek: number[];
   startTime: string;
@@ -51,6 +52,11 @@ export interface RecurringSessionsPayload {
   subscriptionId?: number;
   price?: number;
   workoutTypes?: string[];
+  participants?: Array<{ clientId?: number; customName?: string }>;
+  anonymousParticipantsCount?: number;
+  enableNotification?: boolean;
+  reminderMode?: string;
+  isCritical?: boolean;
 }
 
 export interface RecurringPreviewItem {

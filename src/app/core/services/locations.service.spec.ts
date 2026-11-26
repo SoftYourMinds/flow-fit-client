@@ -52,6 +52,21 @@ describe('LocationsService', () => {
     expect(service.getLastSelectedLocationId()).toBeNull();
     expect(service.resolveDefaultLocationId(mockLocations)).toBe(10);
   });
+
+  it('should resolve default group and individual prices for a location', () => {
+    const loc: Location = {
+      id: 30,
+      name: 'Wisewell',
+      type: 'STUDIO',
+      defaultGroupPrice: 280,
+      defaultIndividualPrice: 400,
+    };
+
+    expect(service.resolveDefaultPrice(loc, 'GROUP')).toBe(280);
+    expect(service.resolveDefaultPrice(loc, 'INDIVIDUAL')).toBe(400);
+    expect(service.resolveDefaultPrice(mockLocations[0], 'GROUP')).toBeNull();
+    expect(service.resolveDefaultPrice(null, 'INDIVIDUAL')).toBeNull();
+  });
 });
 
 describe('WORKOUT_TYPE_OPTIONS', () => {

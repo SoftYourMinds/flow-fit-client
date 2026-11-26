@@ -71,6 +71,8 @@ export class LocationsComponent implements OnInit {
           address: data.address,
           type: data.type,
           maxParticipants: data.maxParticipants,
+          defaultGroupPrice: data.defaultGroupPrice,
+          defaultIndividualPrice: data.defaultIndividualPrice,
         })
         .subscribe(() => this.loadLocations());
     }
@@ -95,6 +97,8 @@ export class LocationsComponent implements OnInit {
           address: data.address,
           type: data.type,
           maxParticipants: data.maxParticipants,
+          defaultGroupPrice: data.defaultGroupPrice,
+          defaultIndividualPrice: data.defaultIndividualPrice,
         })
         .subscribe(() => this.loadLocations());
     }

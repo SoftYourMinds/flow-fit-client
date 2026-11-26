@@ -76,6 +76,7 @@ export class RecurringModalComponent implements OnInit {
     const defaultLocationId = this.locationsService.resolveDefaultLocationId(this.locations);
     if (defaultLocationId) {
       this.locationId.set(defaultLocationId);
+      this.applyLocationDefaultPrice(defaultLocationId);
     }
 
     if (this.preselectedClientId) {
@@ -86,6 +87,12 @@ export class RecurringModalComponent implements OnInit {
     if (this.preselectedSubscriptionId) {
       this.subscriptionId.set(this.preselectedSubscriptionId);
     }
+  }
+
+  onLocationSelect(locationId: number): void {
+    this.locationId.set(locationId);
+    this.previewItems.set([]);
+    this.applyLocationDefaultPrice(locationId);
   }
 
   // ─── Public Methods ─────────────────────────────────────────────
@@ -244,6 +251,14 @@ export class RecurringModalComponent implements OnInit {
       },
       error: () => this.clientSubscriptions.set([]),
     });
+  }
+
+  private applyLocationDefaultPrice(locationId: number): void {
+    const location = this.locations.find((l) => l.id === Number(locationId));
+    const defaultPrice = this.locationsService.resolveDefaultPrice(location, 'INDIVIDUAL');
+    if (defaultPrice !== null) {
+      this.price.set(defaultPrice);
+    }
   }
 
   private getTodayDateString(): string {

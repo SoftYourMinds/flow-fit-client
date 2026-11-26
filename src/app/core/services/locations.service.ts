@@ -10,6 +10,8 @@ export interface Location {
   type: 'STUDIO' | 'GYM' | 'OUTDOOR';
   address?: string;
   maxParticipants?: number;
+  defaultGroupPrice?: number | null;
+  defaultIndividualPrice?: number | null;
 }
 
 @Injectable({
@@ -60,5 +62,19 @@ export class LocationsService {
     const lastId = this.getLastSelectedLocationId();
     const hasLastLocation = lastId !== null && locations.some((loc) => loc.id === lastId);
     return hasLastLocation ? lastId : locations[0].id;
+  }
+
+  resolveDefaultPrice(
+    location: Location | null | undefined,
+    sessionType: 'INDIVIDUAL' | 'GROUP',
+  ): number | null {
+    if (!location) return null;
+
+    const candidate =
+      sessionType === 'GROUP' ? location.defaultGroupPrice : location.defaultIndividualPrice;
+
+    return typeof candidate === 'number' && Number.isFinite(candidate) && candidate >= 0
+      ? candidate
+      : null;
   }
 }

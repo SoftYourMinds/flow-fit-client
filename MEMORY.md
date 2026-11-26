@@ -1,7 +1,10 @@
 # FlowFit Memory
 
 ## Current State
-- Client version bumped to `0.4.4`.
+- Client version bumped to `0.5.0`.
+- Clients page supports Telegram-style swipe-to-archive / swipe-to-delete and an Archive folder with restore; Client Profile has a top-right `...` action menu (share, edit, archive/restore, delete), direct workout scheduling, and interactive subscription calendar editing/deletion.
+- Clicking any workout card in Scheduler (Day, Week, Month) or Client Profile opens the enhanced `SessionModalComponent` directly in 1 tap (with participants stepper, status, subscription deduct/unlink/create, and delete).
+- `CreateWizardModalComponent` supports repeating group/individual sessions without a subscription, quick subscription creation inside Individual flow, optional schedule generation on Subscription creation, and automatic price pre-fill from Location default prices.
 - PWA Web Push & Dual-Channel Notifications (Web Push + Telegram for critical workouts) fully integrated into client and forms, with string-aligned `ReminderMode` values (`'auto' | '15' | '30' | '60' | '120' | '180'`).
 - Dynamic theming system with 8 curated presets and custom theme builder (`ThemeService`).
 - UI/UX supports Light, Dark, and System Auto display modes.
@@ -12,6 +15,12 @@
 - `environment.ts` configured for local development (`http://localhost:4000`).
 
 ## Recent Changes
+- Released `v0.5.0`:
+  - **Clients Archive/Soft-Delete & Profile Menu:** Added `<ion-item-sliding>` (Archive / Restore / Delete) and Telegram-style Archive folder in `ClientsComponent`; replaced top-right Share icon in `DetailsComponent` with an `ellipsis-horizontal` ActionSheet menu (Copy Link, Edit, Archive/Restore, Delete).
+  - **1-Click Session Editing (`SessionModalComponent`, `SchedulerComponent`, `DetailsComponent`):** Tapping a session card in Day/Week/Month view or Client Profile now opens `SessionModalComponent` directly (`persistOnSubmit: true`) with status selector, subscription deduct/unlink/create controls, delete button, and inline conflict error handling without losing edits.
+  - **Interactive Subscription Calendar (`SubscriptionDetailModalComponent`):** Sessions in calendar/list are clickable for direct editing; added "+ Додати" on any selected calendar date and top-right menu (Add Series, Edit Subscription, Delete Subscription with choice to keep or remove future upcoming sessions).
+  - **Recurring Group/One-Off Sessions & Quick Subscription (`CreateWizardModalComponent`):** Added minimal "Повторювати тренування" toggle in Step 2B (weekday chips, end date, `+2 тиж`/`+1 міс` presets, live conflict summary), quick "+ Оформити абонемент" / "Абонемент + графік" card for Individual clients without active subscriptions, and "Одразу скласти розклад" toggle in Step 2A.
+  - **Location Default Prices (`LocationsService`, `LocationModalComponent`, `LocationsComponent`):** Added `defaultGroupPrice` and `defaultIndividualPrice` inputs and display; auto-fills price on location or session type change across `CreateWizardModalComponent`, `SessionModalComponent`, and `RecurringModalComponent`.
 - Prevented duplicate workout creation and duplicate rendering in Scheduler Day view:
   - Added early `if (this.isSubmitting()) return;` guards in `CreateWizardModalComponent` (`submitSingleSession`, `submitSubscription`), `RecurringModalComponent` (`confirmCreate`), and `SessionModalComponent` (`confirm`).
   - Kept `isSubmitting` set to `true` while toast notifications and `modalCtrl.dismiss()` run on success so the submit button does not re-enable before the modal closes.

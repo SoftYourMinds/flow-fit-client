@@ -5,8 +5,8 @@
     </ion-buttons>
     <ion-title>Профіль клієнта</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="shareProfile()">
-        <ion-icon name="share-social-outline" slot="icon-only"></ion-icon>
+      <ion-button (click)="openProfileActions()" aria-label="Дії профілю">
+        <ion-icon name="ellipsis-horizontal" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -23,6 +23,15 @@
         <ion-icon name="person"></ion-icon>
       </div>
       <h2>{{ client().fullName }}</h2>
+      @if (client().isActive === false) {
+        <div style="margin: 6px 0 8px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <ion-badge color="medium" mode="ios">В архіві</ion-badge>
+          <ion-button size="small" fill="outline" shape="round" color="success" (click)="restoreClientProfile()">
+            <ion-icon name="arrow-undo-outline" slot="start"></ion-icon>
+            Відновити
+          </ion-button>
+        </div>
+      }
       <p class="phone"><ion-icon name="call"></ion-icon> {{ client().phone || 'Немає номеру' }}</p>
       @if (client().goal) {
         <p class="goal">{{ client().goal }}</p>
@@ -193,6 +202,9 @@
 
       <!-- Sessions Tab -->
       @if (selectedTab() === 'sessions') {
+        <ion-button expand="block" fill="outline" shape="round" color="primary" class="ion-margin-bottom" (click)="scheduleWorkout('TYPE_CHOICE')">
+          <ion-icon name="add" slot="start"></ion-icon> Запланувати тренування
+        </ion-button>
         <div class="sessions-container">
           <ion-list-header>
             <ion-label>Майбутні тренування</ion-label>

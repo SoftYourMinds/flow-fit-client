@@ -84,8 +84,15 @@ export class SubscriptionsService {
     return this.http.put<ClientSubscription>(`${this.apiUrl}/${id}`, data);
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(
+    id: number,
+    deleteUpcomingSessions = false,
+  ): Observable<{ deletedSessionIds?: number[] } | void> {
+    let params = new HttpParams();
+    if (deleteUpcomingSessions) {
+      params = params.append('deleteUpcomingSessions', 'true');
+    }
+    return this.http.delete<{ deletedSessionIds?: number[] }>(`${this.apiUrl}/${id}`, { params });
   }
 
   deductSession(subscriptionId: number, sessionId: number): Observable<ClientSubscription> {

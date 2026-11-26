@@ -1,0 +1,37 @@
+.client-avatar {
+  background: var(--ion-color-tertiary);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 6px rgba(var(--ion-color-tertiary-rgb), 0.3);
+
+  &.archived-avatar {
+    background: var(--ion-color-medium);
+    box-shadow: none;
+  }
+}
+
+.archive-folder-item {
+  --background: rgba(var(--ion-color-medium-rgb), 0.08);
+}
+
+.archive-avatar {
+  background: rgba(var(--ion-color-medium-rgb), 0.25);
+  color: var(--ion-color-dark);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 1.25rem;
+  }
+}

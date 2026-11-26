@@ -2,6 +2,13 @@
 
 This document tracks important architectural, design, and business logic decisions made during the development of the FlowFit client application.
 
+## 2026-11-27: Direct 1-Click Session Editing via Self-Persisting `SessionModalComponent`
+- **Decision:** Bypassed the intermediate `SessionDetailComponent` on session card clicks in Scheduler (Day/Week/Month), Client Profile, and Subscription Detail Calendar, opening `SessionModalComponent` directly with `persistOnSubmit = true`.
+- **Rationale:** Trainers frequently adjust group participant counts (`anonymousParticipantsCount`) immediately after creating a session. Navigating to `SessionDetailComponent` and tapping "Add" opened `ParticipantModalComponent` (which lacked the `− N +` stepper), requiring a second tap into `SessionModalComponent`. Consolidating status, subscription deduct/unlink/create, and delete controls inside `SessionModalComponent` with in-modal API persistence delivers 1-tap editing from all 3 entry points and keeps form state intact if the backend returns a `409 Conflict`.
+- **Implementation:**
+  - `SessionModalComponent`: Added `persistOnSubmit`, status/isPaid controls, subscription management card, delete button, `preselectedDate`/`preselectedClientId`/`preselectedSubscriptionId`, and `mutated` dismissal flag.
+  - `SchedulerComponent`, `DetailsComponent`, `SubscriptionDetailModalComponent`: Open `SessionModalComponent` directly on tap.
+
 ## 2026-11-14: Submission Guards & Session Deduplication in Scheduler
 - **Decision:** Added synchronous early `isSubmitting()` guards to all workout creation modals, kept `isSubmitting` active through toast presentation and modal dismissal, guarded modal opening in `SchedulerComponent`, and deduplicated loaded sessions by `id`.
 - **Rationale:** Previously, `this.isSubmitting.set(false)` was called *before* `await this.showToast(...)` and `this.modalCtrl.dismiss(...)` in `CreateWizardModalComponent` and `RecurringModalComponent`, re-enabling the submit button for ~300–400ms while the modal remained visible. Combined with rapid mobile touch taps before `OnPush` change detection updated `<ion-button [disabled]>`, duplicate creation requests could be dispatched.

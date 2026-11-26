@@ -1,19 +1,28 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Клієнти</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="createClient()">
-        <ion-icon name="add"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    @if (showArchived()) {
+      <ion-buttons slot="start">
+        <ion-button (click)="toggleArchivedView()">
+          <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-title>Архів клієнтів</ion-title>
+    } @else {
+      <ion-title>Клієнти</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="createClient()">
+          <ion-icon name="add"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
   <ion-toolbar>
-    <ion-searchbar (ionInput)="onSearch($event)" placeholder="Пошук за ім'ям..." mode="ios"></ion-searchbar>
+    <ion-searchbar (ionInput)="onSearch($any($event))" placeholder="Пошук за ім'ям..." mode="ios"></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($any($event))">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
@@ -21,24 +30,67 @@
     <ion-progress-bar type="indeterminate"></ion-progress-bar>
   } @else {
     <ion-list>
-      @for (client of clients(); track client.id) {
-        <ion-item (click)="openClientCabinet(client)" detail="true" button>
+      <!-- Telegram-style Archive Row when viewing active clients -->
+      @if (!showArchived() && archivedClients().length > 0) {
+        <ion-item button detail="true" class="archive-folder-item" (click)="toggleArchivedView()">
           <ion-avatar slot="start">
-            <div style="background: var(--ion-color-tertiary); width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.2rem; box-shadow: 0 2px 6px rgba(214,167,122,0.3);">
-              {{ client.fullName[0] }}
+            <div class="archive-avatar">
+              <ion-icon name="archive-outline"></ion-icon>
             </div>
           </ion-avatar>
           <ion-label>
-            <h2>{{ client.fullName }}</h2>
-            @if (client.goal) {
-              <p><ion-icon name="flag-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>{{ client.goal }}</p>
-            }
+            <h2>Архів</h2>
+            <p>{{ archivedClients().length }} {{ archivedClients().length === 1 ? 'клієнт' : 'клієнтів' }} в архіві</p>
           </ion-label>
+          <ion-badge slot="end" color="medium" mode="ios">{{ archivedClients().length }}</ion-badge>
         </ion-item>
+      }
+
+      @for (client of (showArchived() ? archivedClients() : clients()); track client.id) {
+        <ion-item-sliding #slidingItem>
+          <ion-item (click)="openClientCabinet(client)" detail="true" button>
+            <ion-avatar slot="start">
+              <div
+                class="client-avatar"
+                [class.archived-avatar]="showArchived()"
+              >
+                {{ client.fullName[0] }}
+              </div>
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ client.fullName }}</h2>
+              @if (client.goal) {
+                <p><ion-icon name="flag-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>{{ client.goal }}</p>
+              }
+            </ion-label>
+          </ion-item>
+
+          <ion-item-options side="end">
+            @if (showArchived()) {
+              <ion-item-option color="success" (click)="restoreClient(client, slidingItem)">
+                <ion-icon slot="top" name="arrow-undo-outline"></ion-icon>
+                Відновити
+              </ion-item-option>
+            } @else {
+              <ion-item-option color="warning" (click)="archiveClient(client, slidingItem)">
+                <ion-icon slot="top" name="archive-outline"></ion-icon>
+                В архів
+              </ion-item-option>
+            }
+            <ion-item-option color="danger" (click)="confirmDeleteClient(client, slidingItem)">
+              <ion-icon slot="top" name="trash-outline"></ion-icon>
+              Видалити
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
       } @empty {
         <ion-item lines="none">
           <ion-label class="ion-text-center" color="medium">
-            Немає клієнтів. Створіть першого!
+            @if (showArchived()) {
+              Архів порожній
+            } @else {
+              Немає клієнтів. Створіть першого!
+            }
           </ion-label>
         </ion-item>
       }

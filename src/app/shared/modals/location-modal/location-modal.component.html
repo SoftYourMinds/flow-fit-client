@@ -46,6 +46,40 @@
     </div>
 
     <div class="form-group ion-margin-top">
+      <ion-label class="form-label">Базові ціни тренувань (грн)</ion-label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <ion-item lines="none" class="custom-input-item">
+          <ion-input
+            type="number"
+            inputmode="decimal"
+            min="0"
+            label="Групове"
+            labelPlacement="stacked"
+            [value]="defaultGroupPrice() ?? ''"
+            (ionInput)="onDefaultGroupPriceInput($event.detail.value)"
+            placeholder="напр. 300"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="custom-input-item">
+          <ion-input
+            type="number"
+            inputmode="decimal"
+            min="0"
+            label="Індивідуальне"
+            labelPlacement="stacked"
+            [value]="defaultIndividualPrice() ?? ''"
+            (ionInput)="onDefaultIndividualPriceInput($event.detail.value)"
+            placeholder="напр. 400"
+          ></ion-input>
+        </ion-item>
+      </div>
+      <p style="margin: 6px 2px 0; font-size: 12px; color: var(--ion-color-medium);">
+        Автоматично підставлятиметься при створенні тренування в цій локації
+      </p>
+    </div>
+
+    <div class="form-group ion-margin-top">
       <ion-label class="form-label">Тип локації</ion-label>
       <ion-segment [value]="type()" (ionChange)="type.set($any($event).detail.value)" mode="ios">
         <ion-segment-button value="STUDIO">

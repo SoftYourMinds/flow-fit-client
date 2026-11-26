@@ -20,6 +20,8 @@ export class LocationModalComponent implements OnInit {
   readonly address = signal<string>('');
   readonly type = signal<'STUDIO' | 'GYM' | 'OUTDOOR'>('STUDIO');
   readonly maxParticipants = signal<number>(8);
+  readonly defaultGroupPrice = signal<number | null>(null);
+  readonly defaultIndividualPrice = signal<number | null>(null);
 
   // ─── Lifecycle ─────────────────────────────────────────────────
 
@@ -32,6 +34,8 @@ export class LocationModalComponent implements OnInit {
     this.address.set(this.location.address || '');
     this.type.set(this.location.type || 'STUDIO');
     this.maxParticipants.set(this.location.maxParticipants ?? 8);
+    this.defaultGroupPrice.set(this.location.defaultGroupPrice ?? null);
+    this.defaultIndividualPrice.set(this.location.defaultIndividualPrice ?? null);
   }
 
   // ─── Public Methods ────────────────────────────────────────────
@@ -40,6 +44,14 @@ export class LocationModalComponent implements OnInit {
     const parsed = Number(rawValue);
     const isValid = Number.isFinite(parsed) && parsed >= 1;
     this.maxParticipants.set(isValid ? Math.floor(parsed) : 1);
+  }
+
+  onDefaultGroupPriceInput(rawValue: unknown): void {
+    this.defaultGroupPrice.set(this.parseOptionalPrice(rawValue));
+  }
+
+  onDefaultIndividualPriceInput(rawValue: unknown): void {
+    this.defaultIndividualPrice.set(this.parseOptionalPrice(rawValue));
   }
 
   cancel(): Promise<boolean> {
@@ -60,8 +72,23 @@ export class LocationModalComponent implements OnInit {
         address: this.address().trim(),
         type: this.type(),
         maxParticipants: capacity,
+        defaultGroupPrice: this.defaultGroupPrice(),
+        defaultIndividualPrice: this.defaultIndividualPrice(),
       },
       'confirm',
     );
+  }
+
+  // ─── Private Helpers ───────────────────────────────────────────
+
+  private parseOptionalPrice(rawValue: unknown): number | null {
+    if (rawValue === '' || rawValue === null || rawValue === undefined) {
+      return null;
+    }
+    const parsed = Number(rawValue);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      return null;
+    }
+    return parsed;
   }
 }

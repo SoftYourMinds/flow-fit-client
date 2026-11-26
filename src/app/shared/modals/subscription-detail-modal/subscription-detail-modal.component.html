@@ -2,6 +2,9 @@
   <ion-toolbar>
     <ion-title>Деталі абонементу</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="openSubscriptionActions()" aria-label="Дії абонементу">
+        <ion-icon name="ellipsis-horizontal" slot="icon-only"></ion-icon>
+      </ion-button>
       <ion-button (click)="cancel()">
         <ion-icon name="close-outline" slot="icon-only"></ion-icon>
       </ion-button>
@@ -123,19 +126,28 @@
 
       <!-- Selected Date Sessions Section -->
       <div class="selected-day-details ion-margin-top">
-        <h4>Тренування на обраний день:</h4>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <h4 style="margin: 0;">Тренування на {{ selectedDateStr() | date:'dd.MM' }}:</h4>
+          @if (subscription.status === 'ACTIVE') {
+            <ion-button size="small" fill="outline" shape="round" color="primary" (click)="addSessionForSelectedDate()">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Додати
+            </ion-button>
+          }
+        </div>
         @if (selectedDateSessions().length > 0) {
           <div class="day-sessions-cards">
             @for (s of selectedDateSessions(); track s.id) {
-              <div class="workout-item-card">
+              <div class="workout-item-card" (click)="editSession(s)" style="cursor: pointer;">
                 <div class="time-col">
                   <span class="time-text">{{ formatTimeRange(s.startTime, s.endTime) }}</span>
                   <span class="loc-text">{{ s.location?.name || ('Локація #' + s.locationId) }}</span>
                 </div>
-                <div class="badge-col">
+                <div class="badge-col" style="display: flex; align-items: center; gap: 6px;">
                   <ion-badge [color]="getStatusColor(s.status)">
                     {{ getStatusLabel(s.status) }}
                   </ion-badge>
+                  <ion-icon name="create-outline" color="medium"></ion-icon>
                 </div>
               </div>
             }
@@ -161,7 +173,7 @@
       } @else if (sortedSessions().length > 0) {
         <div class="sessions-list">
           @for (s of sortedSessions(); track s.id) {
-            <div class="session-card-row">
+            <div class="session-card-row" (click)="editSession(s)" style="cursor: pointer;">
               <div class="date-column">
                 <span class="ukrainian-day">{{ formatUkrainianDateWithDay(s.startTime) }}</span>
                 <span class="time-range">{{ formatTimeRange(s.startTime, s.endTime) }}</span>

@@ -9,6 +9,7 @@ export interface Client {
   phone?: string;
   goal?: string;
   currentWeight?: number;
+  isActive?: boolean;
 }
 
 @Injectable({
@@ -21,6 +22,14 @@ export class ClientsService {
 
   getAll(searchQuery?: string): Observable<Client[]> {
     let params = new HttpParams();
+    if (searchQuery) {
+      params = params.append('search', searchQuery);
+    }
+    return this.http.get<Client[]>(this.apiUrl, { params, headers: { 'x-silent-request': 'true' } });
+  }
+
+  getArchived(searchQuery?: string): Observable<Client[]> {
+    let params = new HttpParams().append('archived', 'true');
     if (searchQuery) {
       params = params.append('search', searchQuery);
     }
@@ -40,7 +49,15 @@ export class ClientsService {
   }
 
   archive(id: number) {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.put<Client>(`${this.apiUrl}/${id}/archive`, {});
+  }
+
+  restore(id: number) {
+    return this.http.put<Client>(`${this.apiUrl}/${id}/restore`, {});
+  }
+
+  deleteClient(id: number) {
+    return this.http.delete<Client>(`${this.apiUrl}/${id}`);
   }
 
   addNote(id: number, data: { text: string; links?: string[] }) {

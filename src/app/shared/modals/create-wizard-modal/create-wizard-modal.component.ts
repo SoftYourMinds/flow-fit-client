@@ -33,6 +33,7 @@ import {
 } from '../../../core/services/notification.service';
 import { WORKOUT_TYPE_OPTIONS } from '../../../core/constants/workout-types.constant';
 import { SessionParticipantsEditorComponent } from '../../components/session-participants-editor/session-participants-editor.component';
+import { SubscriptionModalComponent } from '../subscription-modal/subscription-modal.component';
 import {
   normalizeParticipantsForIndividual,
   sanitizeParticipantsForApi,
@@ -66,6 +67,7 @@ export class CreateWizardModalComponent implements OnInit {
   @Input() clients: Client[] = [];
   @Input() preselectedClientId?: number;
   @Input() preselectedDate?: string;
+  @Input() initialStep?: 'TYPE_CHOICE' | 'SUBSCRIPTION' | 'SINGLE';
 
   // ─── Constants ─────────────────────────────────────────────────
   readonly DAYS_OF_WEEK: DayOfWeekOption[] = [
@@ -79,7 +81,6 @@ export class CreateWizardModalComponent implements OnInit {
   ];
 
   readonly WORKOUT_TYPE_OPTIONS = WORKOUT_TYPE_OPTIONS;
-
   readonly SESSION_COUNT_PRESETS: number[] = [4, 8, 10, 12];
   readonly REMINDER_MODES = REMINDER_MODE_LABELS;
 
@@ -94,6 +95,7 @@ export class CreateWizardModalComponent implements OnInit {
   readonly subTotalSessions = signal<number>(8);
   readonly subPrice = signal<number>(2400);
   readonly subIsPaid = signal<boolean>(false);
+  readonly subCreateSchedule = signal<boolean>(true);
   readonly subDaysOfWeek = signal<number[]>([1, 3, 5]);
   readonly subStartTime = signal<string>('10:00');
   readonly subDuration = signal<number>(50);
@@ -104,7 +106,7 @@ export class CreateWizardModalComponent implements OnInit {
   readonly isSubPreviewLoading = signal<boolean>(false);
   readonly subClientActiveSubscriptions = signal<ClientSubscription[]>([]);
 
-  // ─── Step 2B: Single Session State ─────────────────────────────
+  // ─── Step 2B: Single (or Repeating Without Subscription) State ─
   readonly singleType = signal<'INDIVIDUAL' | 'GROUP'>('INDIVIDUAL');
   readonly singleIndividualMode = signal<IndividualParticipantMode>('ANONYMOUS');
   readonly singleAnonymousCount = signal<number>(1);
@@ -120,6 +122,13 @@ export class CreateWizardModalComponent implements OnInit {
   readonly enableNotification = signal<boolean>(true);
   readonly reminderMode = signal<ReminderMode>('auto');
   readonly isCritical = signal<boolean>(false);
+
+  // Minimal repeat without subscription state
+  readonly singleRepeatEnabled = signal<boolean>(false);
+  readonly singleRepeatDays = signal<number[]>([1, 3, 5]);
+  readonly singleRepeatUntil = signal<string>(this.getDefaultDateToString());
+  readonly singleRepeatPreview = signal<RecurringPreviewItem[]>([]);
+  readonly isSingleRepeatPreviewLoading = signal<boolean>(false);
 
   // ─── Reactive Data Lists ───────────────────────────────────────
   readonly clientList = signal<Client[]>([]);
@@ -156,6 +165,14 @@ export class CreateWizardModalComponent implements OnInit {
 
   readonly subConflictCount = computed(() => {
     return this.subPreviewItems().filter((item) => item.hasConflict).length;
+  });
+
+  readonly singleRepeatValidCount = computed(() => {
+    return this.singleRepeatPreview().filter((item) => !item.hasConflict).length;
+  });
+
+  readonly singleRepeatConflictCount = computed(() => {
+    return this.singleRepeatPreview().filter((item) => item.hasConflict).length;
   });
 
   readonly hasOverlappingActiveSubscription = computed(() => {
@@ -213,6 +230,11 @@ export class CreateWizardModalComponent implements OnInit {
       this.subDateFrom.set(this.preselectedDate);
       const targetDate = new Date(this.preselectedDate + 'T10:00:00');
       this.singleStartTime.set(this.getLocalIsoString(targetDate));
+      this.singleRepeatUntil.set(this.addDaysToDateString(this.preselectedDate, 28));
+    }
+
+    if (this.initialStep) {
+      this.goToStep(this.initialStep);
     }
   }
 
@@ -225,7 +247,7 @@ export class CreateWizardModalComponent implements OnInit {
     this.errorMessage.set(null);
     this.currentStep.set(step);
 
-    if (step === 'SUBSCRIPTION' && this.subPreviewItems().length === 0) {
+    if (step === 'SUBSCRIPTION' && this.subCreateSchedule() && this.subPreviewItems().length === 0) {
       this.generateSubPreview();
     }
   }
@@ -236,7 +258,29 @@ export class CreateWizardModalComponent implements OnInit {
     this.subClientId.set(id || null);
     this.checkSubClientActiveSubscriptions(id || null);
     this.subPreviewItems.set([]);
-    this.generateSubPreview();
+    if (this.subCreateSchedule()) {
+      this.generateSubPreview();
+    }
+  }
+
+  onSubLocationChange(rawValue: unknown): void {
+    const id = Number(rawValue) || null;
+    this.subLocationId.set(id);
+    const unitPrice = this.getSubUnitPrice(id);
+    if (unitPrice !== null) {
+      this.subPrice.set(this.subTotalSessions() * unitPrice);
+    }
+    if (this.subCreateSchedule()) {
+      this.generateSubPreview();
+    }
+  }
+
+  onSubCreateScheduleToggle(enabled: boolean): void {
+    this.subCreateSchedule.set(enabled);
+    this.errorMessage.set(null);
+    if (enabled && this.subPreviewItems().length === 0) {
+      this.generateSubPreview();
+    }
   }
 
   toggleDay(dayValue: number): void {
@@ -257,10 +301,12 @@ export class CreateWizardModalComponent implements OnInit {
 
   setSubTotalSessions(count: number): void {
     this.subTotalSessions.set(count);
-    this.subPrice.set(count * 300);
+    const unitPrice = this.getSubUnitPrice(this.subLocationId()) ?? 300;
+    this.subPrice.set(count * unitPrice);
   }
 
   generateSubPreview(): void {
+    if (!this.subCreateSchedule()) return;
     const clientId = this.subClientId();
     const locationId = this.subLocationId();
     if (!clientId || !locationId) return;
@@ -298,14 +344,8 @@ export class CreateWizardModalComponent implements OnInit {
     if (this.isSubmitting()) return;
 
     const clientId = this.subClientId();
-    const locationId = this.subLocationId();
-
     if (!clientId) {
       this.errorMessage.set('Будь ласка, оберіть клієнта');
-      return;
-    }
-    if (!locationId) {
-      this.errorMessage.set('Будь ласка, оберіть локацію');
       return;
     }
     if (this.hasOverlappingActiveSubscription()) {
@@ -315,9 +355,44 @@ export class CreateWizardModalComponent implements OnInit {
       return;
     }
 
+    const withSchedule = this.subCreateSchedule();
+    const locationId = this.subLocationId();
+    if (withSchedule && !locationId) {
+      this.errorMessage.set('Будь ласка, оберіть локацію');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+
+    if (!withSchedule) {
+      this.subscriptionsService
+        .create({
+          clientId,
+          type: 'SESSIONS_BASED',
+          totalSessions: this.subTotalSessions(),
+          price: +this.subPrice(),
+          isPaid: this.subIsPaid(),
+        })
+        .subscribe({
+          next: async (subscription) => {
+            await this.showToast('Абонемент успішно створено!', 'success');
+            await this.modalCtrl.dismiss(
+              { created: true, type: 'subscription', subscription },
+              'confirm',
+            );
+          },
+          error: (err) => {
+            this.isSubmitting.set(false);
+            this.errorMessage.set(err?.error?.message || 'Помилка при створенні абонементу');
+          },
+        });
+      return;
+    }
+
     const payload: CreateSubscriptionWithRecurringPayload = {
       clientId,
-      locationId,
+      locationId: locationId!,
       daysOfWeek: this.subDaysOfWeek(),
       startTime: this.subStartTime(),
       endTime: this.calculateEndTime(this.subStartTime(), this.subDuration()),
@@ -328,9 +403,6 @@ export class CreateWizardModalComponent implements OnInit {
       isPaid: this.subIsPaid(),
       workoutTypes: this.subWorkoutTypes(),
     };
-
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
 
     this.subscriptionsService.createWithRecurring(payload).subscribe({
       next: async (res) => {
@@ -361,10 +433,36 @@ export class CreateWizardModalComponent implements OnInit {
       this.singleAnonymousCount.set(normalized.anonymousCount);
       this.singleIndividualMode.set(normalized.mode);
       this.syncSingleClientSubscriptions(normalized.participants);
-      return;
+    } else {
+      this.clearSingleClientSubscriptions();
     }
 
-    this.clearSingleClientSubscriptions();
+    this.applySingleLocationDefaultPrice(this.singleLocationId(), type);
+  }
+
+  onSingleLocationChange(rawValue: unknown): void {
+    const id = Number(rawValue) || null;
+    this.singleLocationId.set(id);
+    this.applySingleLocationDefaultPrice(id, this.singleType());
+    if (this.singleRepeatEnabled()) {
+      this.generateSingleRepeatPreview();
+    }
+  }
+
+  onSingleStartTimeChange(rawValue: unknown): void {
+    const iso = String(rawValue || '');
+    if (!iso) return;
+    this.singleStartTime.set(iso);
+    if (this.singleRepeatEnabled()) {
+      this.generateSingleRepeatPreview();
+    }
+  }
+
+  onSingleDurationChange(durationMin: number): void {
+    this.singleDuration.set(durationMin);
+    if (this.singleRepeatEnabled()) {
+      this.generateSingleRepeatPreview();
+    }
   }
 
   onSingleParticipantsChange(participants: SessionParticipantDraft[]): void {
@@ -386,6 +484,144 @@ export class CreateWizardModalComponent implements OnInit {
     if (mode !== 'CLIENT') {
       this.clearSingleClientSubscriptions();
     }
+  }
+
+  // ─── Minimal Repeat (Step 2B) ──────────────────────────────────
+  onSingleRepeatToggle(enabled: boolean): void {
+    this.singleRepeatEnabled.set(enabled);
+    this.errorMessage.set(null);
+
+    if (!enabled) {
+      this.singleRepeatPreview.set([]);
+      return;
+    }
+
+    const startDate = new Date(this.singleStartTime());
+    if (!Number.isNaN(startDate.getTime())) {
+      const startDow = startDate.getDay();
+      if (!this.singleRepeatDays().includes(startDow)) {
+        this.singleRepeatDays.set([startDow]);
+      }
+      const dateStr = this.formatDateYmd(startDate);
+      if (this.singleRepeatUntil() < dateStr) {
+        this.singleRepeatUntil.set(this.addDaysToDateString(dateStr, 28));
+      }
+    }
+
+    this.generateSingleRepeatPreview();
+  }
+
+  toggleSingleRepeatDay(dayValue: number): void {
+    const current = this.singleRepeatDays();
+    const exists = current.includes(dayValue);
+    if (exists) {
+      if (current.length === 1) return;
+      this.singleRepeatDays.set(current.filter((d) => d !== dayValue));
+    } else {
+      this.singleRepeatDays.set([...current, dayValue].sort((a, b) => a - b));
+    }
+    this.generateSingleRepeatPreview();
+  }
+
+  isSingleRepeatDaySelected(dayValue: number): boolean {
+    return this.singleRepeatDays().includes(dayValue);
+  }
+
+  setSingleRepeatPresetDays(daysToAdd: number): void {
+    const startDate = new Date(this.singleStartTime());
+    const baseStr = Number.isNaN(startDate.getTime())
+      ? this.getTodayDateString()
+      : this.formatDateYmd(startDate);
+    this.singleRepeatUntil.set(this.addDaysToDateString(baseStr, daysToAdd));
+    this.generateSingleRepeatPreview();
+  }
+
+  onSingleRepeatUntilChange(rawValue: unknown): void {
+    const dateStr = String(rawValue || '');
+    if (!dateStr) return;
+    this.singleRepeatUntil.set(dateStr);
+    this.generateSingleRepeatPreview();
+  }
+
+  generateSingleRepeatPreview(): void {
+    if (!this.singleRepeatEnabled()) return;
+    const locationId = this.singleLocationId();
+    if (!locationId) return;
+
+    const startDate = new Date(this.singleStartTime());
+    if (Number.isNaN(startDate.getTime())) return;
+
+    const startHHmm = this.formatTimeHm(startDate);
+    const payload: RecurringSessionsPayload = {
+      type: this.singleType(),
+      locationId,
+      daysOfWeek: this.singleRepeatDays(),
+      startTime: startHHmm,
+      endTime: this.calculateEndTime(startHHmm, this.singleDuration()),
+      dateFrom: this.formatDateYmd(startDate),
+      dateTo: this.singleRepeatUntil(),
+      timezoneOffset: new Date().getTimezoneOffset(),
+    };
+
+    this.isSingleRepeatPreviewLoading.set(true);
+    this.sessionsService.previewRecurring(payload).subscribe({
+      next: (items) => {
+        this.singleRepeatPreview.set(items || []);
+        this.isSingleRepeatPreviewLoading.set(false);
+      },
+      error: () => {
+        this.singleRepeatPreview.set([]);
+        this.isSingleRepeatPreviewLoading.set(false);
+      },
+    });
+  }
+
+  // ─── Quick Subscription inside Step 2B (Individual) ────────────
+  async quickCreateSubscriptionForSingle(): Promise<void> {
+    const clientId = this.selectedSingleClientId();
+    if (!clientId) return;
+
+    const modal = await this.modalCtrl.create({
+      component: SubscriptionModalComponent,
+      componentProps: { clientId },
+    });
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role !== 'confirm' || !data) return;
+
+    try {
+      const created = await firstValueFrom(this.subscriptionsService.create(data));
+      this.singleClientSubscriptions.set([created]);
+      this.selectedSubscriptionId.set(created.id);
+      this.deductFromSubscription.set(true);
+      await this.showToast('Абонемент оформлено та привʼязано', 'success');
+    } catch (err: unknown) {
+      const errorObj = err as { error?: { message?: string } };
+      this.errorMessage.set(errorObj?.error?.message || 'Помилка при створенні абонементу');
+    }
+  }
+
+  switchSingleToSubscriptionStep(): void {
+    const clientId = this.selectedSingleClientId();
+    if (clientId) {
+      this.subClientId.set(clientId);
+      this.checkSubClientActiveSubscriptions(clientId);
+    }
+    if (this.singleLocationId()) {
+      this.subLocationId.set(this.singleLocationId());
+    }
+    const startDate = new Date(this.singleStartTime());
+    if (!Number.isNaN(startDate.getTime())) {
+      this.subDateFrom.set(this.formatDateYmd(startDate));
+      this.subStartTime.set(this.formatTimeHm(startDate));
+    }
+    this.subDuration.set(this.singleDuration());
+    this.subWorkoutTypes.set([...this.singleWorkoutTypes()]);
+    const unitPrice = this.getSubUnitPrice(this.subLocationId()) ?? 300;
+    this.subPrice.set(this.subTotalSessions() * unitPrice);
+    this.subCreateSchedule.set(true);
+    this.goToStep('SUBSCRIPTION');
   }
 
   loadClients(): void {
@@ -465,6 +701,56 @@ export class CreateWizardModalComponent implements OnInit {
         await this.notificationService.ensureAccessForSessionCreation();
       }
 
+      if (this.singleRepeatEnabled()) {
+        const startHHmm = this.formatTimeHm(start);
+        const createdSessions = await firstValueFrom(
+          this.sessionsService.createRecurring({
+            type: sessionType,
+            clientId: clientId ?? undefined,
+            locationId: Number(locationId),
+            daysOfWeek: this.singleRepeatDays(),
+            startTime: startHHmm,
+            endTime: this.calculateEndTime(startHHmm, this.singleDuration()),
+            dateFrom: this.formatDateYmd(start),
+            dateTo: this.singleRepeatUntil(),
+            timezoneOffset: new Date().getTimezoneOffset(),
+            subscriptionId: willDeduct && activeSub ? activeSub.id : undefined,
+            price: willDeduct ? 0 : +this.singlePrice(),
+            workoutTypes: this.singleWorkoutTypes(),
+            participants,
+            anonymousParticipantsCount,
+            enableNotification: this.enableNotification(),
+            reminderMode: String(this.reminderMode()),
+            isCritical: this.isCritical(),
+          }),
+        );
+
+        if (createdSessions.length === 0) {
+          this.isSubmitting.set(false);
+          this.errorMessage.set(
+            'Жодне тренування не створено — перевірте обрані дні тижня або перетини в розкладі',
+          );
+          return;
+        }
+
+        if (this.enableNotification()) {
+          const loc = this.locationList().find((l) => l.id === locationId);
+          if (loc) {
+            for (const s of createdSessions) {
+              this.notificationService.scheduleForSession(s, loc.name, this.reminderMode());
+            }
+          }
+        }
+
+        this.locationsService.saveLastSelectedLocationId(Number(locationId));
+        await this.showToast(`Створено ${createdSessions.length} тренувань!`, 'success');
+        await this.modalCtrl.dismiss(
+          { created: true, type: 'recurring', count: createdSessions.length },
+          'confirm',
+        );
+        return;
+      }
+
       const createdSession = await firstValueFrom(
         this.sessionsService.create({
           locationId: Number(locationId),
@@ -483,14 +769,12 @@ export class CreateWizardModalComponent implements OnInit {
         }),
       );
 
-      // Deduct from subscription if requested
       if (willDeduct && activeSub) {
         await firstValueFrom(
           this.subscriptionsService.deductSession(activeSub.id, createdSession.id),
         );
       }
 
-      // Schedule notification
       if (this.enableNotification()) {
         const loc = this.locationList().find((l) => l.id === locationId);
         if (loc) {
@@ -533,6 +817,7 @@ export class CreateWizardModalComponent implements OnInit {
     this.selectedSubscriptionId.set(null);
     this.deductFromSubscription.set(false);
   }
+
   private checkSubClientActiveSubscriptions(clientId: number | null): void {
     if (!clientId) {
       this.subClientActiveSubscriptions.set([]);
@@ -562,6 +847,24 @@ export class CreateWizardModalComponent implements OnInit {
         this.deductFromSubscription.set(false);
       },
     });
+  }
+
+  private applySingleLocationDefaultPrice(
+    locationId: number | null,
+    sessionType: 'INDIVIDUAL' | 'GROUP',
+  ): void {
+    if (!locationId) return;
+    const loc = this.locationList().find((l) => l.id === Number(locationId));
+    const defaultPrice = this.locationsService.resolveDefaultPrice(loc, sessionType);
+    if (defaultPrice !== null) {
+      this.singlePrice.set(defaultPrice);
+    }
+  }
+
+  private getSubUnitPrice(locationId: number | null): number | null {
+    if (!locationId) return null;
+    const loc = this.locationList().find((l) => l.id === Number(locationId));
+    return this.locationsService.resolveDefaultPrice(loc, 'INDIVIDUAL');
   }
 
   formatPreviewDate(dateStr: string): string {
@@ -597,21 +900,33 @@ export class CreateWizardModalComponent implements OnInit {
     return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
   }
 
-  private getTodayDateString(): string {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
+  private formatDateYmd(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+  }
+
+  private formatTimeHm(date: Date): string {
+    const h = String(date.getHours()).padStart(2, '0');
+    const m = String(date.getMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
+  private addDaysToDateString(baseYmd: string, daysToAdd: number): string {
+    const d = new Date(`${baseYmd}T12:00:00`);
+    d.setDate(d.getDate() + daysToAdd);
+    return this.formatDateYmd(d);
+  }
+
+  private getTodayDateString(): string {
+    return this.formatDateYmd(new Date());
   }
 
   private getDefaultDateToString(): string {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+    return this.formatDateYmd(date);
   }
 
   private getLocalIsoString(date: Date): string {
@@ -635,9 +950,14 @@ export class CreateWizardModalComponent implements OnInit {
 
     if (!this.subLocationId()) {
       this.subLocationId.set(defaultLocationId);
+      const unitPrice = this.getSubUnitPrice(defaultLocationId);
+      if (unitPrice !== null) {
+        this.subPrice.set(this.subTotalSessions() * unitPrice);
+      }
     }
     if (!this.singleLocationId()) {
       this.singleLocationId.set(defaultLocationId);
+      this.applySingleLocationDefaultPrice(defaultLocationId, this.singleType());
     }
   }
 }
